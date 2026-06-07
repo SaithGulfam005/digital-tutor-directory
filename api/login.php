@@ -19,10 +19,17 @@ if (!db_available()) {
     redirect_with(url('database/install.php'), 'Database not installed. Please run the installer first.', 'warning');
 }
 
-$user = attempt_login($email, $password, $role);
-if (!$user) {
-    redirect_with(url('auth/login.php?role=' . urlencode($role)), 'Invalid email or password.', 'danger');
+$result = attempt_login($email, $password, $role);
+if (!$result['user']) {
+    $message = match ($result['error']) {
+        'pending_approval' => 'Your teacher account is pending admin approval. You can log in after an administrator approves your registration.',
+        'inactive' => 'Your account has been deactivated. Please contact support.',
+        default => 'Invalid email or password.',
+    };
+    $flashType = $result['error'] === 'pending_approval' ? 'warning' : 'danger';
+    redirect_with(url('auth/login.php?role=' . urlencode($role)), $message, $flashType);
 }
 
+$user = $result['user'];
 auth_login($user);
 redirect_with(dashboard_url_for_role($role), 'Welcome back, ' . $user['name'] . '!');

@@ -43,6 +43,10 @@ function require_auth(?string $role = null): array
     if ($role && ($user['role'] ?? '') !== $role) {
         redirect_with(url('pages/home.php'), 'Access denied.', 'danger');
     }
+    if ($role === 'teacher' && ($user['status'] ?? '') !== 'active') {
+        auth_logout();
+        redirect_with(url('auth/login.php?role=teacher'), 'Your teacher account is pending admin approval.', 'warning');
+    }
     return $user;
 }
 
@@ -55,24 +59,24 @@ function dashboard_url_for_role(string $role): string
     };
 }
 
-function attempt_login(string $email, string $password, string $expectedRole): ?array
+function attempt_login(string $email, string $password, string $expectedRole): array
 {
     if (!db_available()) {
-        return null;
+        return ['user' => null, 'error' => 'invalid'];
     }
     $stmt = db()->prepare('SELECT * FROM users WHERE email = ? AND role = ? LIMIT 1');
     $stmt->execute([$email, $expectedRole]);
     $user = $stmt->fetch();
     if (!$user || !password_verify($password, $user['password_hash'])) {
-        return null;
+        return ['user' => null, 'error' => 'invalid'];
     }
     if ($user['status'] === 'inactive') {
-        return null;
+        return ['user' => null, 'error' => 'inactive'];
     }
-    if ($expectedRole === 'teacher' && $user['status'] === 'pending') {
-        // allow pending teachers to login but limited
+    if ($expectedRole === 'teacher' && $user['status'] !== 'active') {
+        return ['user' => null, 'error' => 'pending_approval'];
     }
-    return $user;
+    return ['user' => $user, 'error' => null];
 }
 
 function register_user(array $data, string $role): array
