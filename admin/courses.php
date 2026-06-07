@@ -68,7 +68,7 @@ require __DIR__ . '/../components/page-hero.php';
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Approve</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Reject</button>
                 <?php else: ?>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-admin-action="feature" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-star"></i></button>
+                <!-- <button type="button" class="btn btn-sm btn-outline-primary" data-admin-action="feature" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-star"></i></button> -->
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="delete" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-trash"></i></button>
                 <?php endif; ?>
               </td>

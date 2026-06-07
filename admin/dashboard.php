@@ -180,7 +180,7 @@ require __DIR__ . '/../components/page-hero.php';
 
     <div class="row g-4 mt-1">
       <div class="col-12">
-        <div class="table-card p-3">
+        <!-- <div class="table-card p-3">
           <h2 class="h6 fw-bold mb-3">Quick Actions</h2>
           <div class="row g-2">
             <div class="col-sm-6 col-md-3">
@@ -204,7 +204,7 @@ require __DIR__ . '/../components/page-hero.php';
               </a>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </main>

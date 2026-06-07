@@ -32,7 +32,7 @@
       </div>
       <div class="col-lg-4">
         <h6 class="fw-bold small text-uppercase mb-3">Contact</h6>
-        <p class="small text-secondary mb-1"><i class="bi bi-envelope me-2 text-primary"></i>support@digitaltutordirectory.com</p>
+        <p class="small text-secondary mb-1"><i class="bi bi-envelope me-2 text-primary"></i>digitaltutordirectory@gmail.com</p>
         <p class="small text-secondary mb-1"><i class="bi bi-telephone me-2 text-primary"></i>+92 3279594391</p>
         <p class="small text-secondary"><i class="bi bi-geo-alt me-2 text-primary"></i>Islamia College Gujranwala, Pakistan</p>
       </div>

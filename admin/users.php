@@ -7,7 +7,7 @@ $dashSection = 'users';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'User Management';
 $pageSubheading = 'Manage students and teachers on the platform';
-$pageActions = '<button type="button" class="btn btn-primary btn-sm" data-demo><i class="bi bi-person-plus me-1"></i>Add User</button>';
+//$pageActions = '<button type="button" class="btn btn-primary btn-sm" data-demo><i class="bi bi-person-plus me-1"></i>Add User</button>';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';

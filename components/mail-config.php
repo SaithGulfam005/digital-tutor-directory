@@ -12,6 +12,6 @@ return [
     'smtp_port' => 587,
     'smtp_user' => 'digitaltutordirectory@gmail.com',
     // Set your Gmail App Password here (16 characters, no spaces)
-    'smtp_pass' => '',
+    'smtp_pass' => 'zmmfiewpewxqhtwq',
     'use_smtp' => true,
 ];
