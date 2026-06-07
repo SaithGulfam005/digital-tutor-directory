@@ -87,7 +87,7 @@ require __DIR__ . '/../components/page-hero.php';
             <span class="contact-method__icon"><i class="bi bi-envelope"></i></span>
             <span class="contact-method__body">
               <span class="contact-method__label">Email</span>
-              <span class="contact-method__value">support@digitaltutor.com</span>
+              <span class="contact-method__value">digitaltutordirectory@gmail.com</span>
             </span>
             <i class="bi bi-arrow-up-right contact-method__arrow"></i>
           </a>
@@ -95,7 +95,7 @@ require __DIR__ . '/../components/page-hero.php';
             <span class="contact-method__icon"><i class="bi bi-telephone"></i></span>
             <span class="contact-method__body">
               <span class="contact-method__label">Phone</span>
-              <span class="contact-method__value">+92 300 1234567</span>
+              <span class="contact-method__value">+92 3279594391</span>
             </span>
             <i class="bi bi-arrow-up-right contact-method__arrow"></i>
           </a>
