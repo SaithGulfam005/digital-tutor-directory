@@ -14,7 +14,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Categories</a>
             <ul class="dropdown-menu shadow border-0">
-              <?php foreach (['Development','Design','Business','Marketing','Data Science'] as $cat): ?>
+              <?php foreach (['Development','Design','Business','Marketing','Data Science','English'] as $cat): ?>
               <li><a class="dropdown-item" href="<?= url('pages/courses.php?category='.urlencode($cat)) ?>"><?= $cat ?></a></li>
               <?php endforeach; ?>
             </ul>
