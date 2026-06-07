@@ -41,19 +41,19 @@ INSERT INTO courses (teacher_id, category_id, title, slug, description, price, s
 ((SELECT id FROM users WHERE email='sana.javed@email.com'), 1, 'Advanced React Patterns', 'advanced-react-patterns', 'Hooks, context, and performance.', 42.99, 'pending', 0),
 ((SELECT id FROM users WHERE email='imran.q@email.com'), 3, 'Financial Accounting Basics', 'financial-accounting-basics', 'Intro to accounting principles.', 34.99, 'pending', 0);
 
-INSERT INTO lessons (course_id, title, duration, sort_order) VALUES
-(1, 'Introduction to the Web', '12:30', 1),
-(1, 'HTML Fundamentals', '18:45', 2),
-(1, 'CSS Layouts', '22:10', 3),
-(1, 'JavaScript Basics', '25:00', 4),
-(1, 'Building Your First App', '30:15', 5),
-(1, 'Deployment & Next Steps', '14:20', 6),
-(2, 'Design Thinking', '15:00', 1),
-(2, 'User Research Methods', '20:30', 2),
-(2, 'Wireframing in Figma', '18:00', 3),
-(3, 'Python Setup', '10:00', 1),
-(3, 'Data with Pandas', '24:00', 2),
-(3, 'Visualization', '19:30', 3);
+INSERT INTO lessons (course_id, title, duration, sort_order, content_url) VALUES
+(1, 'Introduction to the Web', '12:30', 1, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+(1, 'HTML Fundamentals', '18:45', 2, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'),
+(1, 'CSS Layouts', '22:10', 3, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'),
+(1, 'JavaScript Basics', '25:00', 4, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'),
+(1, 'Building Your First App', '30:15', 5, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'),
+(1, 'Deployment & Next Steps', '14:20', 6, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'),
+(2, 'Design Thinking', '15:00', 1, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'),
+(2, 'User Research Methods', '20:30', 2, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'),
+(2, 'Wireframing in Figma', '18:00', 3, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'),
+(3, 'Python Setup', '10:00', 1, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'),
+(3, 'Data with Pandas', '24:00', 2, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'),
+(3, 'Visualization', '19:30', 3, 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4');
 
 INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES
 ((SELECT id FROM users WHERE email='ali.raza@email.com'), 1, 68, 'active', CURDATE()),

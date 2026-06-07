@@ -54,11 +54,5 @@
     io.observe(el);
   });
 
-  // Demo actions
-  document.querySelectorAll('[data-demo]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showToast('Backend coming soon. UI demo only.', 'primary');
-    });
-  });
+  // Demo actions removed — features are now backed by the database/API.
 })();

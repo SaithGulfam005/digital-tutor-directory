@@ -4,6 +4,7 @@ define('BASE_URL', '/digital-tutor-directory');
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/mail.php';
 require_once __DIR__ . '/../includes/data.php';
 
 function url(string $path = ''): string
@@ -13,6 +14,24 @@ function url(string $path = ''): string
 function asset(string $path): string
 {
     return url('assets/' . ltrim($path, '/'));
+}
+
+function media_url(?string $path, string $fallback = 'assets/images/avatars/placeholder.svg'): string
+{
+    $path = trim((string) $path);
+    if ($path === '') {
+        return url($fallback);
+    }
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+    if (str_starts_with($path, BASE_URL)) {
+        return $path;
+    }
+    if (str_starts_with($path, '/')) {
+        return $path;
+    }
+    return url(ltrim($path, '/'));
 }
 function isActive(string $path): string
 {

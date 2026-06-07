@@ -85,7 +85,7 @@ function getTeachers(bool $verifiedOnly = true): array
             'experience' => $row['experience'] ?? '',
             'rating' => (float) ($row['rating'] ?? 0),
             'subject' => $row['subject'] ?? '',
-            'photo' => $row['photo'] ?: 'assets/images/teachers/placeholder.jpg',
+            'photo' => $row['photo'] ?? '',
             'students' => (int) ($row['students'] ?? 0),
             'bio' => $row['bio'] ?? '',
         ];
@@ -238,14 +238,20 @@ function getCurrentStudent(): array
     if (!$user || !db_available()) {
         return fallbackCurrentStudent();
     }
+    $stmt = db()->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+    $stmt->execute([(int) $user['id']]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        return fallbackCurrentStudent();
+    }
     return [
-        'id' => (int) $user['id'],
-        'name' => $user['name'],
-        'email' => $user['email'],
-        'phone' => $user['phone'] ?? '',
-        'joined' => date('Y-m-d', strtotime($user['created_at'] ?? 'now')),
-        'bio' => $user['bio'] ?? '',
-        'avatar' => $user['avatar'] ?? 'assets/images/teachers/placeholder.jpg',
+        'id' => (int) $row['id'],
+        'name' => $row['name'],
+        'email' => $row['email'],
+        'phone' => $row['phone'] ?? '',
+        'joined' => date('Y-m-d', strtotime($row['created_at'] ?? 'now')),
+        'bio' => $row['bio'] ?? '',
+        'avatar' => $row['avatar'] ?? '',
     ];
 }
 
@@ -329,6 +335,7 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
             'id' => (int) $row['id'],
             'title' => $row['title'],
             'duration' => $row['duration'],
+            'content_url' => $row['content_url'] ?? '',
             'completed' => in_array($row['id'], $completedIds, true),
         ];
     }, $lessons);
@@ -420,16 +427,16 @@ function getTeacherVerification(?int $teacherId = null): array
     if (!$row) {
         return fallbackTeacherVerification();
     }
-    $docStmt = db()->prepare('SELECT original_name FROM teacher_documents WHERE teacher_profile_id=?');
+    $docStmt = db()->prepare('SELECT original_name, file_path FROM teacher_documents WHERE teacher_profile_id=?');
     $docStmt->execute([$row['id']]);
-    $docs = array_column($docStmt->fetchAll(), 'original_name');
+    $docs = array_map(static fn($d) => $d['original_name'], $docStmt->fetchAll());
 
     return [
         'status' => $row['verification_status'] === 'verified' ? 'verified' : $row['verification_status'],
         'verified_at' => $row['verified_at'] ?? '',
         'qualification' => $row['qualification'] ?? '',
         'cnic' => $row['cnic'] ?? '',
-        'documents' => $docs ?: ['CNIC Front.pdf', 'Degree Certificate.pdf'],
+        'documents' => $docs,
     ];
 }
 
@@ -587,6 +594,10 @@ function updateUserProfile(int $userId, array $data): void
     $stmt = db()->prepare('UPDATE users SET name=?, email=?, phone=?, bio=? WHERE id=?');
     $stmt->execute([$data['name'], $data['email'], $data['phone'] ?? null, $data['bio'] ?? null, $userId]);
 
+    if (!empty($data['avatar'])) {
+        db()->prepare('UPDATE users SET avatar=? WHERE id=?')->execute([$data['avatar'], $userId]);
+    }
+
     if (!empty($data['password'])) {
         $hash = password_hash($data['password'], PASSWORD_DEFAULT);
         db()->prepare('UPDATE users SET password_hash=? WHERE id=?')->execute([$hash, $userId]);
@@ -597,6 +608,112 @@ function updateUserProfile(int $userId, array $data): void
         if ($fresh) {
             auth_login($fresh);
         }
+    }
+}
+
+function studentIsEnrolled(int $studentId, int $courseId): bool
+{
+    if (!db_available()) {
+        return false;
+    }
+    $stmt = db()->prepare('SELECT id FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $courseId]);
+    return (bool) $stmt->fetch();
+}
+
+function getEnrollmentProgress(int $studentId, int $courseId): int
+{
+    if (!db_available()) {
+        return 0;
+    }
+    $stmt = db()->prepare('SELECT progress FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $courseId]);
+    return (int) ($stmt->fetchColumn() ?: 0);
+}
+
+function processCoursePayment(int $studentId, int $courseId, string $method, array $billing = []): array
+{
+    $course = getCourseById($courseId);
+    if (!$course) {
+        throw new RuntimeException('Course not found.');
+    }
+
+    if (!db_available()) {
+        throw new RuntimeException('Database not available.');
+    }
+
+    $pdo = db();
+    $check = $pdo->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=?');
+    $check->execute([$studentId, $courseId]);
+    if ($check->fetch()) {
+        throw new RuntimeException('You are already enrolled in this course.');
+    }
+
+    $pendingCheck = $pdo->prepare("SELECT id FROM payments WHERE student_id=? AND course_id=? AND status='pending' LIMIT 1");
+    $pendingCheck->execute([$studentId, $courseId]);
+    if ($pendingCheck->fetch()) {
+        throw new RuntimeException('A payment for this course is already pending admin approval.');
+    }
+
+    $amount = (float) $course['price'];
+    $teacherShare = round($amount * 0.7, 2);
+    $paymentRef = next_payment_reference();
+    $instantMethods = ['card', 'jazzcash', 'easypaisa'];
+    $methodKey = strtolower($method);
+    $status = in_array($methodKey, $instantMethods, true) ? 'completed' : 'pending';
+
+    $pdo->beginTransaction();
+    try {
+        $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, status, teacher_share, created_at) VALUES (?,?,?,?,?,?,?,NOW())');
+        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $method, $status, $teacherShare]);
+
+        if ($status === 'completed') {
+            $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
+            $en->execute([$studentId, $courseId, 'active']);
+        }
+
+        $pdo->commit();
+
+        return [
+            'reference' => $paymentRef,
+            'status' => $status,
+            'amount' => $amount,
+            'method' => $method,
+        ];
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function admin_confirm_payment(int $paymentId): void
+{
+    $pdo = db();
+    $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
+    $stmt->execute([$paymentId]);
+    $payment = $stmt->fetch();
+    if (!$payment) {
+        throw new RuntimeException('Payment not found.');
+    }
+    if ($payment['status'] === 'completed') {
+        return;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare("UPDATE payments SET status='completed' WHERE id=?")->execute([$paymentId]);
+
+        $check = $pdo->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=? LIMIT 1');
+        $check->execute([(int) $payment['student_id'], (int) $payment['course_id']]);
+        if (!$check->fetch()) {
+            $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
+            $en->execute([(int) $payment['student_id'], (int) $payment['course_id'], 'active']);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
     }
 }
 

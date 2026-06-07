@@ -1,9 +1,4 @@
 <?php
-/**
- * Stripe Checkout Page
- * Handles payment processing for course enrollment
- */
-
 require_once __DIR__ . '/../components/config.php';
 require_once __DIR__ . '/../components/payment-config.php';
 
@@ -12,137 +7,108 @@ $user = require_auth('student');
 $courseId = (int) ($_GET['course_id'] ?? 0);
 $course = getCourseById($courseId);
 
-if (!$course) {
-    redirect_with(url('pages/courses.php'), 'Course not found.', 'danger');
+if (!$course || ($course['status'] ?? '') !== 'published') {
+    redirect_with(url('pages/courses.php'), 'Course not available for enrollment.', 'danger');
+}
+
+if (studentIsEnrolled((int) $user['id'], $courseId)) {
+    redirect_with(url('student/course-learn.php?id=' . $courseId), 'You are already enrolled in this course.');
 }
 
 $pageTitle = 'Checkout | ' . SITE_NAME;
-$dashboardLayout = false;
 $bodyClass = 'checkout-page';
-
 require_once __DIR__ . '/../components/head.php';
 ?>
 <main class="min-vh-100 py-5">
   <div class="container">
     <div class="row g-4">
-      <!-- Order Summary -->
       <div class="col-lg-4">
-        <div class="sticky-top" style="top: 20px;">
-          <div class="card">
-            <div class="card-body p-4">
-              <h5 class="card-title fw-bold mb-3">Order Summary</h5>
-              
-              <div class="d-flex gap-3 mb-4">
-                <img src="<?= url($course['thumb']) ?>" alt="<?= htmlspecialchars($course['title']) ?>" 
-                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" onerror="this.src='<?= url('assets/images/courses/placeholder.jpg') ?>'">
-                <div>
-                  <h6 class="mb-1"><?= htmlspecialchars($course['title']) ?></h6>
-                  <p class="small text-muted mb-2">by <?= htmlspecialchars($course['teacher']) ?></p>
-                  <div class="rating-stars small">
-                    <i class="bi bi-star-fill text-warning"></i>
-                    <span class="text-muted"><?= number_format($course['rating'], 1) ?></span>
-                  </div>
-                </div>
-              </div>
-
-              <hr>
-
-              <div class="d-flex justify-content-between mb-2">
-                <span>Course Price</span>
-                <strong>$<?= number_format($course['price'], 2) ?></strong>
-              </div>
-              <div class="d-flex justify-content-between mb-3 text-success">
-                <span>Discount</span>
-                <strong>-$0.00</strong>
-              </div>
-
-              <hr>
-
-              <div class="d-flex justify-content-between mb-4">
-                <span class="fw-bold">Total</span>
-                <strong class="fs-5">$<?= number_format($course['price'], 2) ?></strong>
-              </div>
-
-              <div class="alert alert-info small mb-0">
-                <i class="bi bi-info-circle me-2"></i>
-                Secure payment powered by Stripe. Your payment information is encrypted.
+        <div class="card border-0 shadow-sm sticky-top" style="top:20px">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Order Summary</h5>
+            <div class="d-flex gap-3 mb-4">
+              <img src="<?= media_url($course['thumb'], 'assets/images/courses/placeholder.jpg') ?>" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px">
+              <div>
+                <h6 class="mb-1"><?= htmlspecialchars($course['title']) ?></h6>
+                <p class="small text-muted mb-0">by <?= htmlspecialchars($course['teacher']) ?></p>
               </div>
             </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-2"><span>Course Price</span><strong>$<?= number_format($course['price'], 2) ?></strong></div>
+            <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><strong class="fs-5 text-primary">$<?= number_format($course['price'], 2) ?></strong></div>
+            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Secure checkout. Card, JazzCash, and EasyPaisa enroll instantly. Bank transfer requires admin approval.</div>
           </div>
         </div>
       </div>
 
-      <!-- Payment Form -->
       <div class="col-lg-8">
-        <div class="card">
+        <div class="card border-0 shadow-sm">
           <div class="card-body p-4">
-            <h5 class="card-title fw-bold mb-4">Payment Details</h5>
-
-            <form id="payment-form" method="post" action="<?= url('api/process-payment.php') ?>">
+            <h5 class="fw-bold mb-4">Choose Payment Method</h5>
+            <form id="payment-form">
               <input type="hidden" name="course_id" value="<?= $courseId ?>">
 
-              <!-- Card Holder Information -->
-              <div class="row mb-3">
+              <div class="row g-2 mb-4">
+                <?php foreach (PAYMENT_METHODS as $key => $label): ?>
                 <div class="col-md-6">
-                  <label class="form-label" for="fname">First Name</label>
-                  <input type="text" class="form-control" id="fname" name="first_name" 
-                         value="<?= htmlspecialchars($user['name'] ?? '') ?>" required>
+                  <label class="payment-method-option d-block border rounded p-3 h-100">
+                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'card' ? 'checked' : '' ?>>
+                    <span class="fw-medium"><?= htmlspecialchars($label) ?></span>
+                  </label>
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="email">Email</label>
-                  <input type="email" class="form-control" id="email" name="email" 
-                         value="<?= htmlspecialchars($user['email']) ?>" required readonly>
+                <?php endforeach; ?>
+              </div>
+
+              <div id="fields-card" class="payment-fields">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" class="form-control" name="card_number" placeholder="4111 1111 1111 1111" maxlength="19">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Expiry (MM/YY)</label>
+                    <input type="text" class="form-control" name="card_expiry" placeholder="12/28" maxlength="5">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">CVC</label>
+                    <input type="text" class="form-control" name="card_cvc" placeholder="123" maxlength="4">
+                  </div>
+                </div>
+                <p class="small text-muted mt-2 mb-0">Test card: 4111 1111 1111 1111 · any future expiry · any CVC</p>
+              </div>
+
+              <div id="fields-wallet" class="payment-fields d-none">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" class="form-control" name="mobile_number" placeholder="03XX XXXXXXX">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Wallet PIN</label>
+                    <input type="password" class="form-control" name="wallet_pin" placeholder="****" maxlength="6">
+                  </div>
                 </div>
               </div>
 
-              <!-- Stripe Card Element -->
-              <div class="mb-3">
-                <label class="form-label">Card Details</label>
-                <div id="card-element" class="form-control p-3" style="height: 40px; padding-top: 10px !important;"></div>
-                <div id="card-errors" class="text-danger small mt-2"></div>
-              </div>
-
-              <!-- Country/Postal Code -->
-              <div class="row mb-4">
-                <div class="col-md-6">
-                  <label class="form-label" for="country">Country</label>
-                  <select class="form-select" id="country" name="country" required>
-                    <option value="">Select country</option>
-                    <option value="US">United States</option>
-                    <option value="GB">United Kingdom</option>
-                    <option value="CA">Canada</option>
-                    <option value="AU">Australia</option>
-                    <option value="PK">Pakistan</option>
-                    <option value="IN">India</option>
-                    <option value="Other">Other</option>
-                  </select>
+              <div id="fields-bank" class="payment-fields d-none">
+                <div class="mb-3">
+                  <label class="form-label">Bank Transaction Reference</label>
+                  <input type="text" class="form-control" name="transaction_ref" placeholder="Enter reference from your bank receipt">
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="postal">Postal Code</label>
-                  <input type="text" class="form-control" id="postal" name="postal_code" required>
-                </div>
+                <div class="alert alert-warning small mb-0">Transfer to <strong>Digital Tutor Directory</strong> account. Your enrollment activates after admin verifies the payment.</div>
               </div>
 
-              <!-- Terms & Conditions -->
-              <div class="form-check mb-4">
-                <input class="form-check-input" type="checkbox" id="terms" name="agree_terms" required>
-                <label class="form-check-label" for="terms">
-                  I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
-                </label>
+              <div class="form-check mt-4 mb-4">
+                <input class="form-check-input" type="checkbox" id="terms" required>
+                <label class="form-check-label" for="terms">I agree to the terms and confirm this payment</label>
               </div>
 
-              <!-- Submit Button -->
-              <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-100">
+              <div id="payment-error" class="alert alert-danger d-none"></div>
+              <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-btn">
                 <span id="btn-text">Pay $<?= number_format($course['price'], 2) ?></span>
-                <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
               </button>
             </form>
-
-            <!-- Alternative: Manual Payment Fallback -->
-            <div class="alert alert-warning mt-4 small">
-              <strong>Testing Mode:</strong> Use card number <code>4242 4242 4242 4242</code>, 
-              any future expiry date, and any 3-digit CVC to test the payment system.
-            </div>
           </div>
         </div>
       </div>
@@ -150,91 +116,59 @@ require_once __DIR__ . '/../components/head.php';
   </div>
 </main>
 
-<script src="https://js.stripe.com/v3/"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Stripe
-  const stripe = Stripe('<?= STRIPE_PUBLISHABLE_KEY ?>');
-  const elements = stripe.elements();
-  const cardElement = elements.create('card');
-  
-  if (document.getElementById('card-element')) {
-    cardElement.mount('#card-element');
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('payment-form');
+  const methodInputs = form.querySelectorAll('input[name="payment_method"]');
+  const cardFields = document.getElementById('fields-card');
+  const walletFields = document.getElementById('fields-wallet');
+  const bankFields = document.getElementById('fields-bank');
+  const errorBox = document.getElementById('payment-error');
+  const submitBtn = document.getElementById('submit-btn');
+  const btnText = document.getElementById('btn-text');
+  const btnSpinner = document.getElementById('btn-spinner');
 
-    // Handle card errors
-    cardElement.addEventListener('change', function(event) {
-      const displayError = document.getElementById('card-errors');
-      if (event.error) {
-        displayError.textContent = event.error.message;
-      } else {
-        displayError.textContent = '';
-      }
-    });
-
-    // Handle form submission
-    const form = document.getElementById('payment-form');
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      const submitBtn = document.getElementById('submit-btn');
-      const btnText = document.getElementById('btn-text');
-      const btnSpinner = document.getElementById('btn-spinner');
-
-      submitBtn.disabled = true;
-      btnText.classList.add('d-none');
-      btnSpinner.classList.remove('d-none');
-
-      try {
-        // Create payment method
-        const {error, paymentMethod} = await stripe.createPaymentMethod({
-          type: 'card',
-          card: cardElement,
-          billing_details: {
-            name: document.getElementById('fname').value,
-            email: document.getElementById('email').value,
-          }
-        });
-
-        if (error) {
-          document.getElementById('card-errors').textContent = error.message;
-          submitBtn.disabled = false;
-          btnText.classList.remove('d-none');
-          btnSpinner.classList.add('d-none');
-          return;
-        }
-
-        // Send to backend for processing
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: form.serialize ? form.serialize() : new URLSearchParams(new FormData(form))
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          window.location.href = '<?= url('student/my-courses.php') ?>';
-        } else {
-          document.getElementById('card-errors').textContent = data.message || 'Payment failed';
-          submitBtn.disabled = false;
-          btnText.classList.remove('d-none');
-          btnSpinner.classList.add('d-none');
-        }
-      } catch (error) {
-        document.getElementById('card-errors').textContent = 'Error processing payment: ' + error.message;
-        submitBtn.disabled = false;
-        btnText.classList.remove('d-none');
-        btnSpinner.classList.add('d-none');
-      }
-    });
-  } else {
-    console.warn('Stripe card element not found');
+  function showFields(method) {
+    cardFields.classList.toggle('d-none', method !== 'card');
+    walletFields.classList.toggle('d-none', !['jazzcash', 'easypaisa'].includes(method));
+    bankFields.classList.toggle('d-none', method !== 'bank_transfer');
   }
+
+  methodInputs.forEach((input) => {
+    input.addEventListener('change', () => showFields(input.value));
+  });
+  showFields('card');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.add('d-none');
+    submitBtn.disabled = true;
+    btnText.classList.add('d-none');
+    btnSpinner.classList.remove('d-none');
+
+    try {
+      const response = await fetch('<?= url('api/process-payment.php') ?>', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const data = await response.json();
+      if (data.success) {
+        window.location.href = data.redirect || '<?= url('student/my-courses.php') ?>';
+        return;
+      }
+      errorBox.textContent = data.message || 'Payment failed.';
+      errorBox.classList.remove('d-none');
+    } catch (err) {
+      errorBox.textContent = 'Payment failed: ' + err.message;
+      errorBox.classList.remove('d-none');
+    }
+
+    submitBtn.disabled = false;
+    btnText.classList.remove('d-none');
+    btnSpinner.classList.add('d-none');
+  });
 });
 </script>
-
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';

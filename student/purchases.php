@@ -64,10 +64,8 @@ require __DIR__ . '/../components/page-hero.php';
               <td>$<?= number_format($p['amount'], 2) ?></td>
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
-              <td><span class="badge badge-completed"><?= ucfirst($p['status']) ?></span></td>
-              <td class="text-end">
-                <button type="button" class="btn btn-sm btn-outline-primary" data-demo><i class="bi bi-download"></i></button>
-              </td>
+              <td><span class="badge <?= $p['status'] === 'completed' ? 'badge-approved' : ($p['status'] === 'pending' ? 'badge-pending' : 'badge-rejected') ?>"><?= ucfirst($p['status']) ?></span></td>
+              <td class="text-end text-muted small">—</td>
             </tr>
             <?php endforeach; ?>
           </tbody>

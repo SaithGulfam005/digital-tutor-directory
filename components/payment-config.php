@@ -1,67 +1,62 @@
 <?php
 /**
- * Payment Configuration
- * Configure payment gateways here
+ * Payment Configuration — built-in gateway (no paid API keys required)
  */
-
 declare(strict_types=1);
 
-// Stripe Configuration
-define('STRIPE_PUBLISHABLE_KEY', 'pk_test_YOUR_PUBLISHABLE_KEY'); // Replace with actual key
-define('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY');           // Replace with actual key
-define('STRIPE_CURRENCY', 'usd');
-
-// Payment Methods
 const PAYMENT_METHODS = [
-    'card' => 'Credit/Debit Card (Stripe)',
-    'stripe' => 'Stripe Payment',
+    'card' => 'Credit / Debit Card',
+    'jazzcash' => 'JazzCash',
+    'easypaisa' => 'EasyPaisa',
+    'bank_transfer' => 'Bank Transfer (manual approval)',
 ];
 
-/**
- * Get Stripe client for payments
- * Note: Requires composer installation: composer require stripe/stripe-php
- */
-function get_stripe_client()
+const INSTANT_PAYMENT_METHODS = ['card', 'jazzcash', 'easypaisa'];
+
+function payment_method_label(string $method): string
 {
-    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY) || strpos(STRIPE_SECRET_KEY, 'sk_test_') === false) {
-        throw new RuntimeException('Stripe not configured. Please set STRIPE_SECRET_KEY in payment config.');
-    }
-
-    // If using composer/autoload
-    if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-        require_once __DIR__ . '/../vendor/autoload.php';
-        return \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
-    }
-
-    // Manual curl implementation (fallback)
-    return null;
+    return PAYMENT_METHODS[strtolower($method)] ?? ucfirst($method);
 }
 
-/**
- * Create Stripe payment intent
- * For future implementation when Stripe SDK is installed
- */
-function create_stripe_payment_intent(float $amount, string $courseId, string $studentId): array
+function is_instant_payment_method(string $method): bool
 {
-    try {
-        get_stripe_client();
+    return in_array(strtolower($method), INSTANT_PAYMENT_METHODS, true);
+}
 
-        $intent = \Stripe\PaymentIntent::create([
-            'amount' => (int) ($amount * 100), // Amount in cents
-            'currency' => STRIPE_CURRENCY,
-            'payment_method_types' => ['card'],
-            'metadata' => [
-                'student_id' => $studentId,
-                'course_id' => $courseId,
-            ],
-        ]);
-
-        return [
-            'client_secret' => $intent->client_secret,
-            'intent_id' => $intent->id,
-            'amount' => $amount,
-        ];
-    } catch (Throwable $e) {
-        throw new RuntimeException('Failed to create payment intent: ' . $e->getMessage());
+function validate_payment_details(string $method, array $data): ?string
+{
+    $method = strtolower($method);
+    if ($method === 'card') {
+        $number = preg_replace('/\D/', '', $data['card_number'] ?? '');
+        if (strlen($number) < 13 || strlen($number) > 19) {
+            return 'Enter a valid card number.';
+        }
+        if (!preg_match('/^\d{2}\/\d{2}$/', $data['card_expiry'] ?? '')) {
+            return 'Enter expiry as MM/YY.';
+        }
+        if (!preg_match('/^\d{3,4}$/', $data['card_cvc'] ?? '')) {
+            return 'Enter a valid CVC.';
+        }
+        return null;
     }
+
+    if (in_array($method, ['jazzcash', 'easypaisa'], true)) {
+        $mobile = preg_replace('/\D/', '', $data['mobile_number'] ?? '');
+        if (strlen($mobile) < 10) {
+            return 'Enter a valid mobile wallet number.';
+        }
+        if (strlen($data['wallet_pin'] ?? '') < 4) {
+            return 'Enter your wallet PIN.';
+        }
+        return null;
+    }
+
+    if ($method === 'bank_transfer') {
+        if (trim($data['transaction_ref'] ?? '') === '') {
+            return 'Enter your bank transaction reference.';
+        }
+        return null;
+    }
+
+    return 'Invalid payment method.';
 }

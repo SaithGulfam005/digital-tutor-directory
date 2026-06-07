@@ -30,7 +30,7 @@ CREATE TABLE users (
   role ENUM('student','teacher','admin') NOT NULL DEFAULT 'student',
   status ENUM('active','inactive','pending') NOT NULL DEFAULT 'active',
   bio TEXT DEFAULT NULL,
-  avatar VARCHAR(255) DEFAULT 'assets/images/teachers/placeholder.jpg',
+  avatar VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_role (role),

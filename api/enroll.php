@@ -10,15 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $courseId = (int) ($_POST['course_id'] ?? 0);
-$method = trim($_POST['method'] ?? 'Card');
-
-if (!$courseId || !db_available()) {
-    redirect_with(url('pages/courses.php'), 'Unable to enroll.', 'danger');
+if (!$courseId) {
+    redirect_with(url('pages/courses.php'), 'Course not found.', 'danger');
 }
 
-try {
-    enrollStudent((int) $user['id'], $courseId, $method);
-    redirect_with(url('student/my-courses.php'), 'Successfully enrolled in the course!');
-} catch (Throwable $e) {
-    redirect_with(url('pages/course-detail.php?id=' . $courseId), $e->getMessage(), 'warning');
-}
+redirect_with(url('student/checkout.php?course_id=' . $courseId));

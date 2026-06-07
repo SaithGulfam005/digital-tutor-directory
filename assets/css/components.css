@@ -97,10 +97,27 @@
   background: #0F172A;
   border-radius: var(--radius);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-size: 4rem;
+}
+
+.password-toggle-host .password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  padding: 0;
+  color: #64748b;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.password-toggle-host .password-toggle-btn:hover {
+  color: #0d6efd;
 }
 .lesson-list .list-group-item.active {
   background: rgba(37, 99, 235, 0.1);

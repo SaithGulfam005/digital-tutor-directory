@@ -8,7 +8,7 @@ $dashSection = 'payments';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Payments';
 $pageSubheading = 'Track transactions, refunds, and payment status';
-$pageActions = '<button type="button" class="btn btn-outline-primary btn-sm" data-demo><i class="bi bi-download me-1"></i>Export CSV</button>';
+$pageActions = '';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
@@ -21,7 +21,7 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="row g-4 mb-4">
       <div class="col-md-4">
         <div class="kpi-card">
-          <p class="text-muted small mb-1">Completed (sample)</p>
+          <p class="text-muted small mb-1">Completed</p>
           <h3 class="mb-0 fw-bold text-success">$<?= number_format($totalCompleted, 2) ?></h3>
         </div>
       </div>
@@ -77,7 +77,6 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
               <td class="text-end text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-demo><i class="bi bi-receipt"></i></button>
                 <?php if ($p['status'] === 'completed'): ?>
                 <button type="button" class="btn btn-sm btn-outline-warning" data-admin-action="refund" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Refund</button>
                 <?php elseif ($p['status'] === 'pending'): ?>

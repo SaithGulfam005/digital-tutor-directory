@@ -1,7 +1,10 @@
 <?php
 require_once __DIR__.'/../components/config.php';
-$id = (int)($_GET['id'] ?? 1);
-$course = getCourseById($id) ?? mockCourses()[0];
+$id = (int) ($_GET['id'] ?? 0);
+$course = getCourseById($id);
+if (!$course) {
+    redirect_with(url('pages/courses.php'), 'Course not found.', 'danger');
+}
 $user = auth_user();
 $enrolled = false;
 if ($user && ($user['role'] ?? '') === 'student' && db_available()) {
@@ -45,7 +48,7 @@ require __DIR__ . '/../components/page-hero.php';
     <ul><li>Build real-world projects</li><li>Master core concepts</li><li>Get certificate on completion</li></ul>
   </div>
   <div class="col-lg-4"><div class="card purchase-card border-0 shadow p-4">
-    <img src="<?= url($course['thumb']) ?>" class="rounded mb-3" alt="" onerror="this.style.height='160px';this.style.background='#E2E8F0'">
+    <img src="<?= media_url($course['thumb'], 'assets/images/courses/placeholder.jpg') ?>" class="rounded mb-3" alt="" style="width:100%;height:160px;object-fit:cover">
     <h3 class="h3 text-primary mb-3">$<?= number_format($course['price'],2) ?></h3>
     <?php if ($enrolled): ?>
     <a href="<?= url('student/course-learn.php?id=' . $id) ?>" class="btn btn-success w-100 btn-lg mb-2">Go to Course</a>

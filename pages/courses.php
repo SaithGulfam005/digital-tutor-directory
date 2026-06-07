@@ -46,18 +46,16 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="col-lg-9">
       <div class="row g-4" id="courseGrid">
         <?php foreach ($courses as $course): ?>
-        <div class="col-md-6 col-xl-4"><?php require __DIR__ . '/../components/course-card.php'; ?></div>
+        <div class="col-md-6 col-xl-4" data-filter-col><?php require __DIR__ . '/../components/course-card.php'; ?></div>
         <?php endforeach; ?>
       </div>
       <div id="courseGridEmpty" class="text-center text-muted py-5 d-none">
         <i class="bi bi-search display-6 d-block mb-2 opacity-50"></i>
         <p class="mb-0">No courses match your search or filters.</p>
       </div>
-      <nav class="mt-4" id="coursePagination"><ul class="pagination justify-content-center">
-        <?php for ($p = 1; $p <= 3; $p++): ?>
-        <li class="page-item <?= $p === 1 ? 'active' : '' ?>"><a class="page-link" href="#"><?= $p ?></a></li>
-        <?php endfor; ?>
-      </ul></nav>
+      <nav class="mt-4 d-none" id="coursePagination" aria-label="Course pages">
+        <ul class="pagination justify-content-center mb-0"></ul>
+      </nav>
     </div>
   </div>
 </div></main>

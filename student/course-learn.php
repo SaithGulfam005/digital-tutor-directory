@@ -1,8 +1,32 @@
 <?php
 require_once __DIR__ . '/../components/require-student.php';
-$courseId = (int) ($_GET['id'] ?? 1);
-$course = getCourseById($courseId) ?? mockStudentEnrollments()[0];
-$lessons = mockCourseLessons($courseId);
+
+$user = auth_user();
+$courseId = (int) ($_GET['id'] ?? 0);
+$course = getCourseById($courseId);
+
+if (!$course) {
+    redirect_with(url('student/my-courses.php'), 'Course not found.', 'danger');
+}
+
+if (!studentIsEnrolled((int) $user['id'], $courseId)) {
+    redirect_with(url('pages/course-detail.php?id=' . $courseId), 'Please purchase this course before accessing lessons.', 'warning');
+}
+
+$lessons = getCourseLessons($courseId, (int) $user['id']);
+if (!$lessons) {
+    redirect_with(url('student/my-courses.php'), 'This course has no lessons yet.', 'warning');
+}
+
+$activeLesson = $lessons[0];
+foreach ($lessons as $lesson) {
+    if (!$lesson['completed']) {
+        $activeLesson = $lesson;
+        break;
+    }
+}
+
+$progress = getEnrollmentProgress((int) $user['id'], $courseId);
 $pageTitle = 'Learning: ' . $course['title'] . ' | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'learn';
@@ -10,10 +34,29 @@ $bodyClass = 'dashboard-body';
 $pageHeading = $course['title'];
 $pageSubheading = 'with ' . htmlspecialchars($course['teacher']);
 $pageActions = '<a href="' . url('student/my-courses.php') . '" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>My Courses</a>';
-$activeLesson = $lessons[2] ?? $lessons[0];
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
+
+function lesson_video_embed(array $lesson): string
+{
+    $url = trim($lesson['content_url'] ?? '');
+    if ($url === '') {
+        return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Video will be available soon.</p></div>';
+    }
+
+    if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([\w-]+)#i', $url, $m)) {
+        $embed = 'https://www.youtube.com/embed/' . $m[1];
+        return '<div class="ratio ratio-16x9 mb-3"><iframe src="' . htmlspecialchars($embed) . '" title="' . htmlspecialchars($lesson['title']) . '" allowfullscreen></iframe></div>';
+    }
+
+    if (preg_match('#vimeo\.com/(\d+)#i', $url, $m)) {
+        $embed = 'https://player.vimeo.com/video/' . $m[1];
+        return '<div class="ratio ratio-16x9 mb-3"><iframe src="' . htmlspecialchars($embed) . '" title="' . htmlspecialchars($lesson['title']) . '" allowfullscreen></iframe></div>';
+    }
+
+    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline src="' . htmlspecialchars(media_url($url)) . '"></video>';
+}
 ?>
 <div class="dashboard-layout">
 <div class="dashboard-wrapper d-flex">
@@ -22,30 +65,20 @@ require __DIR__ . '/../components/page-hero.php';
 
     <div class="row g-4">
       <div class="col-lg-8">
-        <div class="video-placeholder mb-3">
-          <i class="bi bi-play-circle"></i>
+        <div id="lessonVideoWrap">
+          <?= lesson_video_embed($activeLesson) ?>
         </div>
         <h2 class="h5 fw-bold" id="currentLessonTitle"><?= htmlspecialchars($activeLesson['title']) ?></h2>
-        <p class="text-muted">Duration: <?= htmlspecialchars($activeLesson['duration']) ?> · <?= htmlspecialchars($course['category']) ?></p>
+        <p class="text-muted">Duration: <span id="currentLessonDuration"><?= htmlspecialchars($activeLesson['duration']) ?></span> · <?= htmlspecialchars($course['category']) ?></p>
         <div class="d-flex gap-2 mt-3">
-          <button type="button" class="btn btn-primary" id="markLessonComplete"><i class="bi bi-check-lg me-1"></i>Mark Complete</button>
-          <button type="button" class="btn btn-outline-secondary" data-demo>Download Resources</button>
+          <button type="button" class="btn btn-primary" id="markLessonComplete" data-course-id="<?= $courseId ?>" data-lesson-id="<?= (int) $activeLesson['id'] ?>"><i class="bi bi-check-lg me-1"></i>Mark Complete</button>
         </div>
         <div class="progress-card mt-4">
           <h3 class="h6 fw-bold mb-2">Course Progress</h3>
-          <?php
-          $progress = 45;
-          foreach (mockStudentEnrollments() as $e) {
-              if ($e['id'] === $courseId) {
-                  $progress = $e['progress'];
-                  break;
-              }
-          }
-          ?>
           <div class="progress mb-2" style="height:8px">
-            <div class="progress-bar bg-primary" style="width:<?= (int) $progress ?>%"></div>
+            <div class="progress-bar bg-primary" id="courseProgressBar" style="width:<?= (int) $progress ?>%"></div>
           </div>
-          <small class="text-muted"><?= (int) $progress ?>% complete · <?= count(array_filter($lessons, fn($l) => $l['completed'])) ?> of <?= count($lessons) ?> lessons done</small>
+          <small class="text-muted" id="courseProgressText"><?= (int) $progress ?>% complete · <?= count(array_filter($lessons, fn($l) => $l['completed'])) ?> of <?= count($lessons) ?> lessons done</small>
         </div>
       </div>
       <div class="col-lg-4">
@@ -56,7 +89,9 @@ require __DIR__ . '/../components/page-hero.php';
             <a href="#"
                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center <?= $lesson['id'] === $activeLesson['id'] ? 'active' : '' ?>"
                data-lesson="<?= (int) $lesson['id'] ?>"
-               data-lesson-title="<?= htmlspecialchars($lesson['title']) ?>">
+               data-lesson-title="<?= htmlspecialchars($lesson['title']) ?>"
+               data-lesson-duration="<?= htmlspecialchars($lesson['duration']) ?>"
+               data-lesson-url="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
               <span class="small">
                 <i class="bi <?= $lesson['completed'] ? 'bi-check-circle-fill text-success' : 'bi-play-circle' ?> me-2 lesson-status"></i>
                 <?= ($i + 1) ?>. <?= htmlspecialchars($lesson['title']) ?>

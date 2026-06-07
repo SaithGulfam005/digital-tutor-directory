@@ -79,64 +79,41 @@
     });
   }
 
-  // Password visibility toggle
   function initPasswordToggle() {
-    const passwordFields = document.querySelectorAll('input[type="password"]');
-    
-    passwordFields.forEach((field) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'position-relative';
-      wrapper.style.cssText = 'width: 100%;';
-      field.parentNode.insertBefore(wrapper, field);
-      wrapper.appendChild(field);
-      
-      // Add padding to input to make room for button
-      field.style.paddingRight = '3rem';
-      
+    document.querySelectorAll('input[type="password"]').forEach((field) => {
+      if (field.dataset.toggleReady === 'true') return;
+      field.dataset.toggleReady = 'true';
+
+      const floating = field.closest('.form-floating');
+      const host = floating || field.parentElement;
+      if (!host) return;
+
+      host.classList.add('password-toggle-host');
+      if (!host.style.position) {
+        host.style.position = 'relative';
+      }
+
+      field.style.paddingRight = '2.75rem';
+
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
-      toggleBtn.className = 'btn btn-link';
-      toggleBtn.style.cssText = `
-        position: absolute;
-        right: 0.75rem;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        padding: 0.25rem;
-        color: #495057;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        font-size: 1.1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      `;
+      toggleBtn.className = 'btn btn-link password-toggle-btn';
       toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
-      toggleBtn.setAttribute('aria-label', 'Toggle password visibility');
+      toggleBtn.setAttribute('aria-label', 'Show password');
       toggleBtn.setAttribute('tabindex', '-1');
-      
-      wrapper.appendChild(toggleBtn);
-      
-      // Hover effect
-      toggleBtn.addEventListener('mouseenter', () => {
-        toggleBtn.style.color = '#0d6efd';
-      });
-      toggleBtn.addEventListener('mouseleave', () => {
-        toggleBtn.style.color = '#495057';
-      });
-      
+
       toggleBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        const isPassword = field.type === 'password';
-        field.type = isPassword ? 'text' : 'password';
-        toggleBtn.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        const show = field.type === 'password';
+        field.type = show ? 'text' : 'password';
+        toggleBtn.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        toggleBtn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
       });
+
+      host.appendChild(toggleBtn);
     });
   }
-  
-  document.addEventListener('DOMContentLoaded', initPasswordToggle);
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPasswordToggle);
   } else {

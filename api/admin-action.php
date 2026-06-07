@@ -38,8 +38,8 @@ try {
             admin_update_user_status($id, 'inactive');
             json_response(['ok' => true, 'message' => 'User deactivated.']);
         case 'confirm_payment':
-            admin_update_payment_status($id, 'completed');
-            json_response(['ok' => true, 'message' => 'Payment confirmed.']);
+            admin_confirm_payment($id);
+            json_response(['ok' => true, 'message' => 'Payment confirmed and student enrolled.']);
         case 'refund_payment':
             admin_update_payment_status($id, 'refunded');
             json_response(['ok' => true, 'message' => 'Payment refunded.']);

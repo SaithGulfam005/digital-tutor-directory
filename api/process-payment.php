@@ -1,19 +1,11 @@
 <?php
-/**
- * Process Payment API Endpoint
- * POST /api/process-payment.php
- * 
- * This endpoint processes Stripe payments and creates enrollments
- * Future: Integrate with actual Stripe API when SDK is installed
- */
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../components/config.php';
 require_once __DIR__ . '/../components/payment-config.php';
 
 $user = auth_user();
-if (!$user || $user['role'] !== 'student') {
+if (!$user || ($user['role'] ?? '') !== 'student') {
     json_response(['success' => false, 'message' => 'Unauthorized'], 401);
 }
 
@@ -22,90 +14,49 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $courseId = (int) ($_POST['course_id'] ?? 0);
-$firstName = trim($_POST['first_name'] ?? '');
-$country = trim($_POST['country'] ?? '');
-$postalCode = trim($_POST['postal_code'] ?? '');
+$method = trim($_POST['payment_method'] ?? 'card');
 
 if (!$courseId) {
     json_response(['success' => false, 'message' => 'Course not found'], 400);
+}
+
+if (!array_key_exists(strtolower($method), PAYMENT_METHODS)) {
+    json_response(['success' => false, 'message' => 'Invalid payment method'], 400);
 }
 
 if (!db_available()) {
     json_response(['success' => false, 'message' => 'Database not available'], 503);
 }
 
-// Verify course exists and get details
 $course = getCourseById($courseId);
-if (!$course) {
-    json_response(['success' => false, 'message' => 'Course not found'], 404);
+if (!$course || ($course['status'] ?? '') !== 'published') {
+    json_response(['success' => false, 'message' => 'Course is not available for purchase'], 404);
 }
 
-// Check if already enrolled
-$stmt = db()->prepare('SELECT id FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
-$stmt->execute([(int) $user['id'], $courseId]);
-if ($stmt->fetch()) {
-    json_response(['success' => false, 'message' => 'You are already enrolled in this course'], 409);
+$error = validate_payment_details($method, $_POST);
+if ($error) {
+    json_response(['success' => false, 'message' => $error], 400);
 }
 
 try {
-    db()->beginTransaction();
+    $result = processCoursePayment((int) $user['id'], $courseId, payment_method_label($method));
 
-    // In production, verify the payment with Stripe API
-    // For now, we'll create a pending payment and simulate Stripe processing
-    
-    $paymentRef = 'PAY-' . str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-    $amount = (float) $course['price'];
-    $teacherShare = round($amount * 0.7, 2);
-
-    // Create payment record
-    $stmt = db()->prepare('
-        INSERT INTO payments 
-        (reference, student_id, course_id, amount, method, status, teacher_share, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-    ');
-    $stmt->execute([
-        $paymentRef,
-        (int) $user['id'],
-        $courseId,
-        $amount,
-        'stripe',
-        'completed', // In production, this should be 'pending' until Stripe confirms
-        $teacherShare,
-    ]);
-
-    // Create enrollment
-    $stmt = db()->prepare('
-        INSERT INTO enrollments 
-        (student_id, course_id, progress, status, last_access, enrolled_at) 
-        VALUES (?, ?, 0, ?, CURDATE(), NOW())
-    ');
-    $stmt->execute([
-        (int) $user['id'],
-        $courseId,
-        'active',
-    ]);
-
-    db()->commit();
-
-    // Log payment for audit purposes
-    error_log("Payment processed: Reference=$paymentRef, Student=" . $user['id'] . ", Course=$courseId, Amount=$amount");
+    if ($result['status'] === 'pending') {
+        json_response([
+            'success' => true,
+            'pending' => true,
+            'message' => 'Payment submitted. An admin will verify your bank transfer and activate your enrollment.',
+            'payment_reference' => $result['reference'],
+            'redirect' => url('student/purchases.php'),
+        ]);
+    }
 
     json_response([
         'success' => true,
-        'message' => 'Payment processed successfully',
-        'payment_reference' => $paymentRef,
+        'message' => 'Payment successful! You are now enrolled.',
+        'payment_reference' => $result['reference'],
         'redirect' => url('student/my-courses.php'),
     ]);
-
 } catch (Throwable $e) {
-    if (db()) {
-        try {
-            db()->rollBack();
-        } catch (Throwable) {
-            // Already rolled back or transaction not started
-        }
-    }
-    
-    error_log("Payment processing error: " . $e->getMessage());
-    json_response(['success' => false, 'message' => 'Payment processing failed: ' . $e->getMessage()], 500);
+    json_response(['success' => false, 'message' => $e->getMessage()], 400);
 }

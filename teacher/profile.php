@@ -19,7 +19,7 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="row g-4">
       <div class="col-lg-4">
         <div class="table-card p-4 text-center">
-          <img src="<?= url($teacher['photo']) ?>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover" alt="" onerror="this.style.background='#E2E8F0'">
+          <img src="<?= media_url($teacher['photo']) ?>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover" alt="<?= htmlspecialchars($teacher['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
           <h2 class="h5 mb-1"><?= htmlspecialchars($teacher['name']) ?></h2>
           <p class="text-muted small mb-2"><?= htmlspecialchars($teacher['qualification']) ?></p>
           <span class="badge badge-approved"><i class="bi bi-patch-check me-1"></i>Verified</span>
@@ -28,7 +28,10 @@ require __DIR__ . '/../components/page-hero.php';
             <span class="fw-medium"><?= number_format($teacher['rating'], 1) ?></span>
           </div>
           <p class="small text-muted mt-3 mb-0"><?= number_format($teacher['students']) ?> students taught</p>
-          <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-demo>Change Photo</button>
+          <form method="post" action="<?= url('api/avatar-upload.php') ?>" enctype="multipart/form-data" class="mt-3">
+            <input type="file" name="avatar" accept="image/*" class="form-control form-control-sm mb-2" required>
+            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Upload Photo</button>
+          </form>
         </div>
       </div>
       <div class="col-lg-8">
