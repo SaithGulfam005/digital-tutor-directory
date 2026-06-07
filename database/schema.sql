@@ -144,3 +144,14 @@ CREATE TABLE contact_messages (
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+CREATE TABLE password_resets (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(190) NOT NULL,
+    otp CHAR(6) NOT NULL,
+    attempts TINYINT UNSIGNED DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    INDEX idx_email_otp (email, otp),
+    INDEX idx_expires (expires_at)
+) ENGINE=InnoDB;

@@ -78,4 +78,68 @@
       }
     });
   }
+
+  // Password visibility toggle
+  function initPasswordToggle() {
+    const passwordFields = document.querySelectorAll('input[type="password"]');
+    
+    passwordFields.forEach((field) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'position-relative';
+      wrapper.style.cssText = 'width: 100%;';
+      field.parentNode.insertBefore(wrapper, field);
+      wrapper.appendChild(field);
+      
+      // Add padding to input to make room for button
+      field.style.paddingRight = '3rem';
+      
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'btn btn-link';
+      toggleBtn.style.cssText = `
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        padding: 0.25rem;
+        color: #495057;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+      toggleBtn.setAttribute('aria-label', 'Toggle password visibility');
+      toggleBtn.setAttribute('tabindex', '-1');
+      
+      wrapper.appendChild(toggleBtn);
+      
+      // Hover effect
+      toggleBtn.addEventListener('mouseenter', () => {
+        toggleBtn.style.color = '#0d6efd';
+      });
+      toggleBtn.addEventListener('mouseleave', () => {
+        toggleBtn.style.color = '#495057';
+      });
+      
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isPassword = field.type === 'password';
+        field.type = isPassword ? 'text' : 'password';
+        toggleBtn.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+      });
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', initPasswordToggle);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPasswordToggle);
+  } else {
+    initPasswordToggle();
+  }
 })();

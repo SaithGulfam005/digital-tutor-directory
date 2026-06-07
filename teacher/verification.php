@@ -53,9 +53,8 @@ require __DIR__ . '/../components/page-hero.php';
           <h3 class="h6 fw-bold mb-3">Uploaded Documents</h3>
           <ul class="list-group list-group-flush">
             <?php foreach ($verification['documents'] as $doc): ?>
-            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <li class="list-group-item px-0 py-2">
               <span><i class="bi bi-file-earmark-pdf text-danger me-2"></i><?= htmlspecialchars($doc) ?></span>
-              <button type="button" class="btn btn-sm btn-outline-primary" data-demo>Download</button>
             </li>
             <?php endforeach; ?>
           </ul>

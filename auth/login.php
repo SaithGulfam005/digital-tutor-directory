@@ -48,7 +48,7 @@ $defaultRole = $_GET['role'] ?? 'student';
             <input class="form-check-input" type="checkbox" id="remember">
             <label class="form-check-label small" for="remember">Remember me</label>
           </div>
-          <a href="#" class="small" data-demo>Forgot password?</a>
+          <a href="<?= url('auth/forgot-password.php') ?>" class="small">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
       </form>

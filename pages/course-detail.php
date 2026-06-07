@@ -50,11 +50,7 @@ require __DIR__ . '/../components/page-hero.php';
     <?php if ($enrolled): ?>
     <a href="<?= url('student/course-learn.php?id=' . $id) ?>" class="btn btn-success w-100 btn-lg mb-2">Go to Course</a>
     <?php elseif ($user && ($user['role'] ?? '') === 'student'): ?>
-    <form method="post" action="<?= url('api/enroll.php') ?>" class="mb-2">
-      <input type="hidden" name="course_id" value="<?= (int) $course['id'] ?>">
-      <input type="hidden" name="method" value="Card">
-      <button type="submit" class="btn btn-primary w-100 btn-lg">Enroll Now</button>
-    </form>
+    <a href="<?= url('student/checkout.php?course_id=' . $id) ?>" class="btn btn-primary w-100 btn-lg mb-2">Enroll Now</a>
     <?php else: ?>
     <a href="<?= url('auth/login.php?role=student') ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
     <?php endif; ?>

@@ -1,4 +1,5 @@
 -- Seed data for Digital Tutor Directory
+-- Note: These sample accounts should be changed or removed in production.
 USE digital_tutor_directory;
 
 INSERT INTO categories (name, slug) VALUES
@@ -8,7 +9,7 @@ INSERT INTO categories (name, slug) VALUES
 ('Marketing', 'marketing'),
 ('Data Science', 'data-science');
 
--- Password for all demo accounts: password123
+-- Sample password hash (change these in production)
 SET @pwd = '$2y$10$CcGWpc0dMYdhLh55pK62T.N4vglLxy2M/r9ENdwKXfBEQvK1DuvKq';
 
 INSERT INTO users (name, email, phone, password_hash, role, status, bio) VALUES

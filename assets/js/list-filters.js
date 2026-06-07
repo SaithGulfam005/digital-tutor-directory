@@ -165,12 +165,63 @@
       return normalize(searchInput?.value || '');
     }
 
+    function updatePagination(visibleCount) {
+      if (!config.paginationId) return;
+      const pagination = document.getElementById(config.paginationId);
+      if (!pagination) return;
+
+      const itemsPerPage = config.itemsPerPage || 12;
+      const totalPages = Math.ceil(visibleCount / itemsPerPage) || 1;
+      const query = getSearchQuery();
+      const hasFilters = config.hasActiveFilters?.(getFilters?.());
+
+      // Show pagination only if no search/filters and more than 1 page
+      const shouldShow = query === '' && !hasFilters && totalPages > 1;
+      pagination.classList.toggle('d-none', !shouldShow);
+
+      if (shouldShow) {
+        const ul = pagination.querySelector('ul');
+        if (ul) {
+          ul.innerHTML = '';
+          for (let p = 1; p <= totalPages; p++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${p === 1 ? 'active' : ''}`;
+            const link = document.createElement('a');
+            link.className = 'page-link';
+            link.href = '#';
+            link.textContent = p;
+            link.dataset.page = p;
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              pagination.querySelectorAll('.page-item').forEach((item) => item.classList.remove('active'));
+              li.classList.add('active');
+              
+              const start = (p - 1) * itemsPerPage;
+              const end = start + itemsPerPage;
+              const cols = grid.querySelectorAll('[data-filter-col], .col');
+              cols.forEach((col, idx) => {
+                col.classList.toggle('d-none', idx < start || idx >= end);
+              });
+              window.scrollTo({ top: grid.offsetTop - 100, behavior: 'smooth' });
+            });
+            li.appendChild(link);
+            ul.appendChild(li);
+          }
+        }
+      }
+    }
+
+    function getFilters() {
+      return config.getFilters ? config.getFilters() : {};
+    }
+
     function apply() {
       const query = getSearchQuery();
-      const filters = config.getFilters ? config.getFilters() : {};
+      const filters = getFilters();
       let visible = 0;
+      const itemsPerPage = config.itemsPerPage || 12;
 
-      items.forEach((item) => {
+      items.forEach((item, idx) => {
         const col = item.closest('.col, [data-filter-col]') || item;
         const match = config.matchItem(item, query, filters);
         col.classList.toggle('d-none', !match);
@@ -183,12 +234,8 @@
       if (emptyEl) {
         emptyEl.classList.toggle('d-none', visible > 0);
       }
-      if (config.paginationId) {
-        const pagination = document.getElementById(config.paginationId);
-        if (pagination) {
-          pagination.classList.toggle('d-none', query !== '' || config.hasActiveFilters?.(filters));
-        }
-      }
+      
+      updatePagination(visible);
     }
 
     if (searchInput?.dataset.initialValue) {
@@ -213,6 +260,7 @@
       emptyId: 'courseGridEmpty',
       paginationId: 'coursePagination',
       itemSelector: '.course-card',
+      itemsPerPage: 12,
       getFilters() {
         const categories = [...document.querySelectorAll('.filter-category:checked')].map((c) => c.value);
         const minRating = parseFloat(document.querySelector('.filter-rating:checked')?.value || '0');

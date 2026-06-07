@@ -35,7 +35,7 @@ require __DIR__ . '/../components/page-hero.php';
               <th>User</th>
               <th>Role</th>
               <th>Phone</th>
-              <th>Joined</th>
+              <th>Joining Date</th>
               <th>Courses</th>
               <th>Status</th>
               <th class="text-end">Actions</th>

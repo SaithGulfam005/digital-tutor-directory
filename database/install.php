@@ -33,8 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $success = true;
         $messages[] = 'Database installed successfully.';
-        $messages[] = 'Demo login — Admin: admin@digitaltutor.com | Student: ali.raza@email.com | Teacher: sarah.khan@digitaltutor.com';
-        $messages[] = 'Password for all demo accounts: password123';
+        $messages[] = 'You can now register new users or create admin accounts manually.';
     } catch (Throwable $e) {
         $error = $e->getMessage();
     }
@@ -53,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card shadow-sm border-0">
       <div class="card-body p-4">
         <h1 class="h4 fw-bold mb-3">Database Installer</h1>
-        <p class="text-muted">Creates tables and loads demo data into <code><?= htmlspecialchars($config['name']) ?></code>.</p>
+        <p class="text-muted">Creates database tables and initializes the system. <code><?= htmlspecialchars($config['name']) ?></code>.</p>
 
         <?php if ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
