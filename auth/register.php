@@ -41,9 +41,9 @@ if (!in_array($defaultRole, ['student', 'teacher'], true)) {
           <div class="invalid-feedback">Please enter your full name.</div>
         </div>
         <div class="form-floating mb-3">
-          <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+          <input type="email" class="form-control" id="email" name="email" placeholder="Email" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" required>
           <label for="email">Email address</label>
-          <div class="invalid-feedback">Enter a valid email.</div>
+          <div class="invalid-feedback">Enter a complete email like name@gmail.com.</div>
         </div>
         <div class="form-floating mb-3">
           <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone" required>

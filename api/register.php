@@ -25,6 +25,9 @@ $confirm = $_POST['password_confirm'] ?? '';
 if ($name === '' || $email === '' || strlen($password) < 6) {
     redirect_with(url('auth/register.php?role=' . urlencode($role)), 'Please fill all required fields.', 'danger');
 }
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    redirect_with(url('auth/register.php?role=' . urlencode($role)), 'Invalid email address. Please enter a complete email like name@gmail.com.', 'danger');
+}
 if ($password !== $confirm) {
     redirect_with(url('auth/register.php?role=' . urlencode($role)), 'Passwords do not match.', 'danger');
 }
