@@ -9,8 +9,8 @@
   <p class="text-muted small mb-1"><?= htmlspecialchars($teacher['qualification']) ?></p>
   <p class="small mb-2"><i class="bi bi-briefcase me-1"></i><?= htmlspecialchars($teacher['experience']) ?></p>
   <div class="rating-stars small mb-3">
-    <i class="bi bi-star-fill text-warning"></i>
-    <span><?= number_format($teacher['rating'], 1) ?></span>
+    <?= renderStars((float)$teacher['rating']) ?>
+    <span class="ms-2"><?= number_format($teacher['rating'], 1) ?></span>
   </div>
   <a href="<?= url('pages/teacher-profile.php?id=' . (int)$teacher['id']) ?>" class="btn btn-sm btn-primary w-100">View Profile</a>
 </article>

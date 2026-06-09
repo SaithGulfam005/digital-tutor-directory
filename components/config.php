@@ -33,6 +33,20 @@ function media_url(?string $path, string $fallback = 'assets/images/avatars/plac
     }
     return url(ltrim($path, '/'));
 }
+function renderStars(float $rating, int $max = 5): string
+{
+    $html = '';
+    for ($i = 1; $i <= $max; $i++) {
+        if ($rating >= $i) {
+            $html .= '<i class="bi bi-star-fill text-warning"></i>';
+        } elseif ($rating >= $i - 0.5) {
+            $html .= '<i class="bi bi-star-half text-warning"></i>';
+        } else {
+            $html .= '<i class="bi bi-star text-warning"></i>';
+        }
+    }
+    return $html;
+}
 function isActive(string $path): string
 {
     return str_contains($_SERVER['PHP_SELF'] ?? '', $path) ? 'active' : '';

@@ -31,6 +31,9 @@ try {
         case 'reject_course':
             admin_update_course_status($id, 'rejected');
             json_response(['ok' => true, 'message' => 'Course rejected.']);
+        case 'delete_course':
+            admin_delete_course($id);
+            json_response(['ok' => true, 'message' => 'Course deleted.']);
         case 'activate_user':
             admin_update_user_status($id, 'active');
             json_response(['ok' => true, 'message' => 'User activated.']);

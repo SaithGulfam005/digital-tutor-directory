@@ -24,7 +24,7 @@
       if (table?.id === 'verificationsTable') {
         apiAction = uiAction === 'approve' ? 'approve_teacher' : uiAction === 'reject' ? 'reject_teacher' : apiAction;
       } else if (table?.id === 'coursesTable') {
-        apiAction = uiAction === 'approve' ? 'approve_course' : uiAction === 'reject' ? 'reject_course' : apiAction;
+        apiAction = uiAction === 'approve' ? 'approve_course' : uiAction === 'reject' ? 'reject_course' : uiAction === 'delete' ? 'delete_course' : apiAction;
       } else if (table?.id === 'paymentsTable') {
         apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'refund' ? 'refund_payment' : apiAction;
       }

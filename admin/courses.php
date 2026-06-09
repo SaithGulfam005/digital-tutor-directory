@@ -67,9 +67,10 @@ require __DIR__ . '/../components/page-hero.php';
                 <?php if ($c['status'] === 'pending'): ?>
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Approve</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Reject</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="delete" data-api-id="<?= (int) $c['id'] ?>" data-api-action="delete_course" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Delete</button>
                 <?php else: ?>
                 <!-- <button type="button" class="btn btn-sm btn-outline-primary" data-admin-action="feature" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-star"></i></button> -->
-                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="delete" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-trash"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="delete" data-api-id="<?= (int) $c['id'] ?>" data-api-action="delete_course" data-admin-label="<?= htmlspecialchars($c['title']) ?>"><i class="bi bi-trash"></i></button>
                 <?php endif; ?>
               </td>
             </tr>

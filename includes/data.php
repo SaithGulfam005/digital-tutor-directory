@@ -738,6 +738,11 @@ function admin_update_course_status(int $courseId, string $status): void
     db()->prepare('UPDATE courses SET status=? WHERE id=?')->execute([$dbStatus, $courseId]);
 }
 
+function admin_delete_course(int $courseId): void
+{
+    db()->prepare('DELETE FROM courses WHERE id=?')->execute([$courseId]);
+}
+
 function admin_update_payment_status(int $paymentId, string $status): void
 {
     db()->prepare('UPDATE payments SET status=? WHERE id=?')->execute([$status, $paymentId]);
