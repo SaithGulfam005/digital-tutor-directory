@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../components/config.php';
 $pageTitle = 'Courses | ' . SITE_NAME;
 $loadFilters = true;
-$courses = mockCourses();
+$courses = getCourses(true);
 $initialSearch = trim($_GET['q'] ?? '');
 $initialCategory = trim($_GET['category'] ?? '');
 require_once __DIR__ . '/../components/head.php';
@@ -21,10 +21,13 @@ require __DIR__ . '/../components/page-hero.php';
         <input type="search" id="courseSearch" class="form-control mb-2" placeholder="Title, teacher, category..." value="<?= htmlspecialchars($initialSearch) ?>">
         <p class="small text-muted mb-3" id="courseFilterCount"></p>
         <h6 class="fw-bold mb-2">Category</h6>
-        <?php foreach (['Development', 'Design', 'Business', 'Marketing', 'Data Science'] as $cat): ?>
+        <?php foreach (getCategoriesWithCourses() as $cat): 
+          $catName = is_array($cat) ? $cat['name'] : $cat;
+          $catId = str_replace(' ', '', $catName);
+        ?>
         <div class="form-check">
-          <input class="form-check-input filter-category" type="checkbox" value="<?= $cat ?>" id="c<?= str_replace(' ', '', $cat) ?>" <?= $initialCategory === $cat ? 'checked' : '' ?>>
-          <label class="form-check-label" for="c<?= str_replace(' ', '', $cat) ?>"><?= $cat ?></label>
+          <input class="form-check-input filter-category" type="checkbox" value="<?= htmlspecialchars($catName) ?>" id="c<?= htmlspecialchars($catId) ?>" <?= $initialCategory === $catName ? 'checked' : '' ?>>
+          <label class="form-check-label" for="c<?= htmlspecialchars($catId) ?>"><?= htmlspecialchars($catName) ?></label>
         </div>
         <?php endforeach; ?>
         <h6 class="fw-bold mt-3 mb-2">Max Price: <span id="priceLabel">$100</span></h6>

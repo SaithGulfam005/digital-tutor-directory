@@ -110,6 +110,25 @@ function getCategories(): array
     return db()->query('SELECT id, name, slug FROM categories ORDER BY name')->fetchAll();
 }
 
+function getCategoriesWithCourses(): array
+{
+    if (!db_available()) {
+        return ['Development', 'Design', 'Business', 'Marketing', 'Data Science'];
+    }
+    $stmt = db()->query("
+        SELECT DISTINCT cat.id, cat.name, cat.slug 
+        FROM categories cat
+        INNER JOIN courses c ON c.category_id = cat.id
+        WHERE c.status = 'published'
+        ORDER BY cat.name
+    ");
+    $categories = $stmt->fetchAll();
+    if (empty($categories)) {
+        return db()->query('SELECT id, name, slug FROM categories ORDER BY name LIMIT 8')->fetchAll();
+    }
+    return $categories;
+}
+
 function getStudents(): array
 {
     if (!db_available()) {

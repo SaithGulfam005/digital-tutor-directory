@@ -25,8 +25,10 @@
       <div class="col-6 col-lg-2">
         <h6 class="fw-bold small text-uppercase mb-3">Categories</h6>
         <ul class="list-unstyled small">
-          <?php foreach (['Development','Design','Business','Marketing','Data Science'] as $c): ?>
-          <li class="mb-2"><a class="footer-link" href="<?= url('pages/courses.php?category='.urlencode($c)) ?>"><?= $c ?></a></li>
+          <?php foreach (getCategoriesWithCourses() as $cat): 
+            $catName = is_array($cat) ? $cat['name'] : $cat;
+          ?>
+          <li class="mb-2"><a class="footer-link" href="<?= url('pages/courses.php?category='.urlencode($catName)) ?>"><?= htmlspecialchars($catName) ?></a></li>
           <?php endforeach; ?>
         </ul>
       </div>

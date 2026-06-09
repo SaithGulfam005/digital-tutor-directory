@@ -112,12 +112,14 @@ require_once __DIR__ . '/../components/navbar.php';
     <div class="row g-3">
       <?php
       $icons = ['bi-code-slash','bi-palette','bi-briefcase','bi-megaphone','bi-graph-up','bi-camera','bi-music-note','bi-translate'];
-      $cats = ['Development','Design','Business','Marketing','Data Science','Photography','Music','Language'];
-      foreach ($cats as $i => $cat): ?>
+      $categories = getCategoriesWithCourses();
+      foreach ($categories as $i => $cat): 
+        $catName = is_array($cat) ? $cat['name'] : $cat;
+      ?>
       <div class="col-6 col-md-3 fade-up">
-        <a href="<?= url('pages/courses.php?category=' . urlencode($cat)) ?>" class="category-pill">
-          <i class="bi <?= $icons[$i] ?>"></i>
-          <span class="small fw-semibold"><?= $cat ?></span>
+        <a href="<?= url('pages/courses.php?category=' . urlencode($catName)) ?>" class="category-pill">
+          <i class="bi <?= $icons[$i % count($icons)] ?>"></i>
+          <span class="small fw-semibold"><?= htmlspecialchars($catName) ?></span>
         </a>
       </div>
       <?php endforeach; ?>

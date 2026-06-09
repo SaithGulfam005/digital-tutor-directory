@@ -354,9 +354,22 @@
           search.value = q;
         }
         if (category) {
+          let categoryFound = false;
           document.querySelectorAll('.filter-category').forEach((cb) => {
-            if (cb.value === category) cb.checked = true;
+            if (cb.value === category) {
+              cb.checked = true;
+              categoryFound = true;
+            }
           });
+          if (categoryFound) {
+            // Trigger change event to ensure filter is applied
+            const event = new Event('change', { bubbles: true });
+            document.querySelectorAll('.filter-category').forEach(cb => {
+              if (cb.value === category) {
+                cb.dispatchEvent(event);
+              }
+            });
+          }
         }
       },
     });
