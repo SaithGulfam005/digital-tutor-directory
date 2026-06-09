@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
-$courses = mockTeacherCourses();
+$courses = getTeacherCourses();
 $pageTitle = 'My Courses | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'courses';
@@ -61,10 +61,18 @@ require __DIR__ . '/../components/page-hero.php';
               </td>
               <td class="text-end text-nowrap">
                 <a href="<?= url('pages/course-detail.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i></a>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-demo><i class="bi bi-pencil"></i></button>
+                <a href="<?= url('teacher/edit-course.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                 <?php if ($c['status'] === 'draft'): ?>
-                <button type="button" class="btn btn-sm btn-success" data-demo>Publish</button>
+                <form method="post" action="<?= url('api/course-update.php') ?>" class="d-inline">
+                  <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
+                  <input type="hidden" name="status" value="pending">
+                  <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Send this draft for review?')">Publish</button>
+                </form>
                 <?php endif; ?>
+                <form method="post" action="<?= url('api/course-delete.php') ?>" class="d-inline">
+                  <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this course? This cannot be undone.')"><i class="bi bi-trash"></i></button>
+                </form>
               </td>
             </tr>
             <?php endforeach; ?>

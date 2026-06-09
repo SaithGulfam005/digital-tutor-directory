@@ -580,6 +580,50 @@ function createCourse(int $teacherId, array $data): int
     return $courseId;
 }
 
+function updateCourse(int $courseId, int $teacherId, array $data): void
+{
+    $course = getCourseById($courseId);
+    if (!$course) {
+        throw new RuntimeException('Course not found.');
+    }
+    if ((int) $course['teacher_id'] !== $teacherId) {
+        throw new RuntimeException('Unauthorized course update.');
+    }
+
+    $category = $data['category'] ?? $course['category'];
+    $catStmt = db()->prepare('SELECT id FROM categories WHERE name = ? OR slug = ? LIMIT 1');
+    $catStmt->execute([$category, slugify($category)]);
+    $categoryId = (int) ($catStmt->fetchColumn() ?: 1);
+
+    $title = $data['title'] ?? $course['title'];
+    $slug = slugify($title);
+    $description = $data['description'] ?? $course['desc'];
+    $price = isset($data['price']) ? (float) $data['price'] : $course['price'];
+    $status = $data['status'] ?? $course['status'];
+
+    db()->prepare('UPDATE courses SET category_id = ?, title = ?, slug = ?, description = ?, price = ?, status = ? WHERE id = ? AND teacher_id = ?')
+        ->execute([$categoryId, $title, $slug, $description, $price, $status, $courseId, $teacherId]);
+
+    if (array_key_exists('lessons', $data)) {
+        db()->prepare('DELETE FROM lessons WHERE course_id = ?')->execute([$courseId]);
+        $lessonStmt = db()->prepare('INSERT INTO lessons (course_id, title, duration, sort_order) VALUES (?,?,?,?)');
+        foreach (($data['lessons'] ?? []) as $i => $title) {
+            if (trim($title) !== '') {
+                $lessonStmt->execute([$courseId, trim($title), '10:00', $i + 1]);
+            }
+        }
+    }
+}
+
+function deleteCourse(int $courseId, int $teacherId): void
+{
+    $stmt = db()->prepare('DELETE FROM courses WHERE id = ? AND teacher_id = ?');
+    $stmt->execute([$courseId, $teacherId]);
+    if ($stmt->rowCount() === 0) {
+        throw new RuntimeException('Course delete failed or course not found.');
+    }
+}
+
 function saveContactMessage(array $data): void
 {
     if (!db_available()) {
