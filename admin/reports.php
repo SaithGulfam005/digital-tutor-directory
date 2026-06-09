@@ -16,6 +16,8 @@ foreach (mockCourses() as $c) {
     $cat = $c['category'];
     $categories[$cat] = ($categories[$cat] ?? 0) + $c['students'];
 }
+// Filter out categories with 0 enrollments
+$categories = array_filter($categories, fn($count) => $count > 0);
 arsort($categories);
 $maxEnroll = max($categories) ?: 1;
 ?>
