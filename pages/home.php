@@ -161,7 +161,7 @@ require_once __DIR__ . '/../components/navbar.php';
       <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="15000" data-suffix="+">0</div><div class="stat-card__label">Students</div></div></div>
       <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="500" data-suffix="+">0</div><div class="stat-card__label">Teachers</div></div></div>
       <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="1200" data-suffix="+">0</div><div class="stat-card__label">Courses</div></div></div>
-      <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="98" data-suffix="%">0</div><div class="stat-card__label">Satisfaction</div></div></div>
+      <!-- <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="98" data-suffix="%">0</div><div class="stat-card__label">Satisfaction</div></div></div> -->
     </div>
   </div>
 </section>
