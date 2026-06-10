@@ -20,7 +20,10 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="row">
       <div class="col-lg-8">
         <div class="table-card p-4">
-          <form class="needs-validation" novalidate id="addCourseForm" method="post" action="<?= url('api/course-create.php') ?>">
+          <?php // TODO: In api/course-create.php, handle $_FILES['lesson_videos'] array
+          // Move uploaded files to /uploads/course-videos/{teacher_id}/
+          // Save file path OR external URL per lesson to the lessons table (add column: video_source VARCHAR(500)) ?>
+          <form class="needs-validation" novalidate id="addCourseForm" method="post" action="<?= url('api/course-create.php') ?>" enctype="multipart/form-data">
             <div class="mb-3">
               <label class="form-label" for="courseTitle">Course Title</label>
               <input type="text" class="form-control" id="courseTitle" name="title" placeholder="e.g. Advanced React Patterns" required>
@@ -45,14 +48,59 @@ require __DIR__ . '/../components/page-hero.php';
               <textarea class="form-control" id="courseDesc" name="description" rows="4" placeholder="What will students learn?" required></textarea>
             </div>
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
+            <h3 class="h6 fw-bold mb-3"><i class="bi bi-camera-video text-primary me-1"></i>Video Lectures</h3>
             <div id="lessonFields">
-              <div class="input-group mb-2">
-                <span class="input-group-text">1</span>
-                <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+              <div class="lesson-row card p-3 mb-3">
+                <div class="row g-2 align-items-center mb-2">
+                  <div class="col-auto">
+                    <span class="badge bg-secondary lesson-number">1</span>
+                  </div>
+                  <div class="col">
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn d-none" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input type="file" class="form-control lesson-video-file" name="lesson_videos[]" accept=".mp4,.mov,.avi,.webm">
+                  </div>
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                      <input type="url" class="form-control lesson-video-url" name="lesson_video_urls[]" placeholder="https://youtube.com/...">
+                    </div>
+                  </div>
+                </div>
+                <small class="text-muted d-block mt-2">Upload a file OR paste a URL — not both</small>
+                <div class="invalid-feedback lesson-video-feedback">Please upload a video file or provide an external URL.</div>
               </div>
-              <div class="input-group mb-2">
-                <span class="input-group-text">2</span>
-                <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+              <div class="lesson-row card p-3 mb-3">
+                <div class="row g-2 align-items-center mb-2">
+                  <div class="col-auto">
+                    <span class="badge bg-secondary lesson-number">2</span>
+                  </div>
+                  <div class="col">
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn d-none" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input type="file" class="form-control lesson-video-file" name="lesson_videos[]" accept=".mp4,.mov,.avi,.webm">
+                  </div>
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                      <input type="url" class="form-control lesson-video-url" name="lesson_video_urls[]" placeholder="https://youtube.com/...">
+                    </div>
+                  </div>
+                </div>
+                <small class="text-muted d-block mt-2">Upload a file OR paste a URL — not both</small>
+                <div class="invalid-feedback lesson-video-feedback">Please upload a video file or provide an external URL.</div>
               </div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="addLessonBtn"><i class="bi bi-plus me-1"></i>Add Lesson</button>
@@ -77,6 +125,119 @@ require __DIR__ . '/../components/page-hero.php';
   </main>
 </div>
 </div>
+<script>
+(function () {
+  'use strict';
+
+  const lessonFields = document.getElementById('lessonFields');
+  const addLessonBtn = document.getElementById('addLessonBtn');
+  const addCourseForm = document.getElementById('addCourseForm');
+  if (!lessonFields || !lessonFields.querySelector('.lesson-row')) return;
+
+  function buildLessonRow(number) {
+    const row = document.createElement('div');
+    row.className = 'lesson-row card p-3 mb-3';
+    row.innerHTML =
+      '<div class="row g-2 align-items-center mb-2">' +
+        '<div class="col-auto"><span class="badge bg-secondary lesson-number">' + number + '</span></div>' +
+        '<div class="col"><input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required></div>' +
+        '<div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn" title="Remove lesson"><i class="bi bi-trash"></i></button></div>' +
+      '</div>' +
+      '<div class="row g-2">' +
+        '<div class="col-md-6"><input type="file" class="form-control lesson-video-file" name="lesson_videos[]" accept=".mp4,.mov,.avi,.webm"></div>' +
+        '<div class="col-md-6">' +
+          '<div class="input-group">' +
+            '<span class="input-group-text"><i class="bi bi-link-45deg"></i></span>' +
+            '<input type="url" class="form-control lesson-video-url" name="lesson_video_urls[]" placeholder="https://youtube.com/...">' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<small class="text-muted d-block mt-2">Upload a file OR paste a URL — not both</small>' +
+      '<div class="invalid-feedback lesson-video-feedback">Please upload a video file or provide an external URL.</div>';
+    return row;
+  }
+
+  function renumberLessons() {
+    const rows = lessonFields.querySelectorAll('.lesson-row');
+    rows.forEach((row, index) => {
+      const badge = row.querySelector('.lesson-number');
+      if (badge) badge.textContent = String(index + 1);
+      const removeBtn = row.querySelector('.remove-lesson-btn');
+      if (removeBtn) removeBtn.classList.toggle('d-none', index < 2);
+    });
+  }
+
+  addLessonBtn?.addEventListener('click', () => {
+    const n = lessonFields.querySelectorAll('.lesson-row').length + 1;
+    lessonFields.appendChild(buildLessonRow(n));
+    renumberLessons();
+  });
+
+  lessonFields.addEventListener('click', (e) => {
+    const btn = e.target.closest('.remove-lesson-btn');
+    if (!btn) return;
+    const row = btn.closest('.lesson-row');
+    if (!row || lessonFields.querySelectorAll('.lesson-row').length <= 2) return;
+    row.remove();
+    renumberLessons();
+  });
+
+  function validateLessonVideos() {
+    let valid = true;
+    lessonFields.querySelectorAll('.lesson-row').forEach((row) => {
+      const fileInput = row.querySelector('.lesson-video-file');
+      const urlInput = row.querySelector('.lesson-video-url');
+      const feedback = row.querySelector('.lesson-video-feedback');
+      const hasFile = fileInput?.files?.length > 0;
+      const hasUrl = Boolean(urlInput?.value?.trim());
+      const rowValid = hasFile || hasUrl;
+
+      fileInput?.classList.toggle('is-invalid', !rowValid);
+      urlInput?.classList.toggle('is-invalid', !rowValid);
+      if (feedback) feedback.classList.toggle('d-block', !rowValid);
+      if (!rowValid) valid = false;
+    });
+    return valid;
+  }
+
+  lessonFields.addEventListener('input', (e) => {
+    if (!e.target.matches('.lesson-video-url')) return;
+    const row = e.target.closest('.lesson-row');
+    if (!row) return;
+    const fileInput = row.querySelector('.lesson-video-file');
+    const hasFile = fileInput?.files?.length > 0;
+    const hasUrl = Boolean(e.target.value?.trim());
+    if (hasFile || hasUrl) {
+      fileInput?.classList.remove('is-invalid');
+      e.target.classList.remove('is-invalid');
+      row.querySelector('.lesson-video-feedback')?.classList.remove('d-block');
+    }
+  });
+
+  lessonFields.addEventListener('change', (e) => {
+    if (!e.target.matches('.lesson-video-file')) return;
+    const row = e.target.closest('.lesson-row');
+    if (!row) return;
+    const urlInput = row.querySelector('.lesson-video-url');
+    const hasFile = e.target.files?.length > 0;
+    const hasUrl = Boolean(urlInput?.value?.trim());
+    if (hasFile || hasUrl) {
+      e.target.classList.remove('is-invalid');
+      urlInput?.classList.remove('is-invalid');
+      row.querySelector('.lesson-video-feedback')?.classList.remove('d-block');
+    }
+  });
+
+  addCourseForm?.addEventListener('submit', (e) => {
+    const videosValid = validateLessonVideos();
+    const formValid = addCourseForm.checkValidity();
+    if (!videosValid || !formValid) {
+      e.preventDefault();
+      addCourseForm.classList.add('was-validated');
+    }
+  });
+})();
+</script>
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';

@@ -56,7 +56,7 @@
 
   document.getElementById('addLessonBtn')?.addEventListener('click', () => {
     const wrap = document.getElementById('lessonFields');
-    if (!wrap) return;
+    if (!wrap || wrap.querySelector('.lesson-row')) return;
     const n = wrap.querySelectorAll('.input-group').length + 1;
     const div = document.createElement('div');
     div.className = 'input-group mb-2';
