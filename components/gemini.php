@@ -10,7 +10,7 @@ function gemini_config(): array
 
     $defaults = [
         'api_key' => '',
-        'model' => 'gemini-2.0-flash-lite',
+        'model' => 'gemini-1.5-flash',
         'max_requests_per_session' => 30,
     ];
 
@@ -98,7 +98,7 @@ function gemini_chat_request(array $history, string $message): string
         );
     }
 
-    $model = $config['model'] ?? 'gemini-2.0-flash';
+    $model = $config['model'] ?? 'gemini-1.5-flash';
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/'
         . rawurlencode($model)
         . ':generateContent?key=' . rawurlencode($apiKey);

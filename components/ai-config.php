@@ -5,6 +5,6 @@
  * Get a free key at: https://aistudio.google.com/apikey
  */
 return [
-    'model' => 'gemini-2.0-flash-lite',
+    'model' => 'gemini-1.5-flash',
     'max_requests_per_session' => 30,
 ];

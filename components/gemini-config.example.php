@@ -8,6 +8,6 @@
  */
 return [
     'api_key' => 'YOUR_GEMINI_API_KEY_HERE',
-    'model' => 'gemini-2.0-flash-lite',
+    'model' => 'gemini-1.5-flash',
     'max_requests_per_session' => 30,
 ];

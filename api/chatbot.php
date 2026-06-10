@@ -62,5 +62,5 @@ try {
     ) {
         $message = 'The assistant is not configured yet. Please contact the site administrator.';
     }
-    json_response(['ok' => false, 'message' => $message], 500);
+    json_response(['ok' => false, 'message' => $message, 'debug_error' => $e->getMessage()], 500);
 }

@@ -97,6 +97,9 @@
 
       if (!data.ok) {
         const err = data.message || 'Sorry, something went wrong.';
+        if (data.debug_error) {
+          console.error('Chatbot API debug error:', data.debug_error);
+        }
         appendMessage('bot', err);
         window.showToast?.(err, 'danger');
         return;
