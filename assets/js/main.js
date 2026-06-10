@@ -37,15 +37,16 @@
     const target = parseInt(el.dataset.count, 10);
     const io = new IntersectionObserver((entries) => {
       if (!entries[0].isIntersecting) return;
+      const suffix = el.dataset.suffix || '';
       let current = 0;
-      const step = Math.ceil(target / 60);
+      const step = target > 0 ? Math.max(1, Math.ceil(target / 60)) : 1;
       const tick = () => {
         current += step;
         if (current >= target) {
-          el.textContent = target.toLocaleString() + (el.dataset.suffix || '');
+          el.textContent = target.toLocaleString() + suffix;
           return;
         }
-        el.textContent = current.toLocaleString();
+        el.textContent = current.toLocaleString() + suffix;
         requestAnimationFrame(tick);
       };
       tick();
