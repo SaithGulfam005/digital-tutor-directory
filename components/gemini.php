@@ -94,7 +94,7 @@ function gemini_chat_request(array $history, string $message): string
     $apiKey = trim($config['api_key'] ?? '');
     if ($apiKey === '' || $apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
         throw new RuntimeException(
-            'Chatbot API key is missing. Add your key to components/ai-config.php or components/gemini-config.php.'
+            'Chatbot API key is missing. Copy components/gemini-config.example.php to gemini-config.php and add your key from https://aistudio.google.com/apikey'
         );
     }
 

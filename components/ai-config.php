@@ -1,10 +1,10 @@
 <?php
 /**
- * Gemini chatbot settings for Digital Tutor Directory.
- * Override locally in gemini-config.php (optional) or via GEMINI_API_KEY env var.
+ * Gemini chatbot settings (safe to commit — no secrets here).
+ * Add your API key in components/gemini-config.php (copy from gemini-config.example.php).
+ * Get a free key at: https://aistudio.google.com/apikey
  */
 return [
-    'api_key' => 'AIzaSyC04IUxl0iD0gekoJLsGIfEVu5ZB1JEpKw',
     'model' => 'gemini-2.0-flash-lite',
     'max_requests_per_session' => 30,
 ];
