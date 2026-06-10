@@ -4,13 +4,32 @@ declare(strict_types=1);
 function gemini_config(): array
 {
     static $config;
-    if ($config === null) {
-        $path = __DIR__ . '/gemini-config.php';
-        if (!is_file($path)) {
-            throw new RuntimeException('Chatbot is not configured. Copy components/gemini-config.example.php to gemini-config.php.');
-        }
-        $config = require $path;
+    if ($config !== null) {
+        return $config;
     }
+
+    $defaults = [
+        'api_key' => '',
+        'model' => 'gemini-2.0-flash-lite',
+        'max_requests_per_session' => 30,
+    ];
+
+    $aiConfigPath = __DIR__ . '/ai-config.php';
+    if (is_file($aiConfigPath)) {
+        $defaults = array_merge($defaults, require $aiConfigPath);
+    }
+
+    $localConfigPath = __DIR__ . '/gemini-config.php';
+    if (is_file($localConfigPath)) {
+        $defaults = array_merge($defaults, require $localConfigPath);
+    }
+
+    $envKey = getenv('GEMINI_API_KEY');
+    if (is_string($envKey) && trim($envKey) !== '') {
+        $defaults['api_key'] = trim($envKey);
+    }
+
+    $config = $defaults;
     return $config;
 }
 
@@ -74,7 +93,9 @@ function gemini_chat_request(array $history, string $message): string
     $config = gemini_config();
     $apiKey = trim($config['api_key'] ?? '');
     if ($apiKey === '' || $apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-        throw new RuntimeException('Chatbot API key is not configured.');
+        throw new RuntimeException(
+            'Chatbot API key is missing. Add your key to components/ai-config.php or components/gemini-config.php.'
+        );
     }
 
     $model = $config['model'] ?? 'gemini-2.0-flash';
