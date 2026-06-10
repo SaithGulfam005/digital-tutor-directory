@@ -16,12 +16,18 @@ function gemini_config(): array
 
     $aiConfigPath = __DIR__ . '/ai-config.php';
     if (is_file($aiConfigPath)) {
-        $defaults = array_merge($defaults, require $aiConfigPath);
+        $aiConfig = require $aiConfigPath;
+        if (is_array($aiConfig)) {
+            $defaults = array_merge($defaults, $aiConfig);
+        }
     }
 
     $localConfigPath = __DIR__ . '/gemini-config.php';
     if (is_file($localConfigPath)) {
-        $defaults = array_merge($defaults, require $localConfigPath);
+        $localConfig = require $localConfigPath;
+        if (is_array($localConfig)) {
+            $defaults = array_merge($defaults, $localConfig);
+        }
     }
 
     $envKey = getenv('GEMINI_API_KEY');
