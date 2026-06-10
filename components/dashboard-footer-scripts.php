@@ -3,6 +3,7 @@
 <script src="<?= asset('js/navbar.js') ?>"></script>
 <script src="<?= asset('js/forms.js') ?>"></script>
 <script src="<?= asset('js/main.js') ?>"></script>
+<script src="<?= asset('js/chatbot.js') ?>"></script>
 <script src="<?= asset('js/list-filters.js') ?>"></script>
 <script src="<?= asset('js/tables.js') ?>"></script>
 <script src="<?= asset('js/charts.js') ?>"></script>

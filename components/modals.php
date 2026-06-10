@@ -36,6 +36,7 @@
     </div>
   </div>
 </div>
+<?php require __DIR__ . '/chatbot.php'; ?>
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
   <div id="appToast" class="toast align-items-center text-bg-primary border-0" role="alert">
     <div class="d-flex">
