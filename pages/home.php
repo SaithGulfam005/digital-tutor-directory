@@ -3,6 +3,32 @@ require_once __DIR__ . '/../components/config.php';
 $pageTitle = 'Home | ' . SITE_NAME;
 $courses = mockCourses();
 $teachers = mockTeachers();
+
+// Homepage stats; use DB when available, otherwise fallback to mock content.
+$studentsCount = 0;
+$teachersCount = 0;
+$coursesCount = 0;
+$satisfactionPct = 98;
+if (function_exists('db_available') && db_available()) {
+    $pdo = db();
+    $studentsCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
+    $teachersCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='teacher' AND status='active'")->fetchColumn();
+    $coursesCount = (int) $pdo->query("SELECT COUNT(*) FROM courses WHERE status='published'")->fetchColumn();
+    $avgRating = (float) $pdo->query("SELECT AVG(COALESCE(rating,0)) FROM courses WHERE rating IS NOT NULL")->fetchColumn();
+    if ($avgRating > 0) {
+        $satisfactionPct = min(100, max(0, (int) round(($avgRating / 5) * 100)));
+    }
+} else {
+    $studentsCount = count(mockStudents());
+    $teachersCount = count($teachers);
+    $coursesCount = count($courses);
+    $courseRatings = array_filter(array_column($courses, 'rating'), fn($v) => is_numeric($v));
+    if (count($courseRatings)) {
+        $avgRating = array_sum($courseRatings) / count($courseRatings);
+        $satisfactionPct = min(100, max(0, (int) round(($avgRating / 5) * 100)));
+    }
+}
+
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/navbar.php';
 ?>
@@ -158,10 +184,30 @@ require_once __DIR__ . '/../components/navbar.php';
 <section class="section section--alt">
   <div class="container">
     <div class="row g-4">
-      <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="15000" data-suffix="+">0</div><div class="stat-card__label">Students</div></div></div>
-      <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="500" data-suffix="+">0</div><div class="stat-card__label">Teachers</div></div></div>
-      <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="1200" data-suffix="+">0</div><div class="stat-card__label">Courses</div></div></div>
-      <!-- <div class="col-6 col-lg-3 fade-up"><div class="stat-card"><div class="stat-card__number" data-count="98" data-suffix="%">0</div><div class="stat-card__label">Satisfaction</div></div></div> -->
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-card">
+          <div class="stat-card__number" data-count="<?= (int) $studentsCount ?>" data-suffix="+"><?= number_format($studentsCount) ?></div>
+          <div class="stat-card__label">Students</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-card">
+          <div class="stat-card__number" data-count="<?= (int) $teachersCount ?>" data-suffix="+"><?= number_format($teachersCount) ?></div>
+          <div class="stat-card__label">Teachers</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-card">
+          <div class="stat-card__number" data-count="<?= (int) $coursesCount ?>" data-suffix="+"><?= number_format($coursesCount) ?></div>
+          <div class="stat-card__label">Courses</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 fade-up">
+        <div class="stat-card">
+          <div class="stat-card__number" data-count="<?= (int) $satisfactionPct ?>" data-suffix="%"><?= number_format($satisfactionPct) ?></div>
+          <div class="stat-card__label">Satisfaction</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

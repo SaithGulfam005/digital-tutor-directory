@@ -56,14 +56,37 @@
 
   document.getElementById('addLessonBtn')?.addEventListener('click', () => {
     const wrap = document.getElementById('lessonFields');
+<<<<<<< HEAD
     if (!wrap || wrap.querySelector('.lesson-row')) return;
     const n = wrap.querySelectorAll('.input-group').length + 1;
+=======
+    if (!wrap) return;
+    const n = wrap.querySelectorAll('.lesson-row').length + 1;
+>>>>>>> a055c0ef9a5aa23f008167c73a550ce45aae0690
     const div = document.createElement('div');
-    div.className = 'input-group mb-2';
-    div.innerHTML =
-      '<span class="input-group-text">' +
-      n +
-      '</span><input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>';
+    div.className = 'lesson-row mb-4 p-3 rounded border';
+    div.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label">Lesson title</label>
+          <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Duration</label>
+          <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Video URL</label>
+          <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+        </div>
+      </div>
+      <div class="row g-3 mt-3">
+        <div class="col-12">
+          <label class="form-label">Upload video (optional)</label>
+          <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+        </div>
+      </div>
+    `;
     wrap.appendChild(div);
   });
 

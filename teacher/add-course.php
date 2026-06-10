@@ -20,10 +20,14 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="row">
       <div class="col-lg-8">
         <div class="table-card p-4">
+<<<<<<< HEAD
           <?php // TODO: In api/course-create.php, handle $_FILES['lesson_videos'] array
           // Move uploaded files to /uploads/course-videos/{teacher_id}/
           // Save file path OR external URL per lesson to the lessons table (add column: video_source VARCHAR(500)) ?>
           <form class="needs-validation" novalidate id="addCourseForm" method="post" action="<?= url('api/course-create.php') ?>" enctype="multipart/form-data">
+=======
+          <form class="needs-validation" novalidate id="addCourseForm" method="post" enctype="multipart/form-data" action="<?= url('api/course-create.php') ?>">
+>>>>>>> a055c0ef9a5aa23f008167c73a550ce45aae0690
             <div class="mb-3">
               <label class="form-label" for="courseTitle">Course Title</label>
               <input type="text" class="form-control" id="courseTitle" name="title" placeholder="e.g. Advanced React Patterns" required>
@@ -50,6 +54,7 @@ require __DIR__ . '/../components/page-hero.php';
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
             <h3 class="h6 fw-bold mb-3"><i class="bi bi-camera-video text-primary me-1"></i>Video Lectures</h3>
             <div id="lessonFields">
+<<<<<<< HEAD
               <div class="lesson-row card p-3 mb-3">
                 <div class="row g-2 align-items-center mb-2">
                   <div class="col-auto">
@@ -101,6 +106,51 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
                 <small class="text-muted d-block mt-2">Upload a file OR paste a URL — not both</small>
                 <div class="invalid-feedback lesson-video-feedback">Please upload a video file or provide an external URL.</div>
+=======
+              <div class="lesson-row mb-4 p-3 rounded border">
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Video URL</label>
+                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload video (optional)</label>
+                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                  </div>
+                </div>
+              </div>
+              <div class="lesson-row mb-4 p-3 rounded border">
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Video URL</label>
+                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload video (optional)</label>
+                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                  </div>
+                </div>
+>>>>>>> a055c0ef9a5aa23f008167c73a550ce45aae0690
               </div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="addLessonBtn"><i class="bi bi-plus me-1"></i>Add Lesson</button>
