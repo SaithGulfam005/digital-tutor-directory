@@ -57,7 +57,10 @@ if (isset($_POST['status'])) {
 }
 
 if (array_key_exists('lessons', $_POST)) {
-    $lessons = array_filter(array_map('trim', (array) $_POST['lessons']));
+    $lessons = parse_course_lessons($_POST, $_FILES['lesson_files'] ?? []);
+    if (count($lessons) === 0) {
+        redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Please add at least one lesson with a title.', 'danger');
+    }
     $update['lessons'] = $lessons;
 }
 

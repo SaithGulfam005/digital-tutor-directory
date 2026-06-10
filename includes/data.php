@@ -589,11 +589,18 @@ function createCourse(int $teacherId, array $data): int
     $courseId = (int) db()->lastInsertId();
 
     if (!empty($data['lessons'])) {
-        $lessonStmt = db()->prepare('INSERT INTO lessons (course_id, title, duration, sort_order) VALUES (?,?,?,?)');
-        foreach ($data['lessons'] as $i => $title) {
-            if (trim($title) !== '') {
-                $lessonStmt->execute([$courseId, trim($title), '10:00', $i + 1]);
+        $lessonStmt = db()->prepare('INSERT INTO lessons (course_id, title, duration, sort_order, content_url) VALUES (?,?,?,?,?)');
+        foreach ($data['lessons'] as $i => $lesson) {
+            $title = trim($lesson['title'] ?? '');
+            if ($title === '') {
+                continue;
             }
+            $duration = trim($lesson['duration'] ?? '10:00');
+            if (!preg_match('/^\d{1,2}:\d{2}$/', $duration)) {
+                $duration = '10:00';
+            }
+            $contentUrl = trim($lesson['content_url'] ?? '');
+            $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);
         }
     }
     return $courseId;
@@ -625,11 +632,18 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
 
     if (array_key_exists('lessons', $data)) {
         db()->prepare('DELETE FROM lessons WHERE course_id = ?')->execute([$courseId]);
-        $lessonStmt = db()->prepare('INSERT INTO lessons (course_id, title, duration, sort_order) VALUES (?,?,?,?)');
-        foreach (($data['lessons'] ?? []) as $i => $title) {
-            if (trim($title) !== '') {
-                $lessonStmt->execute([$courseId, trim($title), '10:00', $i + 1]);
+        $lessonStmt = db()->prepare('INSERT INTO lessons (course_id, title, duration, sort_order, content_url) VALUES (?,?,?,?,?)');
+        foreach (($data['lessons'] ?? []) as $i => $lesson) {
+            $title = trim($lesson['title'] ?? '');
+            if ($title === '') {
+                continue;
             }
+            $duration = trim($lesson['duration'] ?? '10:00');
+            if (!preg_match('/^\d{1,2}:\d{2}$/', $duration)) {
+                $duration = '10:00';
+            }
+            $contentUrl = trim($lesson['content_url'] ?? '');
+            $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);
         }
     }
 }

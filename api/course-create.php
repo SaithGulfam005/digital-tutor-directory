@@ -13,10 +13,13 @@ $title = trim($_POST['title'] ?? '');
 $category = trim($_POST['category'] ?? '');
 $price = (float) ($_POST['price'] ?? 0);
 $description = trim($_POST['description'] ?? '');
-$lessons = array_filter(array_map('trim', $_POST['lessons'] ?? []));
+$lessons = parse_course_lessons($_POST, $_FILES['lesson_files'] ?? []);
 
 if ($title === '' || $category === '' || $price <= 0 || $description === '') {
     redirect_with(url('teacher/add-course.php'), 'Please complete all required fields.', 'danger');
+}
+if (count($lessons) === 0) {
+    redirect_with(url('teacher/add-course.php'), 'Please add at least one lesson with a title.', 'danger');
 }
 
 try {

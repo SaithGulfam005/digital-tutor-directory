@@ -26,7 +26,7 @@ $lessons = getCourseLessons($courseId);
     <div class="row">
       <div class="col-lg-8">
         <div class="table-card p-4">
-          <form class="needs-validation" novalidate id="editCourseForm" method="post" action="<?= url('api/course-update.php') ?>">
+          <form class="needs-validation" novalidate id="editCourseForm" method="post" enctype="multipart/form-data" action="<?= url('api/course-update.php') ?>">
             <input type="hidden" name="id" value="<?= (int) $courseId ?>">
             <div class="mb-3">
               <label class="form-label" for="courseTitle">Course Title</label>
@@ -65,15 +65,51 @@ $lessons = getCourseLessons($courseId);
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
             <div id="lessonFields">
               <?php foreach ($lessons as $index => $lesson): ?>
-              <div class="input-group mb-2">
-                <span class="input-group-text"><?= $index + 1 ?></span>
-                <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" value="<?= htmlspecialchars($lesson['title']) ?>" required>
+              <div class="lesson-row mb-4 p-3 rounded border">
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" value="<?= htmlspecialchars($lesson['title']) ?>" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00" value="<?= htmlspecialchars($lesson['duration']) ?>">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Video URL</label>
+                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4" value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload new video (optional)</label>
+                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                  </div>
+                </div>
               </div>
               <?php endforeach; ?>
               <?php if (count($lessons) === 0): ?>
-              <div class="input-group mb-2">
-                <span class="input-group-text">1</span>
-                <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+              <div class="lesson-row mb-4 p-3 rounded border">
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Video URL</label>
+                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload video (optional)</label>
+                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                  </div>
+                </div>
               </div>
               <?php endif; ?>
             </div>
