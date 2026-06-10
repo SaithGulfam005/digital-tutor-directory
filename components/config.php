@@ -41,7 +41,7 @@ function save_uploaded_lesson_video(array $file): ?string
 
     $originalName = basename($file['name']);
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-    $allowed = ['mp4', 'webm', 'ogg', 'mov', 'm4v'];
+    $allowed = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'avi'];
     if ($extension === '' || !in_array($extension, $allowed, true)) {
         return null;
     }

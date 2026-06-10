@@ -56,13 +56,8 @@
 
   document.getElementById('addLessonBtn')?.addEventListener('click', () => {
     const wrap = document.getElementById('lessonFields');
-<<<<<<< HEAD
-    if (!wrap || wrap.querySelector('.lesson-row')) return;
-    const n = wrap.querySelectorAll('.input-group').length + 1;
-=======
-    if (!wrap) return;
+    if (!wrap || document.getElementById('addCourseForm')) return;
     const n = wrap.querySelectorAll('.lesson-row').length + 1;
->>>>>>> a055c0ef9a5aa23f008167c73a550ce45aae0690
     const div = document.createElement('div');
     div.className = 'lesson-row mb-4 p-3 rounded border';
     div.innerHTML = `
