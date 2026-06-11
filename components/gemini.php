@@ -163,6 +163,13 @@ function gemini_chat_request(array $history, string $message): string
     $data = json_decode($raw, true);
     if ($httpCode >= 400 || !is_array($data)) {
         $apiMessage = is_array($data) ? ($data['error']['message'] ?? 'Gemini API error.') : 'Gemini API error.';
+        if (
+            stripos($apiMessage, 'Expected OAuth 2 access token') !== false
+            || stripos($apiMessage, 'invalid authentication credentials') !== false
+            || stripos($apiMessage, 'API key') !== false
+        ) {
+            $apiMessage = 'Chatbot credentials are invalid or misconfigured. Please verify your Gemini API key in components/gemini-config.php or the GEMINI_API_KEY environment variable.';
+        }
         throw new RuntimeException((string) $apiMessage);
     }
 
