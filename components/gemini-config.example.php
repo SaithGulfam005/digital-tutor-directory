@@ -7,7 +7,7 @@
  * The key should start with AIza...
  */
 return [
-    'api_key' => 'YOUR_GEMINI_API_KEY_HERE',
+    'api_key' => 'AQ.Ab8RN6KEiEkUvwaTTJAgeH-1GuJIPeT3IfjAPnCZO4EJURdE7A',
     'model' => 'gemini-2.5-flash-lite',
     'max_requests_per_session' => 30,
 ];
