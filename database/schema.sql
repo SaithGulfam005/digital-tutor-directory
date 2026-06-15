@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS lessons;
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS contact_messages;
+DROP TABLE IF EXISTS password_resets;
 DROP TABLE IF EXISTS teacher_documents;
 DROP TABLE IF EXISTS courses;
 DROP TABLE IF EXISTS categories;
@@ -75,7 +76,7 @@ CREATE TABLE courses (
   slug VARCHAR(220) NOT NULL,
   description TEXT NOT NULL,
   price DECIMAL(10,2) NOT NULL DEFAULT 0,
-  thumb VARCHAR(255) DEFAULT 'assets/images/courses/placeholder.jpg',
+  thumb VARCHAR(255) DEFAULT 'assets/images/avatars/placeholder.svg',
   status ENUM('draft','pending','published','rejected') NOT NULL DEFAULT 'pending',
   rating DECIMAL(3,2) NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

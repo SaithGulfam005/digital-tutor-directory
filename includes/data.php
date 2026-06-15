@@ -14,7 +14,7 @@ function map_course_row(array $row): array
         'rating' => (float) $row['rating'],
         'category' => $row['category_name'] ?? '',
         'category_id' => (int) ($row['category_id'] ?? 0),
-        'thumb' => $row['thumb'] ?: 'assets/images/courses/placeholder.jpg',
+        'thumb' => $row['thumb'] ?: 'assets/images/avatars/placeholder.svg',
         'students' => (int) ($row['student_count'] ?? 0),
         'desc' => $row['description'] ?? '',
         'status' => $row['status'] ?? 'published',
@@ -299,7 +299,7 @@ function getStudentEnrollments(?int $studentId = null): array
             'price' => (float) $row['price'],
             'rating' => (float) $row['rating'],
             'category' => $row['category_name'],
-            'thumb' => $row['thumb'] ?: 'assets/images/courses/placeholder.jpg',
+            'thumb' => $row['thumb'] ?: 'assets/images/avatars/placeholder.svg',
             'desc' => $row['description'],
             'progress' => (int) $row['progress'],
             'status' => $row['status'],
@@ -399,7 +399,6 @@ function getTeacherEarnings(?int $teacherId = null): array
         return fallbackTeacherEarnings();
     }
     $pdo = db();
-    $total = (float) $pdo->prepare("SELECT COALESCE(SUM(teacher_share),0) FROM payments p JOIN courses c ON c.id=p.course_id WHERE c.teacher_id=? AND p.status='completed'")->execute([$teacherId]) ?: 0;
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(teacher_share),0) FROM payments p JOIN courses c ON c.id=p.course_id WHERE c.teacher_id=? AND p.status='completed' AND MONTH(p.created_at)=MONTH(CURRENT_DATE())");
     $stmt->execute([$teacherId]);
     $thisMonth = (float) $stmt->fetchColumn();
@@ -835,22 +834,22 @@ function next_payment_reference(): string
 function fallbackCourses(): array
 {
     return [
-        ['id' => 1, 'title' => 'Complete Web Development', 'teacher' => 'Dr. Sarah Khan', 'price' => 49.99, 'rating' => 4.8, 'category' => 'Development', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 1240, 'desc' => 'Master HTML, CSS, JavaScript, and modern frameworks.'],
-        ['id' => 2, 'title' => 'UI/UX Design Masterclass', 'teacher' => 'Ahmed Hassan', 'price' => 39.99, 'rating' => 4.7, 'category' => 'Design', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 890, 'desc' => 'Learn user research, wireframing, and prototyping.'],
-        ['id' => 3, 'title' => 'Data Science with Python', 'teacher' => 'Maria Lopez', 'price' => 59.99, 'rating' => 4.9, 'category' => 'Data Science', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 2100, 'desc' => 'Python, pandas, ML basics, and visualization.'],
-        ['id' => 4, 'title' => 'Digital Marketing Fundamentals', 'teacher' => 'James Wilson', 'price' => 29.99, 'rating' => 4.6, 'category' => 'Marketing', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 650, 'desc' => 'SEO, social media, and campaign strategy.'],
-        ['id' => 5, 'title' => 'Mobile App Development', 'teacher' => 'Dr. Sarah Khan', 'price' => 54.99, 'rating' => 4.8, 'category' => 'Development', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 980, 'desc' => 'Build cross-platform apps with modern tools.'],
-        ['id' => 6, 'title' => 'Business Analytics', 'teacher' => 'Maria Lopez', 'price' => 44.99, 'rating' => 4.5, 'category' => 'Business', 'thumb' => 'assets/images/courses/placeholder.jpg', 'students' => 430, 'desc' => 'Data-driven decision making for business.'],
+        ['id' => 1, 'title' => 'Complete Web Development', 'teacher' => 'Dr. Sarah Khan', 'price' => 49.99, 'rating' => 4.8, 'category' => 'Development', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 1240, 'desc' => 'Master HTML, CSS, JavaScript, and modern frameworks.'],
+        ['id' => 2, 'title' => 'UI/UX Design Masterclass', 'teacher' => 'Ahmed Hassan', 'price' => 39.99, 'rating' => 4.7, 'category' => 'Design', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 890, 'desc' => 'Learn user research, wireframing, and prototyping.'],
+        ['id' => 3, 'title' => 'Data Science with Python', 'teacher' => 'Maria Lopez', 'price' => 59.99, 'rating' => 4.9, 'category' => 'Data Science', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 2100, 'desc' => 'Python, pandas, ML basics, and visualization.'],
+        ['id' => 4, 'title' => 'Digital Marketing Fundamentals', 'teacher' => 'James Wilson', 'price' => 29.99, 'rating' => 4.6, 'category' => 'Marketing', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 650, 'desc' => 'SEO, social media, and campaign strategy.'],
+        ['id' => 5, 'title' => 'Mobile App Development', 'teacher' => 'Dr. Sarah Khan', 'price' => 54.99, 'rating' => 4.8, 'category' => 'Development', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 980, 'desc' => 'Build cross-platform apps with modern tools.'],
+        ['id' => 6, 'title' => 'Business Analytics', 'teacher' => 'Maria Lopez', 'price' => 44.99, 'rating' => 4.5, 'category' => 'Business', 'thumb' => 'assets/images/avatars/placeholder.svg', 'students' => 430, 'desc' => 'Data-driven decision making for business.'],
     ];
 }
 
 function fallbackTeachers(): array
 {
     return [
-        ['id' => 1, 'name' => 'Dr. Sarah Khan', 'email' => 'sarah.khan@digitaltutor.com', 'qualification' => 'PhD Computer Science', 'experience' => '12 years', 'rating' => 4.9, 'subject' => 'Development', 'photo' => 'assets/images/teachers/placeholder.jpg', 'students' => 3200, 'bio' => 'Senior developer and educator.'],
-        ['id' => 2, 'name' => 'Ahmed Hassan', 'email' => 'ahmed@email.com', 'qualification' => 'MSc Design', 'experience' => '8 years', 'rating' => 4.7, 'subject' => 'Design', 'photo' => 'assets/images/teachers/placeholder.jpg', 'students' => 1800, 'bio' => 'UI/UX designer.'],
-        ['id' => 3, 'name' => 'Maria Lopez', 'email' => 'maria@email.com', 'qualification' => 'PhD Statistics', 'experience' => '10 years', 'rating' => 4.9, 'subject' => 'Data Science', 'photo' => 'assets/images/teachers/placeholder.jpg', 'students' => 4100, 'bio' => 'Data scientist.'],
-        ['id' => 4, 'name' => 'James Wilson', 'email' => 'james@email.com', 'qualification' => 'MBA Marketing', 'experience' => '7 years', 'rating' => 4.6, 'subject' => 'Marketing', 'photo' => 'assets/images/teachers/placeholder.jpg', 'students' => 950, 'bio' => 'Marketing strategist.'],
+        ['id' => 1, 'name' => 'Dr. Sarah Khan', 'email' => 'sarah.khan@digitaltutor.com', 'qualification' => 'PhD Computer Science', 'experience' => '12 years', 'rating' => 4.9, 'subject' => 'Development', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 3200, 'bio' => 'Senior developer and educator.'],
+        ['id' => 2, 'name' => 'Ahmed Hassan', 'email' => 'ahmed@email.com', 'qualification' => 'MSc Design', 'experience' => '8 years', 'rating' => 4.7, 'subject' => 'Design', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 1800, 'bio' => 'UI/UX designer.'],
+        ['id' => 3, 'name' => 'Maria Lopez', 'email' => 'maria@email.com', 'qualification' => 'PhD Statistics', 'experience' => '10 years', 'rating' => 4.9, 'subject' => 'Data Science', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 4100, 'bio' => 'Data scientist.'],
+        ['id' => 4, 'name' => 'James Wilson', 'email' => 'james@email.com', 'qualification' => 'MBA Marketing', 'experience' => '7 years', 'rating' => 4.6, 'subject' => 'Marketing', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 950, 'bio' => 'Marketing strategist.'],
     ];
 }
 
@@ -887,7 +886,7 @@ function fallbackCurrentStudent(): array
 {
     return [
         'id' => 101, 'name' => 'Ali Raza', 'email' => 'ali.raza@email.com', 'phone' => '+92 300 1112233',
-        'joined' => '2025-01-12', 'bio' => '', 'avatar' => 'assets/images/teachers/placeholder.jpg',
+        'joined' => '2025-01-12', 'bio' => '', 'avatar' => 'assets/images/avatars/placeholder.svg',
     ];
 }
 
