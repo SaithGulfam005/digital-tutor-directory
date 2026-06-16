@@ -16,7 +16,7 @@
         <h6 class="fw-bold small text-uppercase mb-3">Quick Links</h6>
         <ul class="list-unstyled small">
           <li class="mb-2"><a class="footer-link" href="<?= url('pages/home.php') ?>">Home</a></li>
-          <li class="mb-2"><a class="footer-link" href="<?= url('pages/courses.php') ?>">Courses</a></li>
+          <li class="mb-2"><a class="footer-link" href="<?= url('pages/courses.php') ?>">Coursesssss</a></li>
           <li class="mb-2"><a class="footer-link" href="<?= url('pages/teachers.php') ?>">Teachers</a></li>
           <li class="mb-2"><a class="footer-link" href="<?= url('pages/about.php') ?>">About</a></li>
           <li class="mb-2"><a class="footer-link" href="<?= url('pages/contact.php') ?>">Contact</a></li>
