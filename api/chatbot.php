@@ -55,15 +55,12 @@ try {
     if (stripos($message, 'quota') !== false || stripos($message, 'rate') !== false) {
         $message = 'The assistant is temporarily unavailable. Please try again in a minute or contact support.';
     } elseif (
-        stripos($message, 'Expected OAuth 2 access token') !== false
-        || stripos($message, 'invalid authentication credentials') !== false
-        || stripos($message, 'invalid api key') !== false
-        || stripos($message, 'API key') !== false
+        stripos($message, 'API key') !== false
         || stripos($message, 'not configured') !== false
         || stripos($message, 'gemini-config') !== false
         || stripos($message, 'ai-config') !== false
     ) {
-        $message = 'The assistant cannot authenticate with the configured credentials. Please verify the Gemini API key or contact the site administrator.';
+        $message = 'The assistant is not configured yet. Please contact the site administrator.';
     }
     json_response(['ok' => false, 'message' => $message, 'debug_error' => $e->getMessage()], 500);
 }
