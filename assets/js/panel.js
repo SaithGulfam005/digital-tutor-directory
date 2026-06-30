@@ -1,22 +1,49 @@
 (function () {
   'use strict';
 
+  function mediaUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    const base = (window.BASE_URL || '').replace(/\/$/, '');
+    if (base && path.startsWith(base + '/')) return path;
+    if (path.startsWith('/')) return path;
+    return base ? base + '/' + path.replace(/^\//, '') : path;
+  }
+
+  function videoMimeType(path) {
+    const ext = (path.split('?')[0].split('.').pop() || '').toLowerCase();
+    const map = { webm: 'video/webm', ogg: 'video/ogg', mov: 'video/quicktime', avi: 'video/x-msvideo', m4v: 'video/mp4' };
+    return map[ext] || 'video/mp4';
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function buildVideoHtml(title, url) {
     if (!url) {
       return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Video will be available soon.</p></div>';
     }
 
+    const safeTitle = escapeHtml(title);
+
     const youtube = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/i);
     if (youtube) {
-      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://www.youtube.com/embed/${youtube[1]}" title="${title}" allowfullscreen></iframe></div>`;
+      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://www.youtube.com/embed/${youtube[1]}" title="${safeTitle}" allowfullscreen></iframe></div>`;
     }
 
     const vimeo = url.match(/vimeo\.com\/(\d+)/i);
     if (vimeo) {
-      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="${title}" allowfullscreen></iframe></div>`;
+      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="${safeTitle}" allowfullscreen></iframe></div>`;
     }
 
-    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline src="${url}"></video>`;
+    const src = mediaUrl(url);
+    const mime = videoMimeType(src);
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
   }
 
   document.querySelectorAll('.lesson-list .list-group-item[data-lesson]').forEach((item) => {

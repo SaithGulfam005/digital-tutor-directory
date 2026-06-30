@@ -77,7 +77,10 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-5">
                     <label class="form-label">Video URL</label>
-                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4" value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <input type="text" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4 or uploads/videos/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <?php if (!empty($lesson['content_url']) && !preg_match('#^https?://#i', $lesson['content_url'])): ?>
+                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded video on file</small>
+                    <?php endif; ?>
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
@@ -101,7 +104,7 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-5">
                     <label class="form-label">Video URL</label>
-                    <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                    <input type="text" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
                   </div>
                 </div>
                 <div class="row g-3 mt-3">

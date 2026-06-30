@@ -33,17 +33,65 @@ function media_url(?string $path, string $fallback = 'assets/images/avatars/plac
     }
     return url(ltrim($path, '/'));
 }
+function upload_error_message(int $code): string
+{
+    return match ($code) {
+        UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Video file exceeds the maximum upload size (40 MB).',
+        UPLOAD_ERR_PARTIAL => 'Video upload was interrupted. Please try again.',
+        UPLOAD_ERR_NO_FILE => 'No video file was selected.',
+        default => 'Video upload failed. Please try again.',
+    };
+}
+
+function video_mime_type(string $path): string
+{
+    $ext = strtolower(pathinfo(parse_url($path, PHP_URL_PATH) ?: $path, PATHINFO_EXTENSION));
+    return match ($ext) {
+        'webm' => 'video/webm',
+        'ogg' => 'video/ogg',
+        'mov' => 'video/quicktime',
+        'avi' => 'video/x-msvideo',
+        'm4v' => 'video/mp4',
+        default => 'video/mp4',
+    };
+}
+
 function save_uploaded_lesson_video(array $file): ?string
 {
-    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+    $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($error !== UPLOAD_ERR_OK) {
+        if ($error !== UPLOAD_ERR_NO_FILE) {
+            throw new RuntimeException(upload_error_message($error));
+        }
         return null;
     }
 
-    $originalName = basename($file['name']);
+    $tmpName = $file['tmp_name'] ?? '';
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Invalid video upload. Please try again.');
+    }
+
+    $size = (int) ($file['size'] ?? 0);
+    if ($size < 1024) {
+        throw new RuntimeException(
+            'Video file is empty or too small. If it is stored in OneDrive or Google Drive, download it to your computer first, then upload again.'
+        );
+    }
+
+    $originalName = basename($file['name'] ?? '');
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     $allowed = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'avi'];
     if ($extension === '' || !in_array($extension, $allowed, true)) {
-        return null;
+        throw new RuntimeException('Unsupported video format. Use MP4, WebM, MOV, or AVI.');
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = $finfo ? (string) finfo_file($finfo, $tmpName) : '';
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+    if ($mime !== '' && !str_starts_with($mime, 'video/') && $mime !== 'application/octet-stream') {
+        throw new RuntimeException('Unsupported video file type. Please upload a valid MP4, WebM, MOV, or AVI file.');
     }
 
     $uploadDir = __DIR__ . '/../uploads/videos';
@@ -53,12 +101,20 @@ function save_uploaded_lesson_video(array $file): ?string
 
     $filename = uniqid('video_', true) . '.' . $extension;
     $dest = $uploadDir . '/' . $filename;
-    if (!move_uploaded_file($file['tmp_name'], $dest)) {
-        return null;
+    if (!move_uploaded_file($tmpName, $dest)) {
+        throw new RuntimeException('Failed to save video file. Check that uploads/videos is writable.');
+    }
+
+    if (filesize($dest) < 1024) {
+        @unlink($dest);
+        throw new RuntimeException(
+            'Video could not be saved correctly. Download the file locally (not from cloud storage) and try again.'
+        );
     }
 
     return 'uploads/videos/' . $filename;
 }
+
 function parse_course_lessons(array $post, array $files): array
 {
     $titles = array_map('trim', (array) ($post['lessons'] ?? []));
@@ -80,17 +136,21 @@ function parse_course_lessons(array $post, array $files): array
         }
 
         $contentUrl = $urls[$i] ?? '';
-        if (isset($files['error'][$i]) && $files['error'][$i] === UPLOAD_ERR_OK) {
+        $fileError = isset($files['error'][$i]) ? (int) $files['error'][$i] : UPLOAD_ERR_NO_FILE;
+
+        if ($fileError === UPLOAD_ERR_OK) {
             $uploaded = save_uploaded_lesson_video([
-                'name' => $files['name'][$i],
-                'type' => $files['type'][$i],
-                'tmp_name' => $files['tmp_name'][$i],
-                'error' => $files['error'][$i],
-                'size' => $files['size'][$i],
+                'name' => $files['name'][$i] ?? '',
+                'type' => $files['type'][$i] ?? '',
+                'tmp_name' => $files['tmp_name'][$i] ?? '',
+                'error' => $fileError,
+                'size' => $files['size'][$i] ?? 0,
             ]);
             if ($uploaded) {
                 $contentUrl = $uploaded;
             }
+        } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
+            throw new RuntimeException(upload_error_message($fileError) . ' (lesson: ' . $title . ')');
         }
 
         $lessons[] = [

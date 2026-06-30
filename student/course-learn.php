@@ -55,7 +55,20 @@ function lesson_video_embed(array $lesson): string
         return '<div class="ratio ratio-16x9 mb-3"><iframe src="' . htmlspecialchars($embed) . '" title="' . htmlspecialchars($lesson['title']) . '" allowfullscreen></iframe></div>';
     }
 
-    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline src="' . htmlspecialchars(media_url($url)) . '"></video>';
+    $src = media_url($url);
+    $mime = video_mime_type($url);
+    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata">'
+        . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
+        . 'Your browser does not support the video tag.</video>';
+}
+
+function lesson_video_url(array $lesson): string
+{
+    $url = trim($lesson['content_url'] ?? '');
+    if ($url === '') {
+        return '';
+    }
+    return media_url($url);
 }
 ?>
 <div class="dashboard-layout">
@@ -91,7 +104,7 @@ function lesson_video_embed(array $lesson): string
                data-lesson="<?= (int) $lesson['id'] ?>"
                data-lesson-title="<?= htmlspecialchars($lesson['title']) ?>"
                data-lesson-duration="<?= htmlspecialchars($lesson['duration']) ?>"
-               data-lesson-url="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+               data-lesson-url="<?= htmlspecialchars(lesson_video_url($lesson)) ?>">
               <span class="small">
                 <i class="bi <?= $lesson['completed'] ? 'bi-check-circle-fill text-success' : 'bi-play-circle' ?> me-2 lesson-status"></i>
                 <?= ($i + 1) ?>. <?= htmlspecialchars($lesson['title']) ?>
