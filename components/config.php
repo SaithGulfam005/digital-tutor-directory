@@ -90,7 +90,7 @@ function save_uploaded_lesson_video(array $file): ?string
     if ($finfo) {
         finfo_close($finfo);
     }
-    if ($mime !== '' && !str_starts_with($mime, 'video/') && $mime !== 'application/octet-stream') {
+    if ($mime !== '' && !str_starts_with($mime, 'video/') && !in_array($mime, ['application/octet-stream', 'application/mp4', 'application/x-mp4'], true)) {
         throw new RuntimeException('Unsupported video file type. Please upload a valid MP4, WebM, MOV, or AVI file.');
     }
 
@@ -115,8 +115,114 @@ function save_uploaded_lesson_video(array $file): ?string
     return 'uploads/videos/' . $filename;
 }
 
+function normalize_uploaded_files(array $files): array
+{
+    if ($files === [] || !isset($files['name'])) {
+        return [];
+    }
+    if (!is_array($files['name'])) {
+        return [
+            'name' => [$files['name']],
+            'type' => [$files['type'] ?? ''],
+            'tmp_name' => [$files['tmp_name'] ?? ''],
+            'error' => [(int) ($files['error'] ?? UPLOAD_ERR_NO_FILE)],
+            'size' => [(int) ($files['size'] ?? 0)],
+        ];
+    }
+    return $files;
+}
+
+function is_local_video_path(string $path): bool
+{
+    $path = trim($path);
+    return $path !== '' && !preg_match('#^https?://#i', $path);
+}
+
+function lesson_playback_url(int $courseId, array $lesson): string
+{
+    $url = trim($lesson['content_url'] ?? '');
+    if ($url === '') {
+        return '';
+    }
+    if (preg_match('#(?:youtube\.com|youtu\.be|vimeo\.com)#i', $url)) {
+        return $url;
+    }
+    if (preg_match('#^https?://#i', $url)) {
+        return $url;
+    }
+    return url('api/lesson-video.php?course=' . $courseId . '&lesson=' . (int) ($lesson['id'] ?? 0));
+}
+
+function stream_video_file(string $absPath): never
+{
+    if (!is_readable($absPath)) {
+        http_response_code(404);
+        exit('Video not found');
+    }
+
+    $size = filesize($absPath);
+    if ($size === false || $size < 1) {
+        http_response_code(404);
+        exit('Video file is empty');
+    }
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    $mime = video_mime_type($absPath);
+    $start = 0;
+    $end = $size - 1;
+    $length = $size;
+
+    if (isset($_SERVER['HTTP_RANGE']) && preg_match('/bytes=(\d*)-(\d*)/', (string) $_SERVER['HTTP_RANGE'], $matches)) {
+        if ($matches[1] !== '') {
+            $start = (int) $matches[1];
+        }
+        if ($matches[2] !== '') {
+            $end = (int) $matches[2];
+        }
+        if ($end >= $size) {
+            $end = $size - 1;
+        }
+        if ($start > $end) {
+            http_response_code(416);
+            header('Content-Range: bytes */' . $size);
+            exit;
+        }
+        $length = $end - $start + 1;
+        http_response_code(206);
+        header('Content-Range: bytes ' . $start . '-' . $end . '/' . $size);
+    }
+
+    header('Content-Type: ' . $mime);
+    header('Accept-Ranges: bytes');
+    header('Content-Length: ' . $length);
+    header('Cache-Control: private, max-age=3600');
+
+    $handle = fopen($absPath, 'rb');
+    if ($handle === false) {
+        http_response_code(500);
+        exit;
+    }
+
+    fseek($handle, $start);
+    $remaining = $length;
+    while ($remaining > 0 && !feof($handle)) {
+        $chunk = fread($handle, min(8192, $remaining));
+        if ($chunk === false) {
+            break;
+        }
+        echo $chunk;
+        $remaining -= strlen($chunk);
+    }
+    fclose($handle);
+    exit;
+}
+
 function parse_course_lessons(array $post, array $files): array
 {
+    $files = normalize_uploaded_files($files);
     $titles = array_map('trim', (array) ($post['lessons'] ?? []));
     $durations = array_map('trim', (array) ($post['lesson_durations'] ?? []));
     $urls = array_map('trim', (array) ($post['lesson_urls'] ?? []));

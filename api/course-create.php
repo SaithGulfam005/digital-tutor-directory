@@ -9,6 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_with(url('teacher/courses.php'), 'Invalid request.', 'warning');
 }
 
+if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    redirect_with(url('teacher/add-course.php'), 'Upload too large. Maximum size is 40 MB per video. Upload each video separately using the file picker.', 'danger');
+}
+
 $title = trim($_POST['title'] ?? '');
 $category = trim($_POST['category'] ?? '');
 $price = (float) ($_POST['price'] ?? 0);

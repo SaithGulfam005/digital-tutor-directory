@@ -38,7 +38,7 @@ require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
 
-function lesson_video_embed(array $lesson): string
+function lesson_video_embed(array $lesson, int $courseId): string
 {
     $url = trim($lesson['content_url'] ?? '');
     if ($url === '') {
@@ -55,20 +55,16 @@ function lesson_video_embed(array $lesson): string
         return '<div class="ratio ratio-16x9 mb-3"><iframe src="' . htmlspecialchars($embed) . '" title="' . htmlspecialchars($lesson['title']) . '" allowfullscreen></iframe></div>';
     }
 
-    $src = media_url($url);
+    $src = lesson_playback_url($courseId, $lesson);
     $mime = video_mime_type($url);
     return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata">'
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
         . 'Your browser does not support the video tag.</video>';
 }
 
-function lesson_video_url(array $lesson): string
+function lesson_video_url(array $lesson, int $courseId): string
 {
-    $url = trim($lesson['content_url'] ?? '');
-    if ($url === '') {
-        return '';
-    }
-    return media_url($url);
+    return lesson_playback_url($courseId, $lesson);
 }
 ?>
 <div class="dashboard-layout">
@@ -79,7 +75,7 @@ function lesson_video_url(array $lesson): string
     <div class="row g-4">
       <div class="col-lg-8">
         <div id="lessonVideoWrap">
-          <?= lesson_video_embed($activeLesson) ?>
+          <?= lesson_video_embed($activeLesson, $courseId) ?>
         </div>
         <h2 class="h5 fw-bold" id="currentLessonTitle"><?= htmlspecialchars($activeLesson['title']) ?></h2>
         <p class="text-muted">Duration: <span id="currentLessonDuration"><?= htmlspecialchars($activeLesson['duration']) ?></span> · <?= htmlspecialchars($course['category']) ?></p>
@@ -104,7 +100,7 @@ function lesson_video_url(array $lesson): string
                data-lesson="<?= (int) $lesson['id'] ?>"
                data-lesson-title="<?= htmlspecialchars($lesson['title']) ?>"
                data-lesson-duration="<?= htmlspecialchars($lesson['duration']) ?>"
-               data-lesson-url="<?= htmlspecialchars(lesson_video_url($lesson)) ?>">
+               data-lesson-url="<?= htmlspecialchars(lesson_video_url($lesson, $courseId)) ?>">
               <span class="small">
                 <i class="bi <?= $lesson['completed'] ? 'bi-check-circle-fill text-success' : 'bi-play-circle' ?> me-2 lesson-status"></i>
                 <?= ($i + 1) ?>. <?= htmlspecialchars($lesson['title']) ?>

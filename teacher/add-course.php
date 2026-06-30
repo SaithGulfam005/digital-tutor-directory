@@ -62,7 +62,7 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept=".mp4,.mov,.avi,.webm,video/*">
+                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
                   </div>
                   <div class="col-md-6">
                     <div class="input-group">
@@ -89,7 +89,7 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept=".mp4,.mov,.avi,.webm,video/*">
+                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
                   </div>
                   <div class="col-md-6">
                     <div class="input-group">
@@ -146,7 +146,7 @@ require __DIR__ . '/../components/page-hero.php';
         '<div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn" title="Remove lesson"><i class="bi bi-trash"></i></button></div>' +
       '</div>' +
       '<div class="row g-2">' +
-        '<div class="col-md-6"><input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept=".mp4,.mov,.avi,.webm,video/*"></div>' +
+        '<div class="col-md-6"><input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*"></div>' +
         '<div class="col-md-6">' +
           '<div class="input-group">' +
             '<span class="input-group-text"><i class="bi bi-link-45deg"></i></span>' +
@@ -186,16 +186,19 @@ require __DIR__ . '/../components/page-hero.php';
   function validateLessonVideos() {
     let valid = true;
     lessonFields.querySelectorAll('.lesson-row').forEach((row) => {
-      const fileInput = row.querySelector('.lesson-video-file');
       const urlInput = row.querySelector('.lesson-video-url');
       const feedback = row.querySelector('.lesson-video-feedback');
-      const hasFile = fileInput?.files?.length > 0;
+      const uploading = row.dataset.uploading === '1';
       const hasUrl = Boolean(urlInput?.value?.trim());
-      const rowValid = hasFile || hasUrl;
+      const rowValid = hasUrl && !uploading;
 
-      fileInput?.classList.toggle('is-invalid', !rowValid);
       urlInput?.classList.toggle('is-invalid', !rowValid);
-      if (feedback) feedback.classList.toggle('d-block', !rowValid);
+      if (feedback) {
+        feedback.textContent = uploading
+          ? 'Please wait for the video upload to finish.'
+          : 'Please upload a video file or provide an external URL.';
+        feedback.classList.toggle('d-block', !rowValid);
+      }
       if (!rowValid) valid = false;
     });
     return valid;
@@ -205,31 +208,20 @@ require __DIR__ . '/../components/page-hero.php';
     if (!e.target.matches('.lesson-video-url')) return;
     const row = e.target.closest('.lesson-row');
     if (!row) return;
-    const fileInput = row.querySelector('.lesson-video-file');
-    const hasFile = fileInput?.files?.length > 0;
     const hasUrl = Boolean(e.target.value?.trim());
-    if (hasFile || hasUrl) {
-      fileInput?.classList.remove('is-invalid');
+    if (hasUrl) {
       e.target.classList.remove('is-invalid');
-      row.querySelector('.lesson-video-feedback')?.classList.remove('d-block');
-    }
-  });
-
-  lessonFields.addEventListener('change', (e) => {
-    if (!e.target.matches('.lesson-video-file')) return;
-    const row = e.target.closest('.lesson-row');
-    if (!row) return;
-    const urlInput = row.querySelector('.lesson-video-url');
-    const hasFile = e.target.files?.length > 0;
-    const hasUrl = Boolean(urlInput?.value?.trim());
-    if (hasFile || hasUrl) {
-      e.target.classList.remove('is-invalid');
-      urlInput?.classList.remove('is-invalid');
       row.querySelector('.lesson-video-feedback')?.classList.remove('d-block');
     }
   });
 
   addCourseForm.addEventListener('submit', (e) => {
+    if (window.isLessonVideoUploading?.(lessonFields)) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.showToast?.('Please wait for all video uploads to finish.', 'warning');
+      return;
+    }
     const videosValid = validateLessonVideos();
     const formValid = addCourseForm.checkValidity();
     if (!videosValid || !formValid) {
@@ -240,6 +232,7 @@ require __DIR__ . '/../components/page-hero.php';
   });
 })();
 </script>
+<script src="<?= asset('js/video-upload.js') ?>"></script>
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';

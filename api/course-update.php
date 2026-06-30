@@ -7,6 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_with(url('teacher/courses.php'), 'Invalid request method.', 'warning');
 }
 
+if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    redirect_with(url('teacher/courses.php'), 'Upload too large. Maximum size is 40 MB per video. Upload each video separately using the file picker.', 'danger');
+}
+
 $courseId = (int) ($_POST['id'] ?? 0);
 $course = getCourseById($courseId);
 if (!$course || (int) $course['teacher_id'] !== (int) $user['id']) {

@@ -77,7 +77,7 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-5">
                     <label class="form-label">Video URL</label>
-                    <input type="text" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4 or uploads/videos/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4 or uploads/videos/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
                     <?php if (!empty($lesson['content_url']) && !preg_match('#^https?://#i', $lesson['content_url'])): ?>
                     <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded video on file</small>
                     <?php endif; ?>
@@ -86,7 +86,7 @@ $lessons = getCourseLessons($courseId);
                 <div class="row g-3 mt-3">
                   <div class="col-12">
                     <label class="form-label">Upload new video (optional)</label>
-                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
                   </div>
                 </div>
               </div>
@@ -104,13 +104,13 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-5">
                     <label class="form-label">Video URL</label>
-                    <input type="text" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
                   <div class="col-12">
                     <label class="form-label">Upload video (optional)</label>
-                    <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
                   </div>
                 </div>
               </div>
@@ -138,6 +138,39 @@ $lessons = getCourseLessons($courseId);
   </main>
 </div>
 </div>
+<script src="<?= asset('js/video-upload.js') ?>"></script>
+<script>
+(function () {
+  'use strict';
+  const editCourseForm = document.getElementById('editCourseForm');
+  const lessonFields = document.getElementById('lessonFields');
+  if (!editCourseForm || !lessonFields) return;
+
+  editCourseForm.addEventListener('submit', (e) => {
+    if (window.isLessonVideoUploading?.(lessonFields)) {
+      e.preventDefault();
+      window.showToast?.('Please wait for all video uploads to finish.', 'warning');
+      return;
+    }
+
+    let valid = true;
+    lessonFields.querySelectorAll('.lesson-row').forEach((row) => {
+      const urlInput = row.querySelector('.lesson-video-url');
+      const hasUrl = Boolean(urlInput?.value?.trim());
+      urlInput?.classList.toggle('is-invalid', !hasUrl);
+      if (!hasUrl) valid = false;
+    });
+
+    if (!valid || !editCourseForm.checkValidity()) {
+      e.preventDefault();
+      editCourseForm.classList.add('was-validated');
+      if (!valid) {
+        window.showToast?.('Each lesson needs an uploaded video or external URL.', 'danger');
+      }
+    }
+  });
+})();
+</script>
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';
