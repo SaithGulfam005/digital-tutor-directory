@@ -747,14 +747,14 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
         throw new RuntimeException('A payment for this course is already pending admin approval.');
     }
 
-    $methodKey = strtolower($method);
+    $methodKey = strtolower(trim($method));
     if (!array_key_exists($methodKey, PAYMENT_METHODS)) {
         throw new RuntimeException('Invalid payment method.');
     }
 
     $amount = (float) $course['price'];
     $teacherShare = round($amount * 0.7, 2);
-    $paymentRef = next_payment_reference();
+    $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
     $status = 'pending';
     $methodLabel = payment_method_label($methodKey);
 
@@ -844,10 +844,7 @@ function admin_update_payment_status(int $paymentId, string $status): void
     db()->prepare('UPDATE payments SET status=? WHERE id=?')->execute([$status, $paymentId]);
 }
 
-function next_payment_reference(): string
-{
-    return 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
-}
+
 
 // --- Static fallbacks (when DB not installed) ---
 

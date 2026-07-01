@@ -387,6 +387,7 @@ function mockAdminStats(): array { return getAdminStats(); }
 function mockCurrentStudent(): array { return getCurrentStudent(); }
 function mockStudentEnrollments(): array { return getStudentEnrollments(); }
 function mockStudentPurchases(): array { return getStudentPurchases(); }
+function mockStudentBookings(): array { return getStudentBookings(); }
 function mockCourseLessons(int $courseId): array { return getCourseLessons($courseId, auth_id()); }
 function mockCurrentTeacher(): array { return getCurrentTeacher(); }
 function mockTeacherCourses(): array { return getTeacherCourses(); }

@@ -28,7 +28,7 @@ require __DIR__ . '/../components/page-hero.php';
           <p class="small mb-1"><strong><?= htmlspecialchars($teacher['experience']) ?></strong> experience</p>
           <p class="small mb-1"><strong><?= number_format($teacher['students']) ?></strong> students</p>
           <p class="text-muted small"><?= htmlspecialchars($teacher['qualification']) ?></p>
-          <a href="<?= url('pages/teachers.php') ?>" class="btn btn-outline-primary w-100">Back to Teachers</a>
+          <a href="<?= url('pages/teachers.php') ?>" class="btn btn-primary w-100 mb-2">Back to Teachers</a>
         </div>
       </div>
       <div class="col-lg-8">

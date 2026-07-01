@@ -12,10 +12,16 @@ const PAYMENT_METHODS = [
 ];
 
 const INSTANT_PAYMENT_METHODS = ['card', 'jazzcash', 'easypaisa'];
+const PAYMENT_CALLBACK_SECRET = 'replace-with-your-jazzcash-secret';
 
 function payment_method_label(string $method): string
 {
     return PAYMENT_METHODS[strtolower($method)] ?? ucfirst($method);
+}
+
+function is_callback_secret_valid(string $token): bool
+{
+    return hash_equals(PAYMENT_CALLBACK_SECRET, $token);
 }
 
 function is_instant_payment_method(string $method): bool

@@ -233,3 +233,82 @@ main { flex: 1; }
   .hero { padding: 3rem 0; text-align: center; }
   .hero .btn-group { justify-content: center; }
 }
+/* 3D visual surface */
+body {
+  background: radial-gradient(circle at top left, rgba(59,130,246,.14), transparent 20%),
+              radial-gradient(circle at bottom right, rgba(14,165,233,.08), transparent 18%),
+              #f4f9ff;
+}
+.hero,
+.page-hero {
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+.course-card,
+.teacher-card,
+.kpi-card,
+.progress-card,
+.table-card,
+.stat-card,
+.step-card,
+.category-pill,
+.testimonial-card,
+.cta-band {
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 32px 88px rgba(15,23,42,.12), 0 10px 36px rgba(15,23,42,.08);
+  border: 1px solid rgba(255,255,255,.85);
+  transition: transform .35s ease, box-shadow .35s ease, background .35s ease;
+}
+.course-card,
+.teacher-card,
+.kpi-card,
+.progress-card,
+.table-card,
+.stat-card,
+.step-card,
+.category-pill,
+.testimonial-card,
+.cta-band:hover {
+  transform: translateY(-2px);
+}
+.hero .hero-img-wrap,
+.course-card:hover,
+.teacher-card:hover,
+.kpi-card:hover,
+.progress-card:hover,
+.table-card:hover,
+.stat-card:hover,
+.step-card:hover,
+.category-pill:hover,
+.testimonial-card:hover,
+.cta-band:hover,
+.page-hero:hover {
+  transform: translateY(-8px) translateZ(12px);
+  box-shadow: 0 44px 108px rgba(15,23,42,.16), 0 22px 48px rgba(15,23,42,.12);
+}
+.hero .hero-img-wrap {
+  transform: rotateY(-14deg) translateZ(18px);
+  transition: transform 0.8s ease, box-shadow 0.8s ease;
+}
+.hero .hero-img-wrap:hover {
+  transform: rotateY(-12deg) translateZ(24px);
+}
+.step-card,
+.category-pill,
+.testimonial-card {
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.course-card__thumb,
+.teacher-card__avatar,
+.hero-badge,
+.step-card__icon,
+.cta-band {
+  transform: translateZ(18px);
+}
+
