@@ -36,7 +36,7 @@ require_once __DIR__ . '/../components/head.php';
             <hr>
             <div class="d-flex justify-content-between mb-2"><span>Course Price</span><strong>$<?= number_format($course['price'], 2) ?></strong></div>
             <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><strong class="fs-5 text-primary">$<?= number_format($course['price'], 2) ?></strong></div>
-            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Secure checkout. Card, JazzCash, and EasyPaisa enroll instantly. Bank transfer requires admin approval.</div>
+            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>All payments require admin approval. Enrollment is activated after the administrator confirms your transaction.</div>
           </div>
         </div>
       </div>

@@ -75,7 +75,7 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="fw-medium">$<?= number_format($p['amount'], 2) ?></td>
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
-              <td><span class="badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
+              <td><span class="badge status-badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
               <td class="text-end text-nowrap">
                 <?php if ($p['status'] === 'completed'): ?>
                 <button type="button" class="btn btn-sm btn-outline-warning" data-admin-action="refund" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Refund</button>

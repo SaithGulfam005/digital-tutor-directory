@@ -52,8 +52,13 @@
               if (uiAction === 'approve' || uiAction === 'activate') {
                 const badge = row.querySelector('.status-badge');
                 if (badge) {
-                  badge.className = 'badge status-badge badge-approved';
-                  badge.textContent = uiAction === 'approve' ? 'Approved' : 'Active';
+                  if (table?.id === 'paymentsTable' && uiAction === 'approve') {
+                    badge.className = 'badge status-badge badge-completed';
+                    badge.textContent = 'Completed';
+                  } else {
+                    badge.className = 'badge status-badge badge-approved';
+                    badge.textContent = uiAction === 'approve' ? 'Approved' : 'Active';
+                  }
                 }
               } else if (uiAction === 'reject' || uiAction === 'deactivate') {
                 row.classList.add('opacity-50');
