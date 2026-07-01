@@ -39,7 +39,7 @@ if ($error) {
 }
 
 try {
-    $result = processCoursePayment((int) $user['id'], $courseId, payment_method_label($method));
+    $result = processCoursePayment((int) $user['id'], $courseId, $method);
 
     if ($result['status'] === 'pending') {
         json_response([

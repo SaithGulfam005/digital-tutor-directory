@@ -731,17 +731,21 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
         throw new RuntimeException('A payment for this course is already pending admin approval.');
     }
 
+    $methodKey = strtolower($method);
+    if (!array_key_exists($methodKey, PAYMENT_METHODS)) {
+        throw new RuntimeException('Invalid payment method.');
+    }
+
     $amount = (float) $course['price'];
     $teacherShare = round($amount * 0.7, 2);
     $paymentRef = next_payment_reference();
-    $instantMethods = ['card', 'jazzcash', 'easypaisa'];
-    $methodKey = strtolower($method);
-    $status = in_array($methodKey, $instantMethods, true) ? 'completed' : 'pending';
+    $status = 'pending';
+    $methodLabel = payment_method_label($methodKey);
 
     $pdo->beginTransaction();
     try {
         $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, status, teacher_share, created_at) VALUES (?,?,?,?,?,?,?,NOW())');
-        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $method, $status, $teacherShare]);
+        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $methodLabel, $status, $teacherShare]);
 
         if ($status === 'completed') {
             $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
@@ -754,7 +758,7 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
             'reference' => $paymentRef,
             'status' => $status,
             'amount' => $amount,
-            'method' => $method,
+            'method' => $methodLabel,
         ];
     } catch (Throwable $e) {
         $pdo->rollBack();
