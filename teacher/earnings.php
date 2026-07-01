@@ -1,6 +1,15 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
 $earnings = mockTeacherEarnings();
+$teacherCourses = mockTeacherCourses();
+$sampleCoursePrice = 0.0;
+foreach ($teacherCourses as $course) {
+  $coursePrice = (float) ($course['price'] ?? 0);
+  if ($coursePrice > $sampleCoursePrice) {
+    $sampleCoursePrice = $coursePrice;
+  }
+}
+$sampleTeacherShare = calculate_teacher_share($sampleCoursePrice);
 $pageTitle = 'Earnings | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'earnings';
@@ -16,6 +25,13 @@ require __DIR__ . '/../components/page-hero.php';
 <div class="dashboard-wrapper d-flex">
   <?php require __DIR__ . '/../components/sidebar-teacher.php'; ?>
   <main class="dashboard-main flex-grow-1 p-4">
+
+    <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+      <i class="bi bi-info-circle-fill mt-1"></i>
+      <div>
+        <strong>Platform fee policy:</strong> The platform keeps 10% from your earnings while you receive <strong>$<?= number_format($sampleTeacherShare, 2) ?></strong> from a <strong>$<?= number_format($sampleCoursePrice, 2) ?></strong> course fee.
+      </div>
+    </div>
 
     <div class="row g-4 mb-4">
       <div class="col-sm-6 col-xl-3">

@@ -268,6 +268,21 @@ function parse_course_lessons(array $post, array $files): array
 
     return $lessons;
 }
+function platform_fee_percentage(): float
+{
+    return 0.10;
+}
+
+function calculate_platform_fee(float $amount): float
+{
+    return round($amount * platform_fee_percentage(), 2);
+}
+
+function calculate_teacher_share(float $amount): float
+{
+    return round($amount * (1 - platform_fee_percentage()), 2);
+}
+
 function renderStars(float $rating, int $max = 5): string
 {
     $html = '';

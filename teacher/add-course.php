@@ -38,6 +38,10 @@ require __DIR__ . '/../components/page-hero.php';
               <div class="col-md-6">
                 <label class="form-label" for="coursePrice">Price (USD)</label>
                 <input type="number" class="form-control" id="coursePrice" name="price" min="1" step="0.01" placeholder="49.99" required>
+                <div class="form-text mt-2" id="courseFeeNotice" role="status">
+                  <i class="bi bi-info-circle me-1"></i>
+                   The platform takes <strong data-platform-fee>$0.00</strong> (10%) and you receive <strong data-teacher-share>$0.00</strong>.
+                </div>
               </div>
             </div>
             <div class="mb-3">
@@ -131,7 +135,25 @@ require __DIR__ . '/../components/page-hero.php';
   const lessonFields = document.getElementById('lessonFields');
   const addLessonBtn = document.getElementById('addLessonBtn');
   const addCourseForm = document.getElementById('addCourseForm');
+  const priceInput = document.getElementById('coursePrice');
+  const feeNotice = document.getElementById('courseFeeNotice');
   if (!lessonFields || !addCourseForm) return;
+
+  if (priceInput && feeNotice) {
+    const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');
+    const teacherShareEl = feeNotice.querySelector('[data-teacher-share]');
+    const syncFeeNotice = () => {
+      const rawValue = parseFloat(priceInput.value);
+      const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
+      const platformFee = price * 0.10;
+      const teacherShare = price - platformFee;
+      if (platformFeeEl) platformFeeEl.textContent = '$' + platformFee.toFixed(2);
+      if (teacherShareEl) teacherShareEl.textContent = '$' + teacherShare.toFixed(2);
+    };
+    priceInput.addEventListener('input', syncFeeNotice);
+    priceInput.addEventListener('change', syncFeeNotice);
+    syncFeeNotice();
+  }
 
   function buildLessonRow(number) {
     const row = document.createElement('div');

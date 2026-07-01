@@ -4,6 +4,14 @@ $teacher = mockCurrentTeacher();
 $stats = mockTeacherStats();
 $earnings = mockTeacherEarnings();
 $courses = array_filter(mockTeacherCourses(), fn($c) => ($c['status'] ?? '') === 'published');
+$sampleCoursePrice = 0.0;
+foreach ($courses as $course) {
+  $coursePrice = (float) ($course['price'] ?? 0);
+  if ($coursePrice > $sampleCoursePrice) {
+    $sampleCoursePrice = $coursePrice;
+  }
+}
+$sampleTeacherShare = calculate_teacher_share($sampleCoursePrice);
 $pageTitle = 'Teacher Dashboard | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'overview';
@@ -92,7 +100,11 @@ require __DIR__ . '/../components/page-hero.php';
           <h3 class="text-primary fw-bold mb-3">$<?= number_format($earnings['balance'], 2) ?></h3>
           <p class="small text-muted mb-1">Pending payout</p>
           <p class="fw-medium mb-3">$<?= number_format($earnings['pending_payout'], 2) ?></p>
-          <a href="<?= url('teacher/earnings.php') ?>" class="btn btn-primary btn-sm w-100">View Earnings</a>
+          <div class="alert alert-info py-2 px-3 small mb-3">
+            <i class="bi bi-wallet2 me-1"></i>
+            Students pay the full fee. The platform keeps 10%, and you receive <strong>$<?= number_format($sampleTeacherShare, 2) ?></strong> from a <strong>$<?= number_format($sampleCoursePrice, 2) ?></strong> course fee.
+          </div>
+          <a href="<?= url('teacher/earnings.php') ?>" class="btn btn-primary btn-sm w-100">Access Payments</a>
         </div>
         <div class="list-group">
           <a href="<?= url('teacher/add-course.php') ?>" class="list-group-item list-group-item-action">Add New Course</a>

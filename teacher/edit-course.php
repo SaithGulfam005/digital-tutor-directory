@@ -46,6 +46,10 @@ $lessons = getCourseLessons($courseId);
               <div class="col-md-6">
                 <label class="form-label" for="coursePrice">Price (USD)</label>
                 <input type="number" class="form-control" id="coursePrice" name="price" min="1" step="0.01" value="<?= htmlspecialchars((string) $course['price']) ?>" required>
+                <div class="form-text mt-2" id="courseFeeNotice" role="status">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Students pay the full course fee. The platform takes <strong data-platform-fee>$0.00</strong> (10%) and you receive <strong data-teacher-share>$0.00</strong>.
+                </div>
               </div>
             </div>
             <div class="mb-3">
@@ -144,7 +148,25 @@ $lessons = getCourseLessons($courseId);
   'use strict';
   const editCourseForm = document.getElementById('editCourseForm');
   const lessonFields = document.getElementById('lessonFields');
+  const priceInput = document.getElementById('coursePrice');
+  const feeNotice = document.getElementById('courseFeeNotice');
   if (!editCourseForm || !lessonFields) return;
+
+  if (priceInput && feeNotice) {
+    const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');
+    const teacherShareEl = feeNotice.querySelector('[data-teacher-share]');
+    const syncFeeNotice = () => {
+      const rawValue = parseFloat(priceInput.value);
+      const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
+      const platformFee = price * 0.10;
+      const teacherShare = price - platformFee;
+      if (platformFeeEl) platformFeeEl.textContent = '$' + platformFee.toFixed(2);
+      if (teacherShareEl) teacherShareEl.textContent = '$' + teacherShare.toFixed(2);
+    };
+    priceInput.addEventListener('input', syncFeeNotice);
+    priceInput.addEventListener('change', syncFeeNotice);
+    syncFeeNotice();
+  }
 
   editCourseForm.addEventListener('submit', (e) => {
     if (window.isLessonVideoUploading?.(lessonFields)) {
