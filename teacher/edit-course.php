@@ -58,6 +58,16 @@ $lessons = getCourseLessons($courseId);
               <label class="form-label" for="courseDesc">Description</label>
               <textarea class="form-control" id="courseDesc" name="description" rows="4" required><?= htmlspecialchars($course['desc']) ?></textarea>
             </div>
+            <div class="mb-3">
+              <label class="form-label" for="courseThumb">Course Thumbnail</label>
+              <input type="file" class="form-control" id="courseThumb" name="thumb" accept="image/*">
+              <small class="form-text text-muted">Upload a new image to replace the current course thumbnail.</small>
+              <?php if (!empty($course['thumb'])): ?>
+              <div class="mt-2">
+                <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" alt="Current course thumbnail" class="img-fluid rounded" style="max-height:120px;object-fit:cover">
+              </div>
+              <?php endif; ?>
+            </div>
             <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label class="form-label" for="courseStatus">Status</label>

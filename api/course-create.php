@@ -31,6 +31,11 @@ foreach ($lessons as $lesson) {
     }
 }
 
+$thumbPath = null;
+if (!empty($_FILES['thumb']['name'])) {
+    $thumbPath = save_uploaded_course_thumbnail($_FILES['thumb']);
+}
+
 try {
     createCourse((int) $user['id'], [
         'title' => $title,
@@ -38,6 +43,7 @@ try {
         'price' => $price,
         'description' => $description,
         'lessons' => $lessons,
+        'thumb' => $thumbPath,
         'status' => 'pending',
     ]);
     redirect_with(url('teacher/courses.php'), 'Course submitted for admin approval!');

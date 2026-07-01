@@ -69,7 +69,7 @@ require __DIR__ . '/../components/page-hero.php';
         <h2 class="h6 fw-bold mb-3">Continue Learning</h2>
         <?php foreach (array_slice($activeCourses, 0, 3) as $course): ?>
         <div class="progress-card mb-3 d-flex flex-column flex-md-row gap-3 align-items-md-center">
-          <img src="<?= url($course['thumb']) ?>" width="120" height="68" class="rounded object-fit-cover" alt="" onerror="this.style.background='#E2E8F0'">
+          <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" width="120" height="68" class="rounded object-fit-cover" alt="" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
           <div class="flex-grow-1">
             <h3 class="h6 mb-1"><?= htmlspecialchars($course['title']) ?></h3>
             <div class="progress mb-1" style="height:6px">

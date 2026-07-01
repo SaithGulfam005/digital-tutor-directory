@@ -6,7 +6,7 @@
   data-teacher="<?= htmlspecialchars($course['teacher']) ?>"
   data-search="<?= htmlspecialchars(strtolower($course['title'] . ' ' . $course['teacher'] . ' ' . $course['category'] . ' ' . ($course['desc'] ?? ''))) ?>">
   <div class="course-card__thumb position-relative overflow-hidden">
-    <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
+    <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
     <span class="badge bg-primary position-absolute top-0 end-0 m-2"><?= htmlspecialchars($course['category']) ?></span>
   </div>
   <div class="card-body d-flex flex-column">

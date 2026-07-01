@@ -19,19 +19,51 @@ function asset(string $path): string
 function media_url(?string $path, string $fallback = 'assets/images/avatars/placeholder.svg'): string
 {
     $path = trim((string) $path);
-    if ($path === '') {
-        return url($fallback);
+    $fallback = trim($fallback);
+    $projectRoot = dirname(__DIR__) . DIRECTORY_SEPARATOR;
+
+    $resolveExistingPath = function (string $candidate) use ($projectRoot): ?string {
+        if ($candidate === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $candidate)) {
+            return $candidate;
+        }
+
+        if (str_starts_with($candidate, BASE_URL . '/')) {
+            return $candidate;
+        }
+
+        if (str_starts_with($candidate, '/')) {
+            $candidate = ltrim($candidate, '/');
+        }
+
+        $relativePath = ltrim($candidate, '/');
+        $fullPath = $projectRoot . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+        if ($relativePath !== '' && file_exists($fullPath)) {
+            return url($relativePath);
+        }
+
+        return null;
+    };
+
+    if ($path !== '') {
+        $resolvedPath = $resolveExistingPath($path);
+        if ($resolvedPath !== null) {
+            return $resolvedPath;
+        }
     }
-    if (preg_match('#^https?://#i', $path)) {
-        return $path;
+
+    if ($fallback !== '') {
+        $resolvedFallback = $resolveExistingPath($fallback);
+        if ($resolvedFallback !== null) {
+            return $resolvedFallback;
+        }
     }
-    if (str_starts_with($path, BASE_URL)) {
-        return $path;
-    }
-    if (str_starts_with($path, '/')) {
-        return $path;
-    }
-    return url(ltrim($path, '/'));
+
+    return url($fallback !== '' ? $fallback : 'assets/images/avatars/placeholder.svg');
 }
 function upload_error_message(int $code): string
 {
@@ -54,6 +86,54 @@ function video_mime_type(string $path): string
         'm4v' => 'video/mp4',
         default => 'video/mp4',
     };
+}
+
+function save_uploaded_course_thumbnail(array $file): string
+{
+    $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($error !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Please choose a valid thumbnail image.');
+    }
+
+    $tmpName = $file['tmp_name'] ?? '';
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Invalid thumbnail upload. Please try again.');
+    }
+
+    $size = (int) ($file['size'] ?? 0);
+    if ($size <= 0 || $size > 2 * 1024 * 1024) {
+        throw new RuntimeException('Thumbnail image must be smaller than 2 MB.');
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $tmpName);
+    finfo_close($finfo);
+
+    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!in_array($mime, $allowed, true)) {
+        throw new RuntimeException('Only JPG, PNG, WEBP, or GIF thumbnails are allowed.');
+    }
+
+    $ext = match ($mime) {
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        default => 'jpg',
+    };
+
+    $uploadDir = __DIR__ . '/../uploads/courses';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    $filename = 'course-thumb_' . uniqid('', true) . '.' . $ext;
+    $dest = $uploadDir . '/' . $filename;
+    if (!move_uploaded_file($tmpName, $dest)) {
+        throw new RuntimeException('Failed to upload thumbnail image.');
+    }
+
+    return 'uploads/courses/' . $filename;
 }
 
 function save_uploaded_lesson_video(array $file): ?string

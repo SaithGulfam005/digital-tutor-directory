@@ -593,7 +593,7 @@ function createCourse(int $teacherId, array $data): int
     $categoryId = resolveCategoryId((string) ($data['category'] ?? ''));
 
     $slug = slugify($data['title']);
-    $stmt = db()->prepare('INSERT INTO courses (teacher_id, category_id, title, slug, description, price, status) VALUES (?,?,?,?,?,?,?)');
+    $stmt = db()->prepare('INSERT INTO courses (teacher_id, category_id, title, slug, description, price, thumb, status) VALUES (?,?,?,?,?,?,?,?)');
     $stmt->execute([
         $teacherId,
         $categoryId,
@@ -601,6 +601,7 @@ function createCourse(int $teacherId, array $data): int
         $slug,
         $data['description'],
         (float) $data['price'],
+        $data['thumb'] ?? 'assets/images/avatars/placeholder.svg',
         $data['status'] ?? 'pending',
     ]);
     $courseId = (int) db()->lastInsertId();
@@ -644,6 +645,11 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
 
     db()->prepare('UPDATE courses SET category_id = ?, title = ?, slug = ?, description = ?, price = ?, status = ? WHERE id = ? AND teacher_id = ?')
         ->execute([$categoryId, $title, $slug, $description, $price, $status, $courseId, $teacherId]);
+
+    if (array_key_exists('thumb', $data)) {
+        db()->prepare('UPDATE courses SET thumb = ? WHERE id = ? AND teacher_id = ?')
+            ->execute([$data['thumb'] ?? 'assets/images/avatars/placeholder.svg', $courseId, $teacherId]);
+    }
 
     if (array_key_exists('lessons', $data)) {
         db()->prepare('DELETE FROM lessons WHERE course_id = ?')->execute([$courseId]);
