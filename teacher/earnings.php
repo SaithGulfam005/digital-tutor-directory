@@ -29,7 +29,7 @@ require __DIR__ . '/../components/page-hero.php';
     <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
       <i class="bi bi-info-circle-fill mt-1"></i>
       <div>
-        <strong>Platform fee policy:</strong> The platform keeps 10% from your earnings while you receive <strong>$<?= number_format($sampleTeacherShare, 2) ?></strong> from a <strong>$<?= number_format($sampleCoursePrice, 2) ?></strong> course fee.
+        <strong>Platform fee policy:</strong> The platform keeps 10% from your earnings.
       </div>
     </div>
 
