@@ -568,11 +568,29 @@ function enrollStudent(int $studentId, int $courseId, string $method = 'Card'): 
     }
 }
 
+function resolveCategoryId(string $category): int
+{
+    $name = trim($category);
+    if ($name === '') {
+        return 1;
+    }
+
+    $slug = slugify($name);
+    $catStmt = db()->prepare('SELECT id FROM categories WHERE name = ? OR slug = ? LIMIT 1');
+    $catStmt->execute([$name, $slug]);
+    $categoryId = (int) $catStmt->fetchColumn();
+    if ($categoryId > 0) {
+        return $categoryId;
+    }
+
+    $insertStmt = db()->prepare('INSERT INTO categories (name, slug) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)');
+    $insertStmt->execute([$name, $slug]);
+    return (int) db()->lastInsertId();
+}
+
 function createCourse(int $teacherId, array $data): int
 {
-    $catStmt = db()->prepare('SELECT id FROM categories WHERE name = ? OR slug = ? LIMIT 1');
-    $catStmt->execute([$data['category'], slugify($data['category'])]);
-    $categoryId = (int) ($catStmt->fetchColumn() ?: 1);
+    $categoryId = resolveCategoryId((string) ($data['category'] ?? ''));
 
     $slug = slugify($data['title']);
     $stmt = db()->prepare('INSERT INTO courses (teacher_id, category_id, title, slug, description, price, status) VALUES (?,?,?,?,?,?,?)');
@@ -616,9 +634,7 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
     }
 
     $category = $data['category'] ?? $course['category'];
-    $catStmt = db()->prepare('SELECT id FROM categories WHERE name = ? OR slug = ? LIMIT 1');
-    $catStmt->execute([$category, slugify($category)]);
-    $categoryId = (int) ($catStmt->fetchColumn() ?: 1);
+    $categoryId = resolveCategoryId((string) $category);
 
     $title = $data['title'] ?? $course['title'];
     $slug = slugify($title);

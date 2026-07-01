@@ -46,6 +46,12 @@ try {
         case 'refund_payment':
             admin_update_payment_status($id, 'refunded');
             json_response(['ok' => true, 'message' => 'Payment refunded.']);
+        case 'approve_payout_request':
+            update_payout_request($id, ['status' => 'approved', 'processed_at' => date('Y-m-d H:i:s')]);
+            json_response(['ok' => true, 'message' => 'Payout request approved. Admin will process it within 24 hours.']);
+        case 'reject_payout_request':
+            update_payout_request($id, ['status' => 'rejected']);
+            json_response(['ok' => true, 'message' => 'Payout request rejected.']);
         default:
             json_response(['ok' => false, 'message' => 'Unknown action'], 400);
     }

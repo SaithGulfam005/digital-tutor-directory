@@ -102,7 +102,7 @@ require __DIR__ . '/../components/page-hero.php';
           <p class="fw-medium mb-3">$<?= number_format($earnings['pending_payout'], 2) ?></p>
           <div class="alert alert-info py-2 px-3 small mb-3">
             <i class="bi bi-wallet2 me-1"></i>
-            Students pay the full fee. The platform keeps 10%, and you receive <strong>$<?= number_format($sampleTeacherShare, 2) ?></strong> from a <strong>$<?= number_format($sampleCoursePrice, 2) ?></strong> course fee.
+            The platform keeps 10%, and you receive <strong>$<?= number_format($sampleTeacherShare, 2) ?></strong> from a <strong>$<?= number_format($sampleCoursePrice, 2) ?></strong> course fee.
           </div>
           <a href="<?= url('teacher/earnings.php') ?>" class="btn btn-primary btn-sm w-100">Access Payments</a>
         </div>

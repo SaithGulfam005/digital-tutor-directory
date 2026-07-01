@@ -34,14 +34,16 @@ $lessons = getCourseLessons($courseId);
             </div>
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label class="form-label" for="courseCategory">Category</label>
-                <select class="form-select" id="courseCategory" name="category" required>
+                <label class="form-label" for="courseCategorySelect">Category</label>
+                <select class="form-select" id="courseCategorySelect" required>
                   <option value="">Select category</option>
                   <?php foreach ($categories as $cat): ?>
                     <?php $catName = is_array($cat) ? $cat['name'] : $cat; ?>
                     <option value="<?= htmlspecialchars($catName) ?>" <?= $course['category'] === $catName ? 'selected' : '' ?>><?= htmlspecialchars($catName) ?></option>
                   <?php endforeach; ?>
+                  <option value="__custom__" <?= !in_array($course['category'], array_map(static function ($cat) { return is_array($cat) ? $cat['name'] : $cat; }, $categories), true) ? 'selected' : '' ?>>Custom category...</option>
                 </select>
+                <input type="hidden" class="form-control mt-2 d-none" id="courseCategory" name="category" value="<?= htmlspecialchars((string) $course['category']) ?>" placeholder="Enter a custom category">
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="coursePrice">Price (USD)</label>
@@ -150,7 +152,27 @@ $lessons = getCourseLessons($courseId);
   const lessonFields = document.getElementById('lessonFields');
   const priceInput = document.getElementById('coursePrice');
   const feeNotice = document.getElementById('courseFeeNotice');
+  const categorySelect = document.getElementById('courseCategorySelect');
+  const categoryInput = document.getElementById('courseCategory');
   if (!editCourseForm || !lessonFields) return;
+
+  if (categorySelect && categoryInput) {
+    const syncCategoryField = () => {
+      if (categorySelect.value === '__custom__') {
+        categoryInput.type = 'text';
+        categoryInput.value = categoryInput.value || '';
+        categoryInput.classList.remove('d-none');
+        categoryInput.required = true;
+      } else {
+        categoryInput.type = 'hidden';
+        categoryInput.value = categorySelect.value || '';
+        categoryInput.classList.add('d-none');
+        categoryInput.required = false;
+      }
+    };
+    categorySelect.addEventListener('change', syncCategoryField);
+    syncCategoryField();
+  }
 
   if (priceInput && feeNotice) {
     const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');

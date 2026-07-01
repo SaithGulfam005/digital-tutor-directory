@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "status": "pending",
+        "created_at": "2026-07-01 09:38:09",
+        "updated_at": "2026-07-01 09:38:09",
+        "teacher_id": 21,
+        "teacher_name": "teacher",
+        "bank_name": "jazzcash",
+        "account_name": "haseeb",
+        "account_number": "133476878",
+        "routing_number": "",
+        "amount": 127.93,
+        "notes": ""
+    }
+]

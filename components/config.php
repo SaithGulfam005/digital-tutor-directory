@@ -283,6 +283,80 @@ function calculate_teacher_share(float $amount): float
     return round($amount * (1 - platform_fee_percentage()), 2);
 }
 
+function payout_requests_storage_path(): string
+{
+    return __DIR__ . '/../uploads/payout-requests.json';
+}
+
+function load_payout_requests(): array
+{
+    $path = payout_requests_storage_path();
+    if (!is_file($path)) {
+        return [];
+    }
+
+    $data = json_decode((string) file_get_contents($path), true);
+    return is_array($data) ? $data : [];
+}
+
+function save_payout_requests(array $requests): void
+{
+    $path = payout_requests_storage_path();
+    $dir = dirname($path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    file_put_contents($path, json_encode($requests, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+}
+
+function create_payout_request(array $request): array
+{
+    $requests = load_payout_requests();
+    $requestId = count($requests) + 1;
+    $entry = [
+        'id' => $requestId,
+        'status' => 'pending',
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s'),
+    ];
+    $entry = array_merge($entry, $request);
+    $requests[] = $entry;
+    save_payout_requests($requests);
+    return $entry;
+}
+
+function get_teacher_payout_requests(?int $teacherId = null): array
+{
+    $requests = load_payout_requests();
+    if ($teacherId === null) {
+        return $requests;
+    }
+
+    $filtered = array_values(array_filter($requests, static fn($request) => (int) ($request['teacher_id'] ?? 0) === $teacherId));
+    usort($filtered, static fn($a, $b) => strtotime((string) ($b['created_at'] ?? '')) <=> strtotime((string) ($a['created_at'] ?? '')));
+    return $filtered;
+}
+
+function get_all_payout_requests(): array
+{
+    $requests = load_payout_requests();
+    usort($requests, static fn($a, $b) => strtotime((string) ($b['created_at'] ?? '')) <=> strtotime((string) ($a['created_at'] ?? '')));
+    return $requests;
+}
+
+function update_payout_request(int $requestId, array $changes): bool
+{
+    $requests = load_payout_requests();
+    foreach ($requests as &$request) {
+        if ((int) ($request['id'] ?? 0) === $requestId) {
+            $request = array_merge($request, $changes, ['updated_at' => date('Y-m-d H:i:s')]);
+            save_payout_requests($requests);
+            return true;
+        }
+    }
+    return false;
+}
+
 function renderStars(float $rating, int $max = 5): string
 {
     $html = '';

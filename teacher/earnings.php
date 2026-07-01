@@ -16,7 +16,7 @@ $dashSection = 'earnings';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Earnings';
 $pageSubheading = 'Track revenue, payouts, and transactions';
-$pageActions = '<button type="button" class="btn btn-primary btn-sm" data-demo><i class="bi bi-wallet2 me-1"></i>Request Payout</button>';
+$pageActions = '<a href="' . url('teacher/request-payout.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-wallet2 me-1"></i>Request Payout</a>';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
