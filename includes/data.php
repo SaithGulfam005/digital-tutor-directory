@@ -423,11 +423,11 @@ function getTeacherEarnings(?int $teacherId = null): array
     ], $stmt->fetchAll());
 
     return [
-        'balance' => round($total * 0.85, 2),
+        'balance' => round($total, 2),
         'this_month' => $thisMonth,
         'last_month' => $lastMonth,
         'total' => $total,
-        'pending_payout' => round($thisMonth * 0.4, 2),
+        'pending_payout' => round($thisMonth, 2),
         'history' => [],
         'transactions' => $transactions,
     ];

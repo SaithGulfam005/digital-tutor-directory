@@ -22,8 +22,9 @@ if ($bankName === '' || $accountName === '' || $accountNumber === '' || $amount 
 }
 
 $earnings = mockTeacherEarnings();
-if ($amount > (float) ($earnings['balance'] ?? 0)) {
-    redirect_with(url('teacher/request-payout.php'), 'Requested amount cannot exceed your available balance.', 'danger');
+$maxPayoutAmount = max((float) ($earnings['balance'] ?? 0), 0);
+if ($amount > $maxPayoutAmount) {
+    redirect_with(url('teacher/request-payout.php'), 'Requested amount cannot exceed your available 90% fee share balance.', 'danger');
 }
 
 create_payout_request([
