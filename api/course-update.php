@@ -67,7 +67,7 @@ if (array_key_exists('lessons', $_POST)) {
     }
     foreach ($lessons as $lesson) {
         if (empty($lesson['content_url'])) {
-            redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Each lesson must have an uploaded video or a video URL.', 'danger');
+            redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Each lesson must have an uploaded lesson file or a URL.', 'danger');
         }
     }
     $update['lessons'] = $lessons;

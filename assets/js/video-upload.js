@@ -36,7 +36,7 @@
     const statusEl = getStatusEl(row);
     row.dataset.uploading = '1';
     statusEl.className = 'lesson-upload-status d-block mt-2 text-muted';
-    statusEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading video...';
+    statusEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading lesson file...';
 
     const formData = new FormData();
     formData.append('video', file);
@@ -60,12 +60,12 @@
       clearRowErrors(row);
       statusEl.className = 'lesson-upload-status d-block mt-2 text-success';
       statusEl.innerHTML = '<i class="bi bi-check-circle me-1"></i>Video uploaded successfully';
-      window.showToast?.('Video uploaded successfully.', 'success');
+      window.showToast?.('Lesson file uploaded successfully.', 'success');
     } catch (error) {
       fileInput.value = '';
       statusEl.className = 'lesson-upload-status d-block mt-2 text-danger';
-      statusEl.textContent = error.message || 'Video upload failed.';
-      window.showToast?.(error.message || 'Video upload failed.', 'danger');
+      statusEl.textContent = error.message || 'Lesson upload failed.';
+      window.showToast?.(error.message || 'Lesson upload failed.', 'danger');
     } finally {
       delete row.dataset.uploading;
     }
@@ -73,7 +73,7 @@
 
   function markExistingUploads(root) {
     (root || document).querySelectorAll('.lesson-video-url').forEach((input) => {
-      if (input.value.trim().startsWith('uploads/videos/')) {
+      if (input.value.trim().startsWith('uploads/')) {
         input.readOnly = true;
       }
     });

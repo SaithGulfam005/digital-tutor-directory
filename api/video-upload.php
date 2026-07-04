@@ -20,20 +20,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
     http_response_code(413);
-    echo json_encode(['ok' => false, 'error' => 'Video exceeds the maximum upload size (40 MB).']);
+    echo json_encode(['ok' => false, 'error' => 'Lesson file exceeds the maximum upload size (40 MB).']);
     exit;
 }
 
 if (empty($_FILES['video'])) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'No video file received.']);
+    echo json_encode(['ok' => false, 'error' => 'No lesson file received.']);
     exit;
 }
 
 try {
     $path = save_uploaded_lesson_video($_FILES['video']);
     if (!$path) {
-        throw new RuntimeException('No video file was uploaded.');
+        throw new RuntimeException('No lesson file was uploaded.');
     }
     echo json_encode(['ok' => true, 'path' => $path]);
 } catch (Throwable $e) {

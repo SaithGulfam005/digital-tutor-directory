@@ -42,7 +42,7 @@ function lesson_video_embed(array $lesson, int $courseId): string
 {
     $url = trim($lesson['content_url'] ?? '');
     if ($url === '') {
-        return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Video will be available soon.</p></div>';
+        return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Lesson content will be available soon.</p></div>';
     }
 
     if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([\w-]+)#i', $url, $m)) {
@@ -56,6 +56,16 @@ function lesson_video_embed(array $lesson, int $courseId): string
     }
 
     $src = lesson_playback_url($courseId, $lesson);
+    $extension = strtolower(pathinfo(parse_url($src, PHP_URL_PATH) ?: $src, PATHINFO_EXTENSION));
+    $downloadableExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    if (in_array($extension, $downloadableExtensions, true)) {
+        return '<div class="card border-0 bg-light p-3 mb-3">'
+            . '<div class="d-flex align-items-center justify-content-between gap-3">'
+            . '<div><h3 class="h6 mb-1">Lesson file</h3><p class="small text-muted mb-0">This lesson includes a downloadable file.</p></div>'
+            . '<a class="btn btn-primary btn-sm" href="' . htmlspecialchars($src) . '" target="_blank" rel="noopener">Open file</a>'
+            . '</div></div>';
+    }
+
     $mime = video_mime_type($url);
     return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata">'
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'

@@ -26,7 +26,7 @@
 
   function buildVideoHtml(title, url) {
     if (!url) {
-      return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Video will be available soon.</p></div>';
+      return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Lesson content will be available soon.</p></div>';
     }
 
     const safeTitle = escapeHtml(title);
@@ -42,6 +42,12 @@
     }
 
     const src = mediaUrl(url);
+    const ext = (src.split('?')[0].split('.').pop() || '').toLowerCase();
+    const downloadableExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    if (downloadableExtensions.includes(ext)) {
+      return `<div class="card border-0 bg-light p-3 mb-3"><div class="d-flex align-items-center justify-content-between gap-3"><div><h3 class="h6 mb-1">Lesson file</h3><p class="small text-muted mb-0">This lesson includes a downloadable file.</p></div><a class="btn btn-primary btn-sm" href="${escapeHtml(src)}" target="_blank" rel="noopener">Open file</a></div></div>`;
+    }
+
     const mime = videoMimeType(src);
     return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
   }

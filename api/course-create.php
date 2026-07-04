@@ -27,7 +27,7 @@ if (count($lessons) === 0) {
 }
 foreach ($lessons as $lesson) {
     if (empty($lesson['content_url'])) {
-        redirect_with(url('teacher/add-course.php'), 'Each lesson must have an uploaded video or a video URL.', 'danger');
+        redirect_with(url('teacher/add-course.php'), 'Each lesson must have an uploaded lesson file or a URL.', 'danger');
     }
 }
 

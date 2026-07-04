@@ -89,20 +89,20 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-2">
                     <label class="form-label">Duration</label>
-                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00" value="<?= htmlspecialchars($lesson['duration']) ?>">
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM" value="<?= htmlspecialchars($lesson['duration']) ?>">
                   </div>
                   <div class="col-md-5">
-                    <label class="form-label">Video URL</label>
-                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4 or uploads/videos/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <label class="form-label">Lesson URL or file path</label>
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf or uploads/lessons/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
                     <?php if (!empty($lesson['content_url']) && !preg_match('#^https?://#i', $lesson['content_url'])): ?>
-                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded video on file</small>
+                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded lesson file on server</small>
                     <?php endif; ?>
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
                   <div class="col-12">
-                    <label class="form-label">Upload new video (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
+                    <label class="form-label">Upload new lesson file (optional)</label>
+                    <input type="file" class="form-control lesson-video-file" accept="*/*">
                   </div>
                 </div>
               </div>
@@ -116,17 +116,17 @@ $lessons = getCourseLessons($courseId);
                   </div>
                   <div class="col-md-2">
                     <label class="form-label">Duration</label>
-                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM">
                   </div>
                   <div class="col-md-5">
-                    <label class="form-label">Video URL</label>
-                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+                    <label class="form-label">Lesson URL or file path</label>
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf">
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
                   <div class="col-12">
-                    <label class="form-label">Upload video (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" accept=".mp4,.mov,.avi,.webm,video/*">
+                    <label class="form-label">Upload lesson file (optional)</label>
+                    <input type="file" class="form-control lesson-video-file" accept="*/*">
                   </div>
                 </div>
               </div>
@@ -203,7 +203,7 @@ $lessons = getCourseLessons($courseId);
   editCourseForm.addEventListener('submit', (e) => {
     if (window.isLessonVideoUploading?.(lessonFields)) {
       e.preventDefault();
-      window.showToast?.('Please wait for all video uploads to finish.', 'warning');
+      window.showToast?.('Please wait for all lesson uploads to finish.', 'warning');
       return;
     }
 
@@ -219,7 +219,7 @@ $lessons = getCourseLessons($courseId);
       e.preventDefault();
       editCourseForm.classList.add('was-validated');
       if (!valid) {
-        window.showToast?.('Each lesson needs an uploaded video or external URL.', 'danger');
+        window.showToast?.('Each lesson needs an uploaded lesson file or external URL.', 'danger');
       }
     }
   });
