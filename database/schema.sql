@@ -137,6 +137,40 @@ CREATE TABLE payments (
   INDEX idx_payments_created (created_at)
 ) ENGINE=InnoDB;
 
+CREATE TABLE bookings (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  reference VARCHAR(20) NOT NULL UNIQUE,
+  student_id INT UNSIGNED NOT NULL,
+  teacher_id INT UNSIGNED NOT NULL,
+  session_date DATE DEFAULT NULL,
+  session_time VARCHAR(20) DEFAULT NULL,
+  session_duration VARCHAR(20) DEFAULT NULL,
+  subject VARCHAR(190) DEFAULT NULL,
+  notes TEXT DEFAULT NULL,
+  fee DECIMAL(10,2) NOT NULL DEFAULT 0,
+  status ENUM('pending_payment','paid','cancelled') NOT NULL DEFAULT 'pending_payment',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_bookings_status (status),
+  INDEX idx_bookings_teacher (teacher_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE booking_payments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  reference VARCHAR(20) NOT NULL UNIQUE,
+  booking_id INT UNSIGNED NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  method VARCHAR(40) NOT NULL DEFAULT 'JazzCash',
+  status ENUM('pending','completed','failed') NOT NULL DEFAULT 'pending',
+  gateway_reference VARCHAR(60) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+  INDEX idx_booking_payments_status (status),
+  INDEX idx_booking_payments_booking (booking_id)
+) ENGINE=InnoDB;
+
 CREATE TABLE contact_messages (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(120) NOT NULL,

@@ -52,6 +52,11 @@ require __DIR__ . '/../components/page-hero.php';
               <label class="form-label" for="courseDesc">Description</label>
               <textarea class="form-control" id="courseDesc" name="description" rows="4" placeholder="What will students learn?" required></textarea>
             </div>
+            <div class="mb-3">
+              <label class="form-label" for="courseThumb">Course Thumbnail</label>
+              <input type="file" class="form-control" id="courseThumb" name="thumb" accept="image/*">
+              <small class="form-text text-muted">Upload an image for the course cover. JPG, PNG, WEBP, or GIF up to 2 MB.</small>
+            </div>
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
             <h3 class="h6 fw-bold mb-3"><i class="bi bi-camera-video text-primary me-1"></i>Video Lectures</h3>
             <div id="lessonFields">

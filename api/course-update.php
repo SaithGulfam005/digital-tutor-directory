@@ -73,6 +73,14 @@ if (array_key_exists('lessons', $_POST)) {
     $update['lessons'] = $lessons;
 }
 
+$thumbPath = null;
+if (!empty($_FILES['thumb']['name'])) {
+    $thumbPath = save_uploaded_course_thumbnail($_FILES['thumb']);
+}
+if ($thumbPath !== null) {
+    $update['thumb'] = $thumbPath;
+}
+
 try {
     updateCourse($courseId, (int) $user['id'], $update);
     redirect_with(url('teacher/courses.php'), 'Course updated successfully.');

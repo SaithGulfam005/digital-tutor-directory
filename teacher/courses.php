@@ -46,7 +46,7 @@ require __DIR__ . '/../components/page-hero.php';
             <tr data-status="<?= htmlspecialchars($c['status']) ?>" data-search="<?= htmlspecialchars(strtolower($c['title'] . ' ' . $c['category'] . ' ' . $c['status'])) ?>">
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <img src="<?= url($c['thumb']) ?>" width="56" height="36" class="rounded object-fit-cover" alt="" onerror="this.style.background='#E2E8F0'">
+                  <img src="<?= media_url($c['thumb'], 'assets/images/avatars/placeholder.svg') ?>" width="56" height="36" class="rounded object-fit-cover" alt="" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
                   <strong class="small"><?= htmlspecialchars($c['title']) ?></strong>
                 </div>
               </td>

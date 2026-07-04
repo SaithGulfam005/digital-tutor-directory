@@ -27,7 +27,7 @@ require_once __DIR__ . '/../components/head.php';
           <div class="card-body p-4">
             <h5 class="fw-bold mb-3">Order Summary</h5>
             <div class="d-flex gap-3 mb-4">
-              <img src="<?= media_url($course['thumb'], 'assets/images/courses/placeholder.jpg') ?>" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px">
+              <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px">
               <div>
                 <h6 class="mb-1"><?= htmlspecialchars($course['title']) ?></h6>
                 <p class="small text-muted mb-0">by <?= htmlspecialchars($course['teacher']) ?></p>

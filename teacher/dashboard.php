@@ -83,7 +83,7 @@ require __DIR__ . '/../components/page-hero.php';
         </div>
         <?php foreach (array_slice($courses, 0, 3) as $c): ?>
         <div class="progress-card mb-3 d-flex flex-column flex-md-row gap-3 align-items-md-center">
-          <img src="<?= url($c['thumb']) ?>" width="120" height="68" class="rounded object-fit-cover" alt="" onerror="this.style.background='#E2E8F0'">
+          <img src="<?= media_url($c['thumb'], 'assets/images/avatars/placeholder.svg') ?>" width="120" height="68" class="rounded object-fit-cover" alt="" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
           <div class="flex-grow-1">
             <h3 class="h6 mb-1"><?= htmlspecialchars($c['title']) ?></h3>
             <p class="small text-muted mb-1"><?= number_format($c['students']) ?> students · $<?= number_format($c['revenue'], 0) ?> revenue</p>

@@ -46,7 +46,7 @@ require __DIR__ . '/../components/page-hero.php';
             <tr data-course-id="<?= (int) $c['id'] ?>" data-status="<?= htmlspecialchars($c['status']) ?>" data-search="<?= htmlspecialchars(strtolower($c['title'] . ' ' . $c['teacher'] . ' ' . $c['category'] . ' ' . $c['status'])) ?>">
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <img src="<?= url($c['thumb']) ?>" width="48" height="32" class="rounded object-fit-cover" alt="" onerror="this.style.background='#E2E8F0'">
+                  <img src="<?= media_url($c['thumb'], 'assets/images/avatars/placeholder.svg') ?>" width="48" height="32" class="rounded object-fit-cover" alt="" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
                   <div>
                     <strong class="d-block"><?= htmlspecialchars($c['title']) ?></strong>
                     <small class="text-muted">Submitted <?= htmlspecialchars($c['submitted']) ?></small>

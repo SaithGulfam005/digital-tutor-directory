@@ -1,4 +1,15 @@
-<?php $dashSection = $dashSection ?? 'overview'; ?>
+<?php
+$dashSection = $dashSection ?? 'overview';
+$studentEnrollments = function_exists('mockStudentEnrollments') ? mockStudentEnrollments() : [];
+$activeCourse = null;
+foreach ($studentEnrollments as $enrollment) {
+    if (($enrollment['status'] ?? '') === 'active') {
+        $activeCourse = $enrollment;
+        break;
+    }
+}
+$learningLink = $activeCourse ? url('student/course-learn.php?id=' . (int) ($activeCourse['course_id'] ?? $activeCourse['id'] ?? 0)) : url('student/my-courses.php');
+?>
 <aside class="dashboard-sidebar" id="dashboardSidebar">
   <div class="sidebar-brand d-flex align-items-center gap-2 p-3 border-bottom">
     <i class="bi bi-mortarboard-fill text-primary fs-4"></i>
@@ -7,7 +18,7 @@
   <nav class="nav flex-column p-2">
     <a class="nav-link <?= $dashSection === 'overview' ? 'active' : '' ?>" href="<?= url('student/dashboard.php') ?>"><i class="bi bi-grid me-2"></i>Dashboard</a>
     <a class="nav-link <?= $dashSection === 'courses' ? 'active' : '' ?>" href="<?= url('student/my-courses.php') ?>"><i class="bi bi-book me-2"></i>My Courses</a>
-    <a class="nav-link <?= $dashSection === 'learn' ? 'active' : '' ?>" href="<?= url('student/course-learn.php') ?>"><i class="bi bi-play-circle me-2"></i>Learning</a>
+    <a class="nav-link <?= $dashSection === 'learn' ? 'active' : '' ?>" href="<?= $learningLink ?>"><i class="bi bi-play-circle me-2"></i>Learning</a>
     <a class="nav-link <?= $dashSection === 'purchases' ? 'active' : '' ?>" href="<?= url('student/purchases.php') ?>"><i class="bi bi-receipt me-2"></i>Purchases</a>
     <a class="nav-link <?= $dashSection === 'profile' ? 'active' : '' ?>" href="<?= url('student/profile.php') ?>"><i class="bi bi-person me-2"></i>Profile</a>
     <hr>
@@ -26,7 +37,7 @@
     <nav class="nav flex-column p-2">
       <a class="nav-link" href="<?= url('student/dashboard.php') ?>">Dashboard</a>
       <a class="nav-link" href="<?= url('student/my-courses.php') ?>">My Courses</a>
-      <a class="nav-link" href="<?= url('student/course-learn.php') ?>">Learning</a>
+      <a class="nav-link" href="<?= $learningLink ?>">Learning</a>
       <a class="nav-link" href="<?= url('student/purchases.php') ?>">Purchases</a>
       <a class="nav-link" href="<?= url('student/profile.php') ?>">Profile</a>
     </nav>
