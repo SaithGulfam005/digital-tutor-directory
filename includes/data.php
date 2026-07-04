@@ -336,7 +336,7 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
     if (!db_available()) {
         return fallbackCourseLessons($courseId);
     }
-    $stmt = db()->prepare('SELECT * FROM lessons WHERE course_id = ? ORDER BY sort_order');
+    $stmt = db()->prepare('SELECT * FROM lessons WHERE course_id = ? ORDER BY sort_order, id');
     $stmt->execute([$courseId]);
     $lessons = $stmt->fetchAll();
 
@@ -618,7 +618,8 @@ function createCourse(int $teacherId, array $data): int
                 $duration = '10:00';
             }
             $contentUrl = trim($lesson['content_url'] ?? '');
-            $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);
+            $sortOrder = isset($lesson['sort_order']) ? (int) $lesson['sort_order'] : $i + 1;
+            $lessonStmt->execute([$courseId, $title, $duration, $sortOrder, $contentUrl ?: null]);
         }
     }
     return $courseId;
@@ -664,7 +665,8 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
                 $duration = '10:00';
             }
             $contentUrl = trim($lesson['content_url'] ?? '');
-            $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);
+            $sortOrder = isset($lesson['sort_order']) ? (int) $lesson['sort_order'] : $i + 1;
+            $lessonStmt->execute([$courseId, $title, $duration, $sortOrder, $contentUrl ?: null]);
         }
     }
 }
