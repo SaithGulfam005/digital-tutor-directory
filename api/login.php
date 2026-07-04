@@ -24,9 +24,13 @@ if (!$result['user']) {
     $message = match ($result['error']) {
         'pending_approval' => 'Your teacher account is pending admin approval. You can log in after an administrator approves your registration.',
         'inactive' => 'Your account has been deactivated. Please contact support.',
+        'unverified' => 'Please verify your email address before logging in. We can send a new verification code from the verification page.',
         default => 'Invalid email or password.',
     };
-    $flashType = $result['error'] === 'pending_approval' ? 'warning' : 'danger';
+    $flashType = $result['error'] === 'pending_approval' ? 'warning' : ($result['error'] === 'unverified' ? 'warning' : 'danger');
+    if ($result['error'] === 'unverified') {
+        redirect_with(url('auth/verify-email.php?email=' . urlencode($email)), $message, $flashType);
+    }
     redirect_with(url('auth/login.php?role=' . urlencode($role)), $message, $flashType);
 }
 

@@ -49,12 +49,18 @@ if ($role === 'teacher') {
     }
 }
 
+$user = null;
 try {
     $user = register_user($data, $role);
-    $msg = $role === 'teacher'
-        ? 'Registration submitted! Await admin verification, then log in.'
-        : 'Account created! You can now log in.';
-    redirect_with(url('auth/login.php?role=' . urlencode($role)), $msg);
+    create_or_resend_email_verification((int) $user['id'], (string) $user['email']);
+    redirect_with(
+        url('auth/verify-email.php?email=' . urlencode((string) $user['email'])),
+        'A verification code has been sent to your email. Please verify your address to activate your account.',
+        'success'
+    );
 } catch (Throwable $e) {
+    if ($user !== null) {
+        delete_user_account((int) $user['id']);
+    }
     redirect_with(url('auth/register.php?role=' . urlencode($role)), $e->getMessage(), 'danger');
 }

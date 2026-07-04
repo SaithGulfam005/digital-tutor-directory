@@ -33,6 +33,10 @@ if (!in_array($defaultRole, ['student', 'teacher'], true)) {
         <li class="nav-item"><a class="nav-link <?= $defaultRole === 'student' ? 'active' : '' ?>" href="#" data-role="student">Student</a></li>
         <li class="nav-item"><a class="nav-link <?= $defaultRole === 'teacher' ? 'active' : '' ?>" href="#" data-role="teacher">Teacher</a></li>
       </ul>
+      <div class="alert alert-info small mb-3">
+        <i class="bi bi-shield-lock me-2"></i>
+        Your account will be created after a secure email verification step.
+      </div>
       <form id="registerForm" method="post" action="<?= url('api/register.php') ?>" enctype="multipart/form-data" class="needs-validation" novalidate>
         <input type="hidden" name="role" id="registerRole" value="<?= htmlspecialchars($defaultRole) ?>">
         <div class="form-floating mb-3">

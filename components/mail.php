@@ -146,6 +146,29 @@ function send_smtp_mail(string $to, string $subject, string $htmlBody, string $f
     return true;
 }
 
+function build_verification_email(string $otp): string
+{
+    $year = date('Y');
+    $site = SITE_NAME;
+
+    return <<<HTML
+<html>
+<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">
+    <h2 style="color:#0d6efd;margin-top:0;">{$site}</h2>
+    <p>Thanks for registering. Use this 6-digit code to verify your email address and activate your account:</p>
+    <div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:20px;text-align:center;margin:20px 0;">
+      <div style="font-size:32px;font-weight:bold;letter-spacing:6px;color:#0d6efd;">{$otp}</div>
+      <p style="margin:10px 0 0;color:#666;font-size:13px;">Valid for 10 minutes</p>
+    </div>
+    <p style="font-size:14px;color:#666;">If you did not create an account, you can safely ignore this message.</p>
+    <p style="font-size:12px;color:#999;">&copy; {$year} {$site}</p>
+  </div>
+</body>
+</html>
+HTML;
+}
+
 function build_otp_email(string $otp): string
 {
     $year = date('Y');

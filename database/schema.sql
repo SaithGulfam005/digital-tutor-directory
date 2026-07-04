@@ -29,13 +29,26 @@ CREATE TABLE users (
   phone VARCHAR(30) DEFAULT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role ENUM('student','teacher','admin') NOT NULL DEFAULT 'student',
-  status ENUM('active','inactive','pending') NOT NULL DEFAULT 'active',
+  status ENUM('active','inactive','pending','pending_verification') NOT NULL DEFAULT 'active',
+  email_verified_at TIMESTAMP NULL DEFAULT NULL,
   bio TEXT DEFAULT NULL,
   avatar VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_users_role (role),
   INDEX idx_users_status (status)
+) ENGINE=InnoDB;
+
+CREATE TABLE email_verifications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  otp CHAR(6) NOT NULL,
+  attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NOT NULL,
+  UNIQUE KEY uniq_email_verification_user (user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_email_verifications_expires (expires_at)
 ) ENGINE=InnoDB;
 
 CREATE TABLE teacher_profiles (
