@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../components/require-student.php';
-$stats = mockStudentStats();
-$student = mockCurrentStudent();
-$activeCourses = array_filter(mockStudentEnrollments(), fn($e) => $e['status'] === 'active');
+$stats = getStudentStats((int) auth_id());
+$student = getCurrentStudent();
+$activeCourses = array_filter(getStudentEnrollments((int) auth_id()), fn($e) => $e['status'] === 'active');
 $pageTitle = 'Student Dashboard | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'overview';

@@ -360,6 +360,206 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
     }, $lessons);
 }
 
+function ensure_student_tracking_tables(): void
+{
+    if (!db_available()) {
+        return;
+    }
+
+    $pdo = db();
+    $pdo->exec("CREATE TABLE IF NOT EXISTS course_reviews (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        student_id INT UNSIGNED NOT NULL,
+        course_id INT UNSIGNED NOT NULL,
+        teacher_id INT UNSIGNED NOT NULL,
+        course_rating TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        teacher_rating TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        comment TEXT DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_student_course_review (student_id, course_id),
+        KEY idx_course_reviews_course (course_id),
+        KEY idx_course_reviews_teacher (teacher_id)
+    ) ENGINE=InnoDB");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS teacher_favorites (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        student_id INT UNSIGNED NOT NULL,
+        teacher_id INT UNSIGNED NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_student_teacher_favorite (student_id, teacher_id),
+        KEY idx_teacher_favorites_teacher (teacher_id)
+    ) ENGINE=InnoDB");
+}
+
+function getEnrollmentStatus(int $studentId, int $courseId): string
+{
+    if (!db_available()) {
+        return 'active';
+    }
+    $stmt = db()->prepare('SELECT status FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $courseId]);
+    return (string) ($stmt->fetchColumn() ?: 'active');
+}
+
+function mark_lesson_complete(int $studentId, int $courseId, int $lessonId): array
+{
+    if (!db_available()) {
+        return ['ok' => false, 'error' => 'Database unavailable.'];
+    }
+
+    ensure_student_tracking_tables();
+    $pdo = db();
+    $enrollmentStmt = $pdo->prepare('SELECT id FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
+    $enrollmentStmt->execute([$studentId, $courseId]);
+    $enrollmentId = (int) $enrollmentStmt->fetchColumn();
+    if ($enrollmentId <= 0) {
+        return ['ok' => false, 'error' => 'Enrollment not found.'];
+    }
+
+    $pdo->prepare('INSERT INTO lesson_progress (enrollment_id, lesson_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE lesson_id = lesson_id')
+        ->execute([$enrollmentId, $lessonId]);
+
+    $lessons = getCourseLessons($courseId, $studentId);
+    $completedCount = count(array_filter($lessons, static fn($lesson) => !empty($lesson['completed'])));
+    $totalLessons = count($lessons);
+    $progress = $totalLessons > 0 ? (int) round(($completedCount / $totalLessons) * 100) : 100;
+    $status = $completedCount >= $totalLessons && $totalLessons > 0 ? 'completed' : 'active';
+
+    $pdo->prepare('UPDATE enrollments SET progress = ?, status = ?, last_access = CURDATE() WHERE id = ?')
+        ->execute([$progress, $status, $enrollmentId]);
+
+    return [
+        'ok' => true,
+        'progress' => $progress,
+        'status' => $status,
+        'completed_count' => $completedCount,
+        'total_lessons' => $totalLessons,
+    ];
+}
+
+function get_student_course_review(int $studentId, int $courseId): ?array
+{
+    if (!db_available()) {
+        return null;
+    }
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT * FROM course_reviews WHERE student_id = ? AND course_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $courseId]);
+    $row = $stmt->fetch();
+    return $row ? [
+        'id' => (int) $row['id'],
+        'course_rating' => (int) $row['course_rating'],
+        'teacher_rating' => (int) $row['teacher_rating'],
+        'comment' => $row['comment'] ?? '',
+    ] : null;
+}
+
+function save_student_course_review(int $studentId, int $courseId, int $teacherId, int $courseRating, int $teacherRating, string $comment = ''): void
+{
+    if (!db_available()) {
+        return;
+    }
+    ensure_student_tracking_tables();
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        if ($teacherId <= 0) {
+            $teacherStmt = $pdo->prepare('SELECT teacher_id FROM courses WHERE id = ? LIMIT 1');
+            $teacherStmt->execute([$courseId]);
+            $teacherId = (int) $teacherStmt->fetchColumn();
+        }
+
+        $stmt = $pdo->prepare('INSERT INTO course_reviews (student_id, course_id, teacher_id, course_rating, teacher_rating, comment) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE teacher_id = VALUES(teacher_id), course_rating = VALUES(course_rating), teacher_rating = VALUES(teacher_rating), comment = VALUES(comment), updated_at = CURRENT_TIMESTAMP');
+        $stmt->execute([$studentId, $courseId, $teacherId, max(1, min(5, $courseRating)), max(1, min(5, $teacherRating)), trim($comment)]);
+
+        $courseAverage = (float) $pdo->query('SELECT AVG(course_rating) FROM course_reviews WHERE course_id = ' . (int) $courseId)->fetchColumn();
+        if ($courseAverage > 0) {
+            $pdo->prepare('UPDATE courses SET rating = ? WHERE id = ?')->execute([round($courseAverage, 2), $courseId]);
+        }
+
+        $teacherAverage = (float) $pdo->query('SELECT AVG(teacher_rating) FROM course_reviews WHERE teacher_id = ' . (int) $teacherId)->fetchColumn();
+        if ($teacherAverage > 0) {
+            $pdo->prepare('UPDATE teacher_profiles SET rating = ? WHERE user_id = ?')->execute([round($teacherAverage, 2), $teacherId]);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function get_homepage_testimonials(): array
+{
+    if (!db_available()) {
+        return [];
+    }
+
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT cr.comment, cr.course_rating, cr.teacher_rating, u.name AS student_name, c.title AS course_title
+        FROM course_reviews cr
+        JOIN users u ON u.id = cr.student_id
+        JOIN courses c ON c.id = cr.course_id
+        WHERE TRIM(COALESCE(cr.comment, "")) <> ""
+        ORDER BY cr.created_at DESC
+        LIMIT 6');
+    $stmt->execute();
+
+    return array_map(static function ($row) {
+        return [
+            'name' => $row['student_name'] ?? 'Student',
+            'text' => trim((string) ($row['comment'] ?? '')),
+            'role' => 'Student • ' . ($row['course_title'] ?? 'Course'),
+            'rating' => (float) ($row['course_rating'] ?? 0),
+        ];
+    }, $stmt->fetchAll());
+}
+
+function is_teacher_favorite(int $studentId, int $teacherId): bool
+{
+    if (!db_available()) {
+        return false;
+    }
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT id FROM teacher_favorites WHERE student_id = ? AND teacher_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $teacherId]);
+    return (bool) $stmt->fetchColumn();
+}
+
+function toggle_teacher_favorite(int $studentId, int $teacherId): bool
+{
+    if (!db_available()) {
+        return false;
+    }
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT id FROM teacher_favorites WHERE student_id = ? AND teacher_id = ? LIMIT 1');
+    $stmt->execute([$studentId, $teacherId]);
+    if ($stmt->fetchColumn()) {
+        db()->prepare('DELETE FROM teacher_favorites WHERE student_id = ? AND teacher_id = ?')->execute([$studentId, $teacherId]);
+        return false;
+    }
+    db()->prepare('INSERT INTO teacher_favorites (student_id, teacher_id) VALUES (?, ?)')->execute([$studentId, $teacherId]);
+    return true;
+}
+
+function get_student_favorite_teachers(int $studentId): array
+{
+    if (!db_available()) {
+        return [];
+    }
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT tf.teacher_id, u.name, u.avatar, tp.subject, tp.rating FROM teacher_favorites tf JOIN users u ON u.id = tf.teacher_id LEFT JOIN teacher_profiles tp ON tp.user_id = tf.teacher_id WHERE tf.student_id = ? ORDER BY tf.created_at DESC');
+    $stmt->execute([$studentId]);
+    return array_map(static fn($row) => [
+        'id' => (int) $row['teacher_id'],
+        'name' => $row['name'],
+        'photo' => $row['avatar'] ?? '',
+        'subject' => $row['subject'] ?? '',
+        'rating' => (float) ($row['rating'] ?? 0),
+    ], $stmt->fetchAll());
+}
+
 function getCurrentTeacher(): array
 {
     $user = auth_user();
@@ -613,9 +813,9 @@ function createCourse(int $teacherId, array $data): int
             if ($title === '') {
                 continue;
             }
-            $duration = trim($lesson['duration'] ?? '10:00');
+            $duration = trim((string) ($lesson['duration'] ?? ''));
             if (!preg_match('/^\d{1,2}:\d{2}$/', $duration)) {
-                $duration = '10:00';
+                $duration = '';
             }
             $contentUrl = trim($lesson['content_url'] ?? '');
             $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);
@@ -659,9 +859,9 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
             if ($title === '') {
                 continue;
             }
-            $duration = trim($lesson['duration'] ?? '10:00');
+            $duration = trim((string) ($lesson['duration'] ?? ''));
             if (!preg_match('/^\d{1,2}:\d{2}$/', $duration)) {
-                $duration = '10:00';
+                $duration = '';
             }
             $contentUrl = trim($lesson['content_url'] ?? '');
             $lessonStmt->execute([$courseId, $title, $duration, $i + 1, $contentUrl ?: null]);

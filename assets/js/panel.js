@@ -75,16 +75,49 @@
     });
   });
 
-  document.getElementById('markLessonComplete')?.addEventListener('click', () => {
-    const active = document.querySelector('.lesson-list .list-group-item.active');
-    if (active) {
-      active.classList.add('text-success');
-      const icon = active.querySelector('.lesson-status');
-      if (icon) {
-        icon.className = 'bi bi-check-circle-fill text-success lesson-status';
+  document.getElementById('markLessonComplete')?.addEventListener('click', async () => {
+    const btn = document.getElementById('markLessonComplete');
+    const courseId = btn?.dataset.courseId;
+    const lessonId = btn?.dataset.lessonId;
+    if (!courseId || !lessonId) return;
+
+    btn.disabled = true;
+    try {
+      const response = await fetch((window.BASE_URL || '') + '/api/student-progress.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: new URLSearchParams({ course_id: courseId, lesson_id: lessonId }),
+        credentials: 'same-origin',
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Unable to mark lesson complete.');
       }
+
+      const active = document.querySelector('.lesson-list .list-group-item.active');
+      if (active) {
+        active.classList.add('text-success');
+        const icon = active.querySelector('.lesson-status');
+        if (icon) {
+          icon.className = 'bi bi-check-circle-fill text-success lesson-status';
+        }
+      }
+      const progressBar = document.getElementById('courseProgressBar');
+      const progressText = document.getElementById('courseProgressText');
+      if (progressBar) progressBar.style.width = data.progress + '%';
+      if (progressText) progressText.textContent = data.progress + '% complete · ' + data.completed_count + ' of ' + data.total_lessons + ' lessons done';
+
+      if (data.status === 'completed') {
+        window.showToast?.('Course completed! You can now rate this course and teacher.', 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        window.showToast?.('Lesson marked complete!', 'success');
+      }
+    } catch (error) {
+      window.showToast?.(error.message || 'Unable to mark lesson complete.', 'danger');
+    } finally {
+      btn.disabled = false;
     }
-    window.showToast?.('Lesson marked complete!', 'success');
   });
 
   document.getElementById('addLessonBtn')?.addEventListener('click', () => {

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../components/require-student.php';
-$student = mockCurrentStudent();
+$student = getCurrentStudent();
+$favorites = get_student_favorite_teachers((int) auth_id());
 $pageTitle = 'Profile | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'profile';
@@ -67,6 +68,21 @@ require __DIR__ . '/../components/page-hero.php';
               <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
           </form>
+        </div>
+        <div class="table-card p-4 mt-4">
+          <h3 class="h6 fw-bold mb-3">Favorite Teachers</h3>
+          <?php if ($favorites): ?>
+            <div class="d-flex flex-wrap gap-2">
+              <?php foreach ($favorites as $favorite): ?>
+                <span class="badge badge-approved d-inline-flex align-items-center gap-2">
+                  <i class="bi bi-heart-fill"></i>
+                  <?= htmlspecialchars($favorite['name']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          <?php else: ?>
+            <p class="text-muted small mb-0">You have not favorited any teachers yet.</p>
+          <?php endif; ?>
         </div>
       </div>
     </div>

@@ -5,69 +5,6 @@ define('BASE_URL', '/digital-tutor-directory');
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/mail.php';
-
-function normalize_lesson_duration(?string $value): string
-{
-    $value = trim((string) ($value ?? ''));
-    if ($value === '') {
-        return '';
-    }
-
-    if (preg_match('/^\d{1,2}:\d{2}$/', $value)) {
-        return $value;
-    }
-
-    if (is_numeric($value)) {
-        return format_lesson_duration((float) $value);
-    }
-
-    return '';
-}
-
-function format_lesson_duration(float $seconds): string
-{
-    $seconds = max(0, (int) round($seconds));
-    if ($seconds < 60) {
-        return '0:' . str_pad((string) $seconds, 2, '0', STR_PAD_LEFT);
-    }
-
-    $hours = intdiv($seconds, 3600);
-    $minutes = intdiv($seconds % 3600, 60);
-    $secs = $seconds % 60;
-
-    if ($hours > 0) {
-        return $hours . ':' . str_pad((string) $minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string) $secs, 2, '0', STR_PAD_LEFT);
-    }
-
-    return $minutes . ':' . str_pad((string) $secs, 2, '0', STR_PAD_LEFT);
-}
-
-function detect_video_duration(string $filePath): string
-{
-    if (!is_file($filePath)) {
-        return '';
-    }
-
-    $commands = [
-        'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($filePath),
-        'ffprobe.exe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($filePath),
-    ];
-
-    foreach ($commands as $command) {
-        $output = [];
-        $code = 0;
-        @exec($command, $output, $code);
-        if ($code === 0 && isset($output[0])) {
-            $duration = trim((string) $output[0]);
-            if (is_numeric($duration)) {
-                return format_lesson_duration((float) $duration);
-            }
-        }
-    }
-
-    return '';
-}
-
 require_once __DIR__ . '/../includes/data.php';
 
 function url(string $path = ''): string
@@ -131,10 +68,10 @@ function media_url(?string $path, string $fallback = 'assets/images/avatars/plac
 function upload_error_message(int $code): string
 {
     return match ($code) {
-        UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Lesson file exceeds the maximum upload size (40 MB).',
-        UPLOAD_ERR_PARTIAL => 'Lesson upload was interrupted. Please try again.',
-        UPLOAD_ERR_NO_FILE => 'No lesson file was selected.',
-        default => 'Lesson upload failed. Please try again.',
+        UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Video file exceeds the maximum upload size (40 MB).',
+        UPLOAD_ERR_PARTIAL => 'Video upload was interrupted. Please try again.',
+        UPLOAD_ERR_NO_FILE => 'No video file was selected.',
+        default => 'Video upload failed. Please try again.',
     };
 }
 
@@ -149,6 +86,48 @@ function video_mime_type(string $path): string
         'm4v' => 'video/mp4',
         default => 'video/mp4',
     };
+}
+
+function format_lesson_duration(float $seconds): string
+{
+    $totalSeconds = max(0, (int) round($seconds));
+    $minutes = intdiv($totalSeconds, 60);
+    $secondsPart = $totalSeconds % 60;
+    return $minutes . ':' . str_pad((string) $secondsPart, 2, '0', STR_PAD_LEFT);
+}
+
+function detect_video_duration(string $path): string
+{
+    $path = trim($path);
+    if ($path === '') {
+        return '';
+    }
+
+    $resolvedPath = $path;
+    if (!preg_match('#^https?://#i', $path)) {
+        $absolutePath = realpath(__DIR__ . '/../' . ltrim($path, '/'));
+        if ($absolutePath !== false) {
+            $resolvedPath = $absolutePath;
+        }
+    }
+
+    if ($resolvedPath === '' || !is_file($resolvedPath)) {
+        return '';
+    }
+
+    $ffprobeCandidates = ['ffprobe', 'ffprobe.exe'];
+    foreach ($ffprobeCandidates as $candidate) {
+        $command = escapeshellcmd($candidate) . ' -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($resolvedPath) . ' 2>/dev/null';
+        $output = shell_exec($command);
+        if (is_string($output) && trim($output) !== '') {
+            $seconds = (float) trim($output);
+            if ($seconds > 0) {
+                return format_lesson_duration($seconds);
+            }
+        }
+    }
+
+    return '';
 }
 
 function save_uploaded_course_thumbnail(array $file): string
@@ -199,75 +178,63 @@ function save_uploaded_course_thumbnail(array $file): string
     return 'uploads/courses/' . $filename;
 }
 
-function save_uploaded_lesson_file(array $file): array
+function save_uploaded_lesson_video(array $file): ?string
 {
     $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
     if ($error !== UPLOAD_ERR_OK) {
         if ($error !== UPLOAD_ERR_NO_FILE) {
             throw new RuntimeException(upload_error_message($error));
         }
-        return ['path' => null, 'duration' => ''];
+        return null;
     }
 
     $tmpName = $file['tmp_name'] ?? '';
-    $isUploadedFile = $tmpName !== '' && is_uploaded_file($tmpName);
-    if ($tmpName === '' || (!$isUploadedFile && PHP_SAPI !== 'cli')) {
-        throw new RuntimeException('Invalid lesson upload. Please try again.');
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Invalid video upload. Please try again.');
     }
 
     $size = (int) ($file['size'] ?? 0);
     if ($size < 1024) {
         throw new RuntimeException(
-            'The selected file is empty or too small. Please choose a valid lesson file.'
+            'Video file is empty or too small. If it is stored in OneDrive or Google Drive, download it to your computer first, then upload again.'
         );
-    }
-
-    if ($size > 40 * 1024 * 1024) {
-        throw new RuntimeException('Lesson files must be 40 MB or smaller.');
     }
 
     $originalName = basename($file['name'] ?? '');
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allowed = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'avi'];
+    if ($extension === '' || !in_array($extension, $allowed, true)) {
+        throw new RuntimeException('Unsupported video format. Use MP4, WebM, MOV, or AVI.');
+    }
+
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime = $finfo ? (string) finfo_file($finfo, $tmpName) : '';
     if ($finfo) {
         finfo_close($finfo);
     }
+    if ($mime !== '' && !str_starts_with($mime, 'video/') && !in_array($mime, ['application/octet-stream', 'application/mp4', 'application/x-mp4'], true)) {
+        throw new RuntimeException('Unsupported video file type. Please upload a valid MP4, WebM, MOV, or AVI file.');
+    }
 
-    $uploadDir = __DIR__ . '/../uploads/lessons';
+    $uploadDir = __DIR__ . '/../uploads/videos';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
 
-    $filename = $extension !== '' ? uniqid('lesson_', true) . '.' . $extension : uniqid('lesson_', true);
+    $filename = uniqid('video_', true) . '.' . $extension;
     $dest = $uploadDir . '/' . $filename;
-    if ($isUploadedFile) {
-        if (!move_uploaded_file($tmpName, $dest)) {
-            throw new RuntimeException('Failed to save lesson file. Check that uploads/lessons is writable.');
-        }
-    } else {
-        if (!copy($tmpName, $dest)) {
-            throw new RuntimeException('Failed to save lesson file. Check that uploads/lessons is writable.');
-        }
+    if (!move_uploaded_file($tmpName, $dest)) {
+        throw new RuntimeException('Failed to save video file. Check that uploads/videos is writable.');
     }
 
     if (filesize($dest) < 1024) {
         @unlink($dest);
-        throw new RuntimeException('The uploaded file could not be saved correctly. Please try again.');
+        throw new RuntimeException(
+            'Video could not be saved correctly. Download the file locally (not from cloud storage) and try again.'
+        );
     }
 
-    $duration = '';
-    if ($mime !== '' && str_starts_with($mime, 'video/')) {
-        $duration = detect_video_duration($dest);
-    }
-
-    return ['path' => 'uploads/lessons/' . $filename, 'duration' => $duration];
-}
-
-function save_uploaded_lesson_video(array $file): ?string
-{
-    $saved = save_uploaded_lesson_file($file);
-    return $saved['path'] ?? null;
+    return 'uploads/videos/' . $filename;
 }
 
 function normalize_uploaded_files(array $files): array
@@ -305,13 +272,6 @@ function lesson_playback_url(int $courseId, array $lesson): string
     if (preg_match('#^https?://#i', $url)) {
         return $url;
     }
-
-    $extension = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?: $url, PATHINFO_EXTENSION));
-    $downloadableExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-    if (in_array($extension, $downloadableExtensions, true)) {
-        return url($url);
-    }
-
     return url('api/lesson-video.php?course=' . $courseId . '&lesson=' . (int) ($lesson['id'] ?? 0));
 }
 
@@ -398,26 +358,34 @@ function parse_course_lessons(array $post, array $files): array
             continue;
         }
 
-        $duration = normalize_lesson_duration($durations[$i] ?? '');
-        $contentUrl = $urls[$i] ?? '';
+        $duration = trim((string) ($durations[$i] ?? ''));
+        if (!preg_match('/^\d{1,2}:\d{2}$/', $duration)) {
+            $duration = '';
+        }
+
+        $contentUrl = trim((string) ($urls[$i] ?? ''));
         $fileError = isset($files['error'][$i]) ? (int) $files['error'][$i] : UPLOAD_ERR_NO_FILE;
 
         if ($fileError === UPLOAD_ERR_OK) {
-            $uploaded = save_uploaded_lesson_file([
+            $uploaded = save_uploaded_lesson_video([
                 'name' => $files['name'][$i] ?? '',
                 'type' => $files['type'][$i] ?? '',
                 'tmp_name' => $files['tmp_name'][$i] ?? '',
                 'error' => $fileError,
                 'size' => $files['size'][$i] ?? 0,
             ]);
-            if (!empty($uploaded['path'])) {
-                $contentUrl = $uploaded['path'];
-                if ($uploaded['duration'] !== '') {
-                    $duration = $uploaded['duration'];
+            if ($uploaded) {
+                $contentUrl = $uploaded;
+                if ($duration === '') {
+                    $duration = detect_video_duration($uploaded);
                 }
             }
         } elseif ($fileError !== UPLOAD_ERR_NO_FILE) {
             throw new RuntimeException(upload_error_message($fileError) . ' (lesson: ' . $title . ')');
+        }
+
+        if ($duration === '' && $contentUrl !== '' && is_local_video_path($contentUrl)) {
+            $duration = detect_video_duration($contentUrl);
         }
 
         $lessons[] = [

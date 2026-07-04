@@ -156,21 +156,20 @@ require_once __DIR__ . '/../components/navbar.php';
 <section class="section">
   <div class="container">
     <h2 class="section-title text-center mb-4">Student Testimonials</h2>
+    <?php $testimonials = get_homepage_testimonials(); ?>
+    <?php if (!empty($testimonials)): ?>
     <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
       <div class="carousel-inner">
-        <?php
-        $testimonials = [
-          ['name'=>'Ayesha R.','text'=>'The teachers are incredibly professional. I completed two courses in a month!','role'=>'Web Developer'],
-          ['name'=>'Omar K.','text'=>'Best platform for verified tutors. Payment and access were seamless.','role'=>'Student'],
-          ['name'=>'Fatima S.','text'=>'As a teacher, uploading courses after verification was straightforward.','role'=>'Instructor'],
-        ];
-        foreach ($testimonials as $i => $t): ?>
+        <?php foreach ($testimonials as $i => $t): ?>
         <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
           <div class="testimonial-card text-center mx-auto" style="max-width:640px">
-            <p class="fs-5 mb-4">"<?= $t['text'] ?>"</p>
+            <p class="fs-5 mb-4">"<?= htmlspecialchars($t['text']) ?>"</p>
+            <div class="d-flex justify-content-center gap-1 mb-3">
+              <?= renderStars((float) ($t['rating'] ?? 0)) ?>
+            </div>
             <img src="https://ui-avatars.com/api/?name=<?= urlencode($t['name']) ?>&background=2563EB&color=fff" alt="">
-            <h6 class="mt-2 mb-0"><?= $t['name'] ?></h6>
-            <small class="text-muted"><?= $t['role'] ?></small>
+            <h6 class="mt-2 mb-0"><?= htmlspecialchars($t['name']) ?></h6>
+            <small class="text-muted"><?= htmlspecialchars($t['role']) ?></small>
           </div>
         </div>
         <?php endforeach; ?>
@@ -178,6 +177,9 @@ require_once __DIR__ . '/../components/navbar.php';
       <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev"></button>
       <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next"></button>
     </div>
+    <?php else: ?>
+    <div class="text-center text-muted py-3">Student testimonials will appear here once learners leave course reviews.</div>
+    <?php endif; ?>
   </div>
 </section>
 

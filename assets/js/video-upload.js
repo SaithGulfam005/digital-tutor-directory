@@ -56,6 +56,10 @@
         urlInput.value = data.path;
         urlInput.readOnly = true;
       }
+      const durationInput = row.querySelector('input[name="lesson_durations[]"]');
+      if (durationInput && data.duration) {
+        durationInput.value = data.duration;
+      }
       fileInput.value = '';
       clearRowErrors(row);
       statusEl.className = 'lesson-upload-status d-block mt-2 text-success';

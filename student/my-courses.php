@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../components/require-student.php';
-$enrollments = mockStudentEnrollments();
+$enrollments = getStudentEnrollments((int) auth_id());
 $pageTitle = 'My Courses | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'courses';

@@ -27,6 +27,9 @@ foreach ($lessons as $lesson) {
 }
 
 $progress = getEnrollmentProgress((int) $user['id'], $courseId);
+$enrollmentStatus = getEnrollmentStatus((int) $user['id'], $courseId);
+$existingReview = get_student_course_review((int) $user['id'], $courseId);
+$favoriteTeacher = is_teacher_favorite((int) $user['id'], (int) $course['teacher_id']);
 $pageTitle = 'Learning: ' . $course['title'] . ' | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'learn';
@@ -99,6 +102,44 @@ function lesson_video_url(array $lesson, int $courseId): string
           </div>
           <small class="text-muted" id="courseProgressText"><?= (int) $progress ?>% complete · <?= count(array_filter($lessons, fn($l) => $l['completed'])) ?> of <?= count($lessons) ?> lessons done</small>
         </div>
+        <?php if ($enrollmentStatus === 'completed' || $existingReview): ?>
+        <div class="table-card p-3 mt-4">
+          <h3 class="h6 fw-bold mb-3">Rate this course</h3>
+          <form method="post" action="<?= url('api/student-review.php') ?>">
+            <input type="hidden" name="course_id" value="<?= (int) $courseId ?>">
+            <input type="hidden" name="teacher_id" value="<?= (int) $course['teacher_id'] ?>">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Course rating</label>
+                <select class="form-select" name="course_rating">
+                  <?php for ($i = 1; $i <= 5; $i++): ?>
+                  <option value="<?= $i ?>" <?= ($existingReview['course_rating'] ?? 5) == $i ? 'selected' : '' ?>><?= $i ?> star<?= $i > 1 ? 's' : '' ?></option>
+                  <?php endfor; ?>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Teacher rating</label>
+                <select class="form-select" name="teacher_rating">
+                  <?php for ($i = 1; $i <= 5; $i++): ?>
+                  <option value="<?= $i ?>" <?= ($existingReview['teacher_rating'] ?? 5) == $i ? 'selected' : '' ?>><?= $i ?> star<?= $i > 1 ? 's' : '' ?></option>
+                  <?php endfor; ?>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Your feedback</label>
+                <textarea class="form-control" name="comment" rows="3" placeholder="Share your experience with this course and instructor"><?= htmlspecialchars($existingReview['comment'] ?? '') ?></textarea>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="favoriteTeacher" name="favorite_teacher" value="1" <?= $favoriteTeacher ? 'checked' : '' ?>>
+                  <label class="form-check-label" for="favoriteTeacher">Favorite this teacher</label>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Save review</button>
+          </form>
+        </div>
+        <?php endif; ?>
       </div>
       <div class="col-lg-4">
         <div class="table-card p-3 lesson-list">

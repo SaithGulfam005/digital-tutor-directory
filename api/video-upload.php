@@ -35,7 +35,9 @@ try {
     if (!$path) {
         throw new RuntimeException('No lesson file was uploaded.');
     }
-    echo json_encode(['ok' => true, 'path' => $path]);
+
+    $duration = detect_video_duration($path);
+    echo json_encode(['ok' => true, 'path' => $path, 'duration' => $duration]);
 } catch (Throwable $e) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
