@@ -10,6 +10,10 @@ function map_course_row(array $row): array
         'title' => $row['title'],
         'teacher' => $row['teacher_name'] ?? '',
         'teacher_id' => (int) ($row['teacher_id'] ?? 0),
+        'teacher_photo' => $row['teacher_photo'] ?? '',
+        'teacher_qualification' => $row['teacher_qualification'] ?? '',
+        'teacher_subject' => $row['teacher_subject'] ?? '',
+        'teacher_rating' => (float) ($row['teacher_rating'] ?? 0),
         'price' => (float) $row['price'],
         'rating' => (float) $row['rating'],
         'category' => $row['category_name'] ?? '',
@@ -25,10 +29,13 @@ function map_course_row(array $row): array
 
 function courses_base_sql(string $where = '1=1'): string
 {
-    return "SELECT c.*, u.name AS teacher_name, cat.name AS category_name,
+    return "SELECT c.*, u.name AS teacher_name, u.avatar AS teacher_photo,
+            tp.qualification AS teacher_qualification, tp.subject AS teacher_subject,
+            tp.rating AS teacher_rating, cat.name AS category_name,
             (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) AS student_count
             FROM courses c
             JOIN users u ON u.id = c.teacher_id
+            LEFT JOIN teacher_profiles tp ON tp.user_id = u.id
             JOIN categories cat ON cat.id = c.category_id
             WHERE $where";
 }

@@ -15,9 +15,14 @@
   </div>
   <div class="card-body d-flex flex-column">
     <h3 class="h6 card-title mb-1"><?= htmlspecialchars($course['title']) ?></h3>
-    <p class="text-muted small mb-2"><?= htmlspecialchars($course['teacher']) ?></p>
+    <div class="d-flex align-items-center gap-2 p-2 rounded border bg-light mb-2">
+      <img src="<?= media_url($course['teacher_photo'] ?? '', 'assets/images/avatars/placeholder.svg') ?>" class="rounded-circle" width="36" height="36" style="object-fit:cover" alt="<?= htmlspecialchars($course['teacher']) ?>">
+      <div class="min-w-0">
+        <div class="fw-semibold small">Uploaded by <?= htmlspecialchars($course['teacher']) ?></div>
+      </div>
+    </div>
     <div class="rating-stars small mb-2">
-      <?php $r = (float)$course['rating']; for ($i = 1; $i <= 5; $i++): ?>
+      <?php $r = (float) ($course['teacher_rating'] ?: $course['rating']); for ($i = 1; $i <= 5; $i++): ?>
         <i class="bi bi-star<?= $i <= floor($r) ? '-fill' : ($i - $r < 1 ? '-half' : '') ?> text-warning"></i>
       <?php endfor; ?>
       <span class="text-muted ms-1">(<?= number_format($r, 1) ?>)</span>

@@ -27,6 +27,10 @@ foreach ($lessons as $lesson) {
 }
 
 $progress = getEnrollmentProgress((int) $user['id'], $courseId);
+$teacherProfile = null;
+if ($course['teacher_id'] > 0) {
+    $teacherProfile = getTeacherById($course['teacher_id']);
+}
 $pageTitle = 'Learning: ' . $course['title'] . ' | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'learn';
@@ -99,6 +103,26 @@ function lesson_video_url(array $lesson, int $courseId): string
           </div>
           <small class="text-muted" id="courseProgressText"><?= (int) $progress ?>% complete · <?= count(array_filter($lessons, fn($l) => $l['completed'])) ?> of <?= count($lessons) ?> lessons done</small>
         </div>
+
+        <?php if ($teacherProfile): ?>
+        <div class="card border-0 shadow-sm p-3 mt-4">
+          <h3 class="h6 fw-bold mb-3">Instructor</h3>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="<?= media_url($teacherProfile['photo']) ?>" class="rounded-circle" width="44" height="44" style="object-fit:cover" alt="<?= htmlspecialchars($teacherProfile['name']) ?>">
+            <div>
+              <div class="fw-semibold small"><?= htmlspecialchars($teacherProfile['name']) ?></div>
+              <div class="text-muted small"><?= htmlspecialchars($teacherProfile['subject'] ?: $teacherProfile['qualification']) ?></div>
+            </div>
+          </div>
+          <div class="rating-stars small mb-2">
+            <?= renderStars((float)$teacherProfile['rating']) ?>
+            <span class="ms-2 text-muted"><?= number_format($teacherProfile['rating'], 1) ?> / 5</span>
+          </div>
+          <p class="small text-muted mb-2"><?= htmlspecialchars($teacherProfile['qualification']) ?></p>
+          <p class="small text-muted mb-0"><strong><?= number_format($teacherProfile['students']) ?></strong> students taught</p>
+          <a href="<?= url('pages/teacher-profile.php?id=' . (int)$teacherProfile['id']) ?>" class="btn btn-sm btn-outline-primary w-100 mt-3">View full profile</a>
+        </div>
+        <?php endif; ?>
       </div>
       <div class="col-lg-4">
         <div class="table-card p-3 lesson-list">
