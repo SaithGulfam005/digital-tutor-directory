@@ -237,6 +237,20 @@ function save_uploaded_lesson_video(array $file): ?string
     return 'uploads/videos/' . $filename;
 }
 
+function format_duration_from_seconds(int $seconds): string
+{
+    $seconds = max(0, $seconds);
+    $hours = intdiv($seconds, 3600);
+    $minutes = intdiv($seconds % 3600, 60);
+    $secs = $seconds % 60;
+
+    if ($hours > 0) {
+        return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
+    }
+
+    return sprintf('%d:%02d', $minutes, $secs);
+}
+
 function normalize_uploaded_files(array $files): array
 {
     if ($files === [] || !isset($files['name'])) {
@@ -258,6 +272,26 @@ function is_local_video_path(string $path): bool
 {
     $path = trim($path);
     return $path !== '' && !preg_match('#^https?://#i', $path);
+}
+
+function resolve_local_media_path(string $path): ?string
+{
+    $path = trim($path);
+    if ($path === '') {
+        return null;
+    }
+
+    if (preg_match('#^https?://#i', $path)) {
+        return null;
+    }
+
+    $candidate = ltrim($path, '/');
+    $absolute = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $candidate);
+    if (is_file($absolute)) {
+        return $absolute;
+    }
+
+    return null;
 }
 
 function lesson_playback_url(int $courseId, array $lesson): string
@@ -392,6 +426,7 @@ function parse_course_lessons(array $post, array $files): array
             'title' => $title,
             'duration' => $duration,
             'content_url' => $contentUrl ?: null,
+            'sort_order' => count($lessons) + 1,
         ];
     }
 

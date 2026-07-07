@@ -1,12 +1,13 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
 $teacher = mockCurrentTeacher();
-$pageTitle = 'Profile | ' . SITE_NAME;
+$pageTitle = 'Edit Profile | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'profile';
 $bodyClass = 'dashboard-body';
-$pageHeading = 'Profile Settings';
+$pageHeading = 'Edit Profile';
 $pageSubheading = 'Update your instructor profile';
+$pendingProfileUpdate = $_SESSION['pending_profile_update'] ?? null;
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
@@ -15,7 +16,6 @@ require __DIR__ . '/../components/page-hero.php';
 <div class="dashboard-wrapper d-flex">
   <?php require __DIR__ . '/../components/sidebar-teacher.php'; ?>
   <main class="dashboard-main flex-grow-1 p-4">
-
     <div class="row g-4">
       <div class="col-lg-4">
         <div class="table-card p-4 text-center">
@@ -34,41 +34,117 @@ require __DIR__ . '/../components/page-hero.php';
           </form>
         </div>
       </div>
+
       <div class="col-lg-8">
-        <div class="table-card p-4">
-          <form class="needs-validation" novalidate method="post" action="<?= url('api/profile-update.php') ?>">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label" for="fname">Full Name</label>
-                <input type="text" class="form-control" id="fname" name="name" value="<?= htmlspecialchars($teacher['name']) ?>" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($teacher['email'] ?? '') ?>" required>
-              </div>
-              <div class="col-12">
-                <label class="form-label" for="bio">Bio</label>
-                <textarea class="form-control" id="bio" name="bio" rows="4" required><?= htmlspecialchars($teacher['bio']) ?></textarea>
-              </div>
-            </div>
-            <hr class="my-4">
-            <h3 class="h6 fw-bold mb-3">Change Password</h3>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label" for="newPass">New Password</label>
-                <input type="password" class="form-control" id="newPass" name="password" minlength="6">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="confirmPass">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPass" name="password_confirm" minlength="6">
-              </div>
-            </div>
-            <div class="mt-4">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-            </div>
-          </form>
+        <div class="table-card p-4 position-relative">
+          <div class="dropdown position-absolute" style="right:16px;top:16px">
+            <button class="btn btn-sm btn-light" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">⋯</button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editDetailsModal">Edit Details</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeContactModal">Change Email / Phone</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</a></li>
+            </ul>
+          </div>
+          <p class="text-muted small mb-3">Use the menu in the top-right to manage your profile, security, and contact info.</p>
         </div>
-      </div>
+
+        <!-- Edit Details Modal -->
+        <div class="modal fade" id="editDetailsModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="post" action="<?= url('api/profile-update.php') ?>">
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit Details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($teacher['name']) ?>" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" class="form-control" rows="4" required><?= htmlspecialchars($teacher['bio']) ?></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Contact Modal -->
+        <div class="modal fade" id="changeContactModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="post" action="<?= url('api/profile-update.php') ?>">
+                <div class="modal-header">
+                  <h5 class="modal-title">Change Email / Phone</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($teacher['email'] ?? '') ?>" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($teacher['phone'] ?? '') ?>">
+                  </div>
+                  <?php if ($pendingProfileUpdate): ?>
+                  <div class="mb-3">
+                    <label class="form-label">Verification Code</label>
+                    <input type="text" name="otp" class="form-control" maxlength="6" inputmode="numeric" placeholder="000000" required>
+                    <div class="form-text">Enter the 6-digit code sent to <?= htmlspecialchars((string) ($pendingProfileUpdate['send_to'] ?? 'your email')) ?>.</div>
+                  </div>
+                  <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <form method="post" action="<?= url('api/profile-update.php') ?>">
+                <div class="modal-header">
+                  <h5 class="modal-title">Change Password</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="password" class="form-control" minlength="6">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirm" class="form-control" minlength="6">
+                  </div>
+                  <?php if ($pendingProfileUpdate): ?>
+                  <div class="mb-3">
+                    <label class="form-label">Verification Code</label>
+                    <input type="text" name="otp" class="form-control" maxlength="6" inputmode="numeric" placeholder="000000" required>
+                    <div class="form-text">Enter the 6-digit code sent to <?= htmlspecialchars((string) ($pendingProfileUpdate['send_to'] ?? 'your email')) ?>.</div>
+                  </div>
+                  <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Change Password</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
     </div>
   </main>
 </div>

@@ -8,12 +8,21 @@
   <div class="course-card__thumb position-relative overflow-hidden">
     <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
     <span class="badge bg-primary position-absolute top-0 end-0 m-2"><?= htmlspecialchars($course['category']) ?></span>
+    <?php if (!empty($course['lessons']) && is_array($course['lessons'])): ?>
+      <?php $totalDuration = 0; foreach ($course['lessons'] as $lesson) { $duration = trim((string) ($lesson['duration'] ?? '')); if (preg_match('/^(\d+):(\d{2})$/', $duration, $m)) { $totalDuration += (int)$m[1] * 60 + (int)$m[2]; } } ?>
+      <span class="badge bg-dark position-absolute bottom-0 end-0 m-2"><?= htmlspecialchars($totalDuration > 0 ? format_duration_from_seconds($totalDuration) : '0:00') ?></span>
+    <?php endif; ?>
   </div>
   <div class="card-body d-flex flex-column">
     <h3 class="h6 card-title mb-1"><?= htmlspecialchars($course['title']) ?></h3>
-    <p class="text-muted small mb-2"><?= htmlspecialchars($course['teacher']) ?></p>
+    <div class="d-flex align-items-center gap-2 p-2 rounded border bg-light mb-2">
+      <img src="<?= media_url($course['teacher_photo'] ?? '', 'assets/images/avatars/placeholder.svg') ?>" class="rounded-circle" width="36" height="36" style="object-fit:cover" alt="<?= htmlspecialchars($course['teacher']) ?>">
+      <div class="min-w-0">
+        <div class="fw-semibold small">Uploaded by <?= htmlspecialchars($course['teacher']) ?></div>
+      </div>
+    </div>
     <div class="rating-stars small mb-2">
-      <?php $r = (float)$course['rating']; for ($i = 1; $i <= 5; $i++): ?>
+      <?php $r = (float) ($course['teacher_rating'] ?: $course['rating']); for ($i = 1; $i <= 5; $i++): ?>
         <i class="bi bi-star<?= $i <= floor($r) ? '-fill' : ($i - $r < 1 ? '-half' : '') ?> text-warning"></i>
       <?php endfor; ?>
       <span class="text-muted ms-1">(<?= number_format($r, 1) ?>)</span>

@@ -7,10 +7,14 @@ if (!$course) {
 }
 $user = auth_user();
 $enrolled = false;
+$teacherProfile = null;
 if ($user && ($user['role'] ?? '') === 'student' && db_available()) {
     $stmt = db()->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=?');
     $stmt->execute([(int) $user['id'], $id]);
     $enrolled = (bool) $stmt->fetch();
+}
+if ($course['teacher_id'] > 0) {
+    $teacherProfile = getTeacherById($course['teacher_id']);
 }
 $pageTitle = $course['title'].' | '.SITE_NAME;
 require_once __DIR__.'/../components/head.php';
@@ -58,7 +62,28 @@ require __DIR__ . '/../components/page-hero.php';
     <a href="<?= url('auth/login.php?role=student') ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
     <?php endif; ?>
     <ul class="list-unstyled small text-muted"><li><i class="bi bi-infinity me-2"></i>Lifetime access</li><li><i class="bi bi-phone me-2"></i>Mobile friendly</li></ul>
-    <hr><h4 class="h6">Instructor</h4><p class="small mb-0"><?= htmlspecialchars($course['teacher']) ?></p>
+    <hr><h4 class="h6">Instructor</h4>
+    <p class="small mb-2"><strong><?= htmlspecialchars($course['teacher']) ?></strong></p>
+    <?php if ($enrolled && $teacherProfile): ?>
+      <div class="border rounded p-3 bg-light">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <img src="<?= media_url($teacherProfile['photo']) ?>" class="rounded-circle" width="44" height="44" style="object-fit:cover" alt="<?= htmlspecialchars($teacherProfile['name']) ?>">
+          <div>
+            <div class="fw-semibold small"><?= htmlspecialchars($teacherProfile['name']) ?></div>
+            <div class="text-muted small"><?= htmlspecialchars($teacherProfile['subject'] ?: $teacherProfile['qualification']) ?></div>
+          </div>
+        </div>
+        <div class="rating-stars small mb-2">
+          <?= renderStars((float)$teacherProfile['rating']) ?>
+          <span class="ms-2 text-muted"><?= number_format($teacherProfile['rating'], 1) ?> / 5</span>
+        </div>
+        <p class="small text-muted mb-2"><?= htmlspecialchars($teacherProfile['qualification']) ?></p>
+        <p class="small text-muted mb-2"><strong><?= number_format($teacherProfile['students']) ?></strong> students taught</p>
+        <a href="<?= url('pages/teacher-profile.php?id=' . (int)$teacherProfile['id']) ?>" class="btn btn-sm btn-outline-primary w-100">View full profile</a>
+      </div>
+    <?php elseif ($teacherProfile): ?>
+      <p class="small text-muted mb-0">Enroll to view the instructor profile and rating.</p>
+    <?php endif; ?>
   </div></div>
 </div></div></main>
 <?php require_once __DIR__.'/../components/footer.php'; require_once __DIR__.'/../components/modals.php'; require_once __DIR__.'/../components/public-footer-scripts.php'; ?>

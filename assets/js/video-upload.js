@@ -19,6 +19,46 @@
     row.querySelector('.lesson-video-feedback')?.classList.remove('d-block');
   }
 
+  function formatDuration(seconds) {
+    const total = Math.max(0, Math.round(seconds || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    if (hours > 0) {
+      return hours + ':' + String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+    return minutes + ':' + String(secs).padStart(2, '0');
+  }
+
+  function setLessonDuration(row, durationSeconds) {
+    const durationInput = row.querySelector('input[name="lesson_durations[]"]');
+    if (durationInput) {
+      durationInput.value = formatDuration(durationSeconds);
+    }
+  }
+
+  function detectVideoDuration(file) {
+    return new Promise((resolve) => {
+      if (!file || !window.URL) {
+        resolve(0);
+        return;
+      }
+      const objectUrl = window.URL.createObjectURL(file);
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        const duration = Number.isFinite(video.duration) ? video.duration : 0;
+        window.URL.revokeObjectURL(objectUrl);
+        resolve(duration);
+      };
+      video.onerror = () => {
+        window.URL.revokeObjectURL(objectUrl);
+        resolve(0);
+      };
+      video.src = objectUrl;
+    });
+  }
+
   async function uploadLessonVideo(fileInput) {
     const row = fileInput.closest('.lesson-row');
     if (!row) return;
@@ -50,6 +90,11 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) {
         throw new Error(data.error || 'Video upload failed.');
+      }
+
+      const durationSeconds = await detectVideoDuration(file);
+      if (durationSeconds > 0) {
+        setLessonDuration(row, durationSeconds);
       }
 
       if (urlInput) {

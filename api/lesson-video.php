@@ -47,9 +47,8 @@ if ($contentUrl === '' || !is_local_video_path($contentUrl)) {
     exit('Video not found');
 }
 
-$absPath = realpath(__DIR__ . '/../' . ltrim($contentUrl, '/'));
-$uploadsRoot = realpath(__DIR__ . '/../uploads/videos');
-if ($absPath === false || $uploadsRoot === false || !str_starts_with($absPath, $uploadsRoot)) {
+$absPath = resolve_local_media_path($contentUrl);
+if ($absPath === null || !is_file($absPath)) {
     http_response_code(404);
     exit('Video not found');
 }
