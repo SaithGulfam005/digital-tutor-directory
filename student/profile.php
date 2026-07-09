@@ -1,13 +1,10 @@
 <?php
 require_once __DIR__ . '/../components/require-student.php';
-<<<<<<< HEAD
 $student = getCurrentStudent();
 $favorites = get_student_favorite_teachers((int) auth_id());
 $pageTitle = 'Profile | ' . SITE_NAME;
-=======
 $student = mockCurrentStudent();
 $pageTitle = 'Edit Profile | ' . SITE_NAME;
->>>>>>> 9de4fed1ab188aad3465c849380906af98308a82
 $dashboardLayout = true;
 $dashSection = 'profile';
 $bodyClass = 'dashboard-body';
@@ -147,7 +144,6 @@ require __DIR__ . '/../components/page-hero.php';
             </div>
           </div>
         </div>
-<<<<<<< HEAD
         <div class="table-card p-4 mt-4">
           <h3 class="h6 fw-bold mb-3">Favorite Teachers</h3>
           <?php if ($favorites): ?>
@@ -164,8 +160,6 @@ require __DIR__ . '/../components/page-hero.php';
           <?php endif; ?>
         </div>
       </div>
-=======
->>>>>>> 9de4fed1ab188aad3465c849380906af98308a82
     </div>
   </main>
 </div>
