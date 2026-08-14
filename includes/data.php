@@ -940,6 +940,27 @@ function getEnrollmentProgress(int $studentId, int $courseId): int
 
 function processCoursePayment(int $studentId, int $courseId, string $method, array $billing = []): array
 {
+    $methodKey = strtolower(trim($method));
+    if ($methodKey === 'stripe') {
+        throw new RuntimeException('Use Stripe checkout for card payments.');
+    }
+
+    if ($methodKey !== 'bank_transfer') {
+        throw new RuntimeException('Invalid payment method.');
+    }
+
+    $payment = create_pending_payment($studentId, $courseId, $methodKey, $billing['transaction_ref'] ?? null);
+
+    return [
+        'reference' => $payment['reference'],
+        'status' => 'pending',
+        'amount' => $payment['amount'],
+        'method' => $payment['method'],
+    ];
+}
+
+function create_pending_payment(int $studentId, int $courseId, string $method, ?string $transactionRef = null): array
+{
     $course = getCourseById($courseId);
     if (!$course) {
         throw new RuntimeException('Course not found.');
@@ -959,7 +980,7 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
     $pendingCheck = $pdo->prepare("SELECT id FROM payments WHERE student_id=? AND course_id=? AND status='pending' LIMIT 1");
     $pendingCheck->execute([$studentId, $courseId]);
     if ($pendingCheck->fetch()) {
-        throw new RuntimeException('A payment for this course is already pending admin approval.');
+        throw new RuntimeException('A payment for this course is already pending approval.');
     }
 
     $methodKey = strtolower(trim($method));
@@ -970,31 +991,84 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
     $amount = (float) $course['price'];
     $teacherShare = round($amount * 0.7, 2);
     $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
-    $status = 'pending';
     $methodLabel = payment_method_label($methodKey);
+    if ($transactionRef) {
+        $methodLabel .= ' (Ref: ' . substr(trim($transactionRef), 0, 40) . ')';
+    }
+
+    ensure_stripe_payment_columns();
 
     $pdo->beginTransaction();
     try {
         $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, status, teacher_share, created_at) VALUES (?,?,?,?,?,?,?,NOW())');
-        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $methodLabel, $status, $teacherShare]);
-
-        if ($status === 'completed') {
-            $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
-            $en->execute([$studentId, $courseId, 'active']);
-        }
-
+        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $methodLabel, 'pending', $teacherShare]);
+        $paymentId = (int) $pdo->lastInsertId();
         $pdo->commit();
 
         return [
+            'id' => $paymentId,
             'reference' => $paymentRef,
-            'status' => $status,
             'amount' => $amount,
             'method' => $methodLabel,
+            'course_title' => $course['title'],
         ];
     } catch (Throwable $e) {
         $pdo->rollBack();
         throw $e;
     }
+}
+
+function complete_stripe_payment(int $paymentId, string $sessionId, int $studentId, int $courseId): array
+{
+    if (!db_available()) {
+        throw new RuntimeException('Database not available.');
+    }
+
+    $pdo = db();
+    ensure_stripe_payment_columns();
+
+    $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
+    $stmt->execute([$paymentId]);
+    $payment = $stmt->fetch();
+    if (!$payment) {
+        throw new RuntimeException('Payment record not found.');
+    }
+
+    if ((int) $payment['student_id'] !== $studentId || (int) $payment['course_id'] !== $courseId) {
+        throw new RuntimeException('Payment does not match this purchase.');
+    }
+
+    if ($payment['status'] === 'completed') {
+        $course = getCourseById($courseId);
+        return ['course_title' => $course['title'] ?? 'Course', 'already_completed' => true];
+    }
+
+    $course = getCourseById($courseId);
+    if (!$course) {
+        throw new RuntimeException('Course not found.');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare("UPDATE payments SET status='completed', stripe_session_id=? WHERE id=?")
+            ->execute([$sessionId, $paymentId]);
+
+        $check = $pdo->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=? LIMIT 1');
+        $check->execute([$studentId, $courseId]);
+        if (!$check->fetch()) {
+            $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
+            $en->execute([$studentId, $courseId, 'active']);
+        }
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+
+    notify_payment_approved($paymentId);
+
+    return ['course_title' => $course['title'], 'already_completed' => false];
 }
 
 function admin_confirm_payment(int $paymentId): void
@@ -1026,6 +1100,76 @@ function admin_confirm_payment(int $paymentId): void
         $pdo->rollBack();
         throw $e;
     }
+
+    notify_payment_approved($paymentId);
+}
+
+function admin_reject_payment(int $paymentId, string $reason = ''): void
+{
+    $pdo = db();
+    $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
+    $stmt->execute([$paymentId]);
+    $payment = $stmt->fetch();
+    if (!$payment) {
+        throw new RuntimeException('Payment not found.');
+    }
+    if ($payment['status'] !== 'pending') {
+        throw new RuntimeException('Only pending payments can be rejected.');
+    }
+
+    $pdo->prepare("UPDATE payments SET status='failed' WHERE id=?")->execute([$paymentId]);
+    notify_payment_rejected($paymentId, $reason);
+}
+
+function notify_payment_approved(int $paymentId): void
+{
+    $payment = get_payment_details($paymentId);
+    if (!$payment || empty($payment['student_email'])) {
+        return;
+    }
+
+    $subject = 'Payment approved — ' . ($payment['course_title'] ?? 'your course');
+    $body = build_payment_approved_email(
+        $payment['student_name'],
+        $payment['course_title'],
+        (float) $payment['amount'],
+        $payment['reference']
+    );
+    send_app_mail($payment['student_email'], $subject, $body);
+}
+
+function notify_payment_rejected(int $paymentId, string $reason = ''): void
+{
+    $payment = get_payment_details($paymentId);
+    if (!$payment || empty($payment['student_email'])) {
+        return;
+    }
+
+    $subject = 'Payment not approved — ' . ($payment['course_title'] ?? 'your course');
+    $body = build_payment_rejected_email(
+        $payment['student_name'],
+        $payment['course_title'],
+        (float) $payment['amount'],
+        $payment['reference'],
+        $reason
+    );
+    send_app_mail($payment['student_email'], $subject, $body);
+}
+
+function get_payment_details(int $paymentId): ?array
+{
+    if (!db_available()) {
+        return null;
+    }
+
+    $stmt = db()->prepare('SELECT p.*, u.name AS student_name, u.email AS student_email, c.title AS course_title
+        FROM payments p
+        JOIN users u ON u.id = p.student_id
+        JOIN courses c ON c.id = p.course_id
+        WHERE p.id = ? LIMIT 1');
+    $stmt->execute([$paymentId]);
+    $row = $stmt->fetch();
+    return $row ?: null;
 }
 
 function admin_update_user_status(int $userId, string $status): void

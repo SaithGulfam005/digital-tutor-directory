@@ -8,6 +8,7 @@ declare(strict_types=1);
 return [
     'from_email' => 'digitaltutordirectory@gmail.com',
     'from_name' => 'Digital Tutor Directory',
+    'contact_email' => 'digitaltutordirectory@gmail.com',
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
     'smtp_user' => 'digitaltutordirectory@gmail.com',

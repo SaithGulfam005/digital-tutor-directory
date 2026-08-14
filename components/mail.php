@@ -10,24 +10,27 @@ function mail_config(): array
     return $config;
 }
 
-function send_app_mail(string $to, string $subject, string $htmlBody): bool
+function send_app_mail(string $to, string $subject, string $htmlBody, ?string $replyTo = null): bool
 {
     $config = mail_config();
     $fromEmail = $config['from_email'];
     $fromName = $config['from_name'];
 
     if (!empty($config['use_smtp']) && !empty($config['smtp_pass'])) {
-        return send_smtp_mail($to, $subject, $htmlBody, $fromEmail, $fromName, $config);
+        return send_smtp_mail($to, $subject, $htmlBody, $fromEmail, $fromName, $config, $replyTo);
     }
 
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
     $headers .= 'From: ' . $fromName . ' <' . $fromEmail . ">\r\n";
+    if ($replyTo !== null && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+        $headers .= 'Reply-To: ' . $replyTo . "\r\n";
+    }
 
     return @mail($to, $subject, $htmlBody, $headers);
 }
 
-function send_smtp_mail(string $to, string $subject, string $htmlBody, string $fromEmail, string $fromName, array $config): bool
+function send_smtp_mail(string $to, string $subject, string $htmlBody, string $fromEmail, string $fromName, array $config, ?string $replyTo = null): bool
 {
     $host = $config['smtp_host'];
     $port = (int) ($config['smtp_port'] ?? 587);
@@ -129,6 +132,9 @@ function send_smtp_mail(string $to, string $subject, string $htmlBody, string $f
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     $message = "From: {$fromName} <{$fromEmail}>\r\n";
     $message .= "To: {$to}\r\n";
+    if ($replyTo !== null && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+        $message .= "Reply-To: {$replyTo}\r\n";
+    }
     $message .= "Subject: {$encodedSubject}\r\n";
     $message .= "MIME-Version: 1.0\r\n";
     $message .= "Content-Type: text/html; charset=UTF-8\r\n";
@@ -186,6 +192,41 @@ function build_otp_email(string $otp): string
     </div>
     <p style="font-size:14px;color:#666;">If you did not request this, you can ignore this email.</p>
     <p style="font-size:12px;color:#999;">&copy; {$year} {$site}</p>
+  </div>
+</body>
+</html>
+HTML;
+}
+
+function contact_inbox_email(): string
+{
+    $config = mail_config();
+    return trim((string) ($config['contact_email'] ?? $config['from_email'] ?? ''));
+}
+
+function build_contact_email(string $name, string $email, string $subject, string $message): string
+{
+    $year = date('Y');
+    $site = SITE_NAME;
+    $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+    $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+    $safeSubject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+    $safeMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+
+    return <<<HTML
+<html>
+<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">
+    <h2 style="color:#0d6efd;margin-top:0;">New contact message</h2>
+    <p style="margin:0 0 8px;"><strong>Site:</strong> {$site}</p>
+    <p style="margin:0 0 8px;"><strong>Name:</strong> {$safeName}</p>
+    <p style="margin:0 0 8px;"><strong>Email:</strong> {$safeEmail}</p>
+    <p style="margin:0 0 16px;"><strong>Subject:</strong> {$safeSubject}</p>
+    <div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:16px;">
+      <p style="margin:0 0 8px;font-weight:bold;">Message</p>
+      <p style="margin:0;">{$safeMessage}</p>
+    </div>
+    <p style="font-size:12px;color:#999;margin-top:20px;">&copy; {$year} {$site}</p>
   </div>
 </body>
 </html>

@@ -1,59 +1,40 @@
 <?php
 /**
- * Payment Configuration — built-in gateway (no paid API keys required)
+ * Payment & Stripe configuration.
+ * Get test keys from https://dashboard.stripe.com/test/apikeys
  */
 declare(strict_types=1);
 
 const PAYMENT_METHODS = [
-    'card' => 'Credit / Debit Card',
-    'jazzcash' => 'JazzCash',
-    'easypaisa' => 'EasyPaisa',
+    'stripe' => 'Credit / Debit Card (Stripe)',
     'bank_transfer' => 'Bank Transfer (manual approval)',
 ];
 
-const INSTANT_PAYMENT_METHODS = ['card', 'jazzcash', 'easypaisa'];
-const PAYMENT_CALLBACK_SECRET = 'replace-with-your-jazzcash-secret';
+const PAYMENT_CURRENCY = 'usd';
+
+// Stripe test keys — replace with your keys from Stripe Dashboard
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51ReplaceWithYourPublishableKey';
+const STRIPE_SECRET_KEY = 'sk_test_51ReplaceWithYourSecretKey';
+const STRIPE_WEBHOOK_SECRET = '';
 
 function payment_method_label(string $method): string
 {
     return PAYMENT_METHODS[strtolower($method)] ?? ucfirst($method);
 }
 
-function is_callback_secret_valid(string $token): bool
+function stripe_is_configured(): bool
 {
-    return hash_equals(PAYMENT_CALLBACK_SECRET, $token);
-}
-
-function is_instant_payment_method(string $method): bool
-{
-    return in_array(strtolower($method), INSTANT_PAYMENT_METHODS, true);
+    return STRIPE_SECRET_KEY !== ''
+        && STRIPE_PUBLISHABLE_KEY !== ''
+        && !str_contains(STRIPE_SECRET_KEY, 'ReplaceWithYour')
+        && !str_contains(STRIPE_PUBLISHABLE_KEY, 'ReplaceWithYour');
 }
 
 function validate_payment_details(string $method, array $data): ?string
 {
     $method = strtolower($method);
-    if ($method === 'card') {
-        $number = preg_replace('/\D/', '', $data['card_number'] ?? '');
-        if (strlen($number) < 13 || strlen($number) > 19) {
-            return 'Enter a valid card number.';
-        }
-        if (!preg_match('/^\d{2}\/\d{2}$/', $data['card_expiry'] ?? '')) {
-            return 'Enter expiry as MM/YY.';
-        }
-        if (!preg_match('/^\d{3,4}$/', $data['card_cvc'] ?? '')) {
-            return 'Enter a valid CVC.';
-        }
-        return null;
-    }
 
-    if (in_array($method, ['jazzcash', 'easypaisa'], true)) {
-        $mobile = preg_replace('/\D/', '', $data['mobile_number'] ?? '');
-        if (strlen($mobile) < 10) {
-            return 'Enter a valid mobile wallet number.';
-        }
-        if (strlen($data['wallet_pin'] ?? '') < 4) {
-            return 'Enter your wallet PIN.';
-        }
+    if ($method === 'stripe') {
         return null;
     }
 

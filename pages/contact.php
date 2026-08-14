@@ -10,6 +10,9 @@ $faqs = [
     ['Are teachers verified?', 'Yes. Teachers submit documents and are approved by admin before teaching.'],
     ['Can I become a teacher?', 'Register as a teacher, upload verification documents, and wait for admin approval.'],
 ];
+$supportEmail = contact_inbox_email();
+$supportPhone = '+92 3279594391';
+$supportPhoneHref = '+923279594391';
 ?>
 <?php
 $pageHeading = 'Contact Us';
@@ -83,19 +86,19 @@ require __DIR__ . '/../components/page-hero.php';
 
       <div class="col-lg-5">
         <div class="contact-aside h-100 d-flex flex-column gap-3">
-          <a href="mailto:support@digitaltutor.com" class="contact-method">
+          <a href="mailto:<?= htmlspecialchars($supportEmail) ?>" class="contact-method">
             <span class="contact-method__icon"><i class="bi bi-envelope"></i></span>
             <span class="contact-method__body">
               <span class="contact-method__label">Email</span>
-              <span class="contact-method__value">digitaltutordirectory@gmail.com</span>
+              <span class="contact-method__value"><?= htmlspecialchars($supportEmail) ?></span>
             </span>
             <i class="bi bi-arrow-up-right contact-method__arrow"></i>
           </a>
-          <a href="tel:+923001234567" class="contact-method">
+          <a href="tel:<?= htmlspecialchars($supportPhoneHref) ?>" class="contact-method">
             <span class="contact-method__icon"><i class="bi bi-telephone"></i></span>
             <span class="contact-method__body">
               <span class="contact-method__label">Phone</span>
-              <span class="contact-method__value">+92 3279594391</span>
+              <span class="contact-method__value"><?= htmlspecialchars($supportPhone) ?></span>
             </span>
             <i class="bi bi-arrow-up-right contact-method__arrow"></i>
           </a>
