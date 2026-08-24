@@ -1200,7 +1200,35 @@ function admin_delete_course(int $courseId): void
 
 function admin_update_payment_status(int $paymentId, string $status): void
 {
-    db()->prepare('UPDATE payments SET status=? WHERE id=?')->execute([$status, $paymentId]);
+    $pdo = db();
+    $paymentStmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
+    $paymentStmt->execute([$paymentId]);
+    $payment = $paymentStmt->fetch();
+    if (!$payment) {
+        throw new RuntimeException('Payment not found.');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE payments SET status=? WHERE id=?')->execute([$status, $paymentId]);
+
+        if (in_array($status, ['refunded', 'failed'], true)) {
+            $pdo->prepare('DELETE FROM enrollments WHERE student_id=? AND course_id=?')
+                ->execute([(int) $payment['student_id'], (int) $payment['course_id']]);
+        } elseif ($status === 'completed') {
+            $check = $pdo->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=? LIMIT 1');
+            $check->execute([(int) $payment['student_id'], (int) $payment['course_id']]);
+            if (!$check->fetch()) {
+                $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())')
+                    ->execute([(int) $payment['student_id'], (int) $payment['course_id'], 'active']);
+            }
+        }
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
 

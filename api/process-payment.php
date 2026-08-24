@@ -15,12 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $courseId = (int) ($_POST['course_id'] ?? 0);
 $method = trim($_POST['payment_method'] ?? 'card');
+$methodKey = strtolower($method);
+if ($methodKey === 'stripe') {
+    $methodKey = 'card';
+}
 
 if (!$courseId) {
     json_response(['success' => false, 'message' => 'Course not found'], 400);
 }
 
-if (!array_key_exists(strtolower($method), PAYMENT_METHODS)) {
+if (!array_key_exists($methodKey, PAYMENT_METHODS)) {
     json_response(['success' => false, 'message' => 'Invalid payment method'], 400);
 }
 
@@ -33,13 +37,36 @@ if (!$course || ($course['status'] ?? '') !== 'published') {
     json_response(['success' => false, 'message' => 'Course is not available for purchase'], 404);
 }
 
-$error = validate_payment_details($method, $_POST);
+$error = validate_payment_details($methodKey, $_POST);
 if ($error) {
     json_response(['success' => false, 'message' => $error], 400);
 }
 
 try {
-    $result = processCoursePayment((int) $user['id'], $courseId, $method);
+    if (in_array($methodKey, ['card'], true)) {
+        if (!stripe_is_configured()) {
+            json_response([
+                'success' => false,
+                'message' => 'Stripe is not configured yet. Ask the administrator to add Stripe API keys in payment-config.php.',
+            ], 503);
+        }
+
+        $payment = create_pending_payment((int) $user['id'], $courseId, 'stripe');
+        $session = stripe_create_checkout_session((int) $user['id'], $courseId, (int) $payment['id'], $user, $course);
+
+        if (empty($session['url'])) {
+            throw new RuntimeException('Stripe did not return a checkout URL.');
+        }
+
+        json_response([
+            'success' => true,
+            'message' => 'Redirecting to Stripe checkout.',
+            'payment_reference' => $payment['reference'],
+            'redirect' => $session['url'],
+        ]);
+    }
+
+    $result = processCoursePayment((int) $user['id'], $courseId, $methodKey);
 
     if ($result['status'] === 'pending') {
         json_response([
