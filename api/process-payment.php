@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../components/config.php';
 require_once __DIR__ . '/../components/payment-config.php';
+require_once __DIR__ . '/../components/stripe.php';
 
 $user = auth_user();
 if (!$user || ($user['role'] ?? '') !== 'student') {
@@ -39,6 +40,25 @@ if ($error) {
 }
 
 try {
+    if (strtolower($method) === 'stripe') {
+        $payment = create_pending_payment((int) $user['id'], $courseId, 'stripe');
+        $session = stripe_create_checkout_session((int) $user['id'], $courseId, (int) $payment['id'], $user, $course);
+
+        if (empty($session['url'])) {
+            throw new RuntimeException('Stripe did not return a checkout URL.');
+        }
+
+        json_response([
+            'success' => true,
+            'pending' => false,
+            'message' => 'Redirecting to Stripe checkout…',
+            'payment_reference' => $payment['reference'],
+            'redirect' => $session['url'],
+            'checkout_url' => $session['url'],
+            'session_id' => $session['id'] ?? '',
+        ]);
+    }
+
     $result = processCoursePayment((int) $user['id'], $courseId, $method);
 
     if ($result['status'] === 'pending') {

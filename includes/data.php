@@ -941,8 +941,16 @@ function getEnrollmentProgress(int $studentId, int $courseId): int
 function processCoursePayment(int $studentId, int $courseId, string $method, array $billing = []): array
 {
     $methodKey = strtolower(trim($method));
+
     if ($methodKey === 'stripe') {
-        throw new RuntimeException('Use Stripe checkout for card payments.');
+        $payment = create_pending_payment($studentId, $courseId, $methodKey);
+        return [
+            'reference' => $payment['reference'],
+            'status' => 'pending',
+            'amount' => $payment['amount'],
+            'method' => $payment['method'],
+            'checkout_url' => '',
+        ];
     }
 
     if ($methodKey !== 'bank_transfer') {
@@ -1135,7 +1143,11 @@ function notify_payment_approved(int $paymentId): void
         (float) $payment['amount'],
         $payment['reference']
     );
-    send_app_mail($payment['student_email'], $subject, $body);
+    try {
+        send_app_mail($payment['student_email'], $subject, $body);
+    } catch (Throwable $e) {
+        error_log('Payment approval email failed: ' . $e->getMessage());
+    }
 }
 
 function notify_payment_rejected(int $paymentId, string $reason = ''): void

@@ -52,41 +52,17 @@ require_once __DIR__ . '/../components/head.php';
                 <?php foreach (PAYMENT_METHODS as $key => $label): ?>
                 <div class="col-md-6">
                   <label class="payment-method-option d-block border rounded p-3 h-100">
-                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'card' ? 'checked' : '' ?>>
+                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'stripe' ? 'checked' : '' ?>>
                     <span class="fw-medium"><?= htmlspecialchars($label) ?></span>
                   </label>
                 </div>
                 <?php endforeach; ?>
               </div>
 
-              <div id="fields-card" class="payment-fields">
-                <div class="row g-3">
-                  <div class="col-12">
-                    <label class="form-label">Card Number</label>
-                    <input type="text" class="form-control" name="card_number" placeholder="4111 1111 1111 1111" maxlength="19">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Expiry (MM/YY)</label>
-                    <input type="text" class="form-control" name="card_expiry" placeholder="12/28" maxlength="5">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">CVC</label>
-                    <input type="text" class="form-control" name="card_cvc" placeholder="123" maxlength="4">
-                  </div>
-                </div>
-                <p class="small text-muted mt-2 mb-0">Test card: 4111 1111 1111 1111 · any future expiry · any CVC</p>
-              </div>
-
-              <div id="fields-wallet" class="payment-fields d-none">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Mobile Number</label>
-                    <input type="tel" class="form-control" name="mobile_number" placeholder="03XX XXXXXXX">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Wallet PIN</label>
-                    <input type="password" class="form-control" name="wallet_pin" placeholder="****" maxlength="6">
-                  </div>
+              <div id="fields-stripe" class="payment-fields">
+                <div class="alert alert-info small mb-0">
+                  <i class="bi bi-credit-card me-2"></i>
+                  You will be redirected to Stripe to complete your secure payment for this course.
                 </div>
               </div>
 
@@ -128,16 +104,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnText = document.getElementById('btn-text');
   const btnSpinner = document.getElementById('btn-spinner');
 
+  const stripeFields = document.getElementById('fields-stripe');
+
   function showFields(method) {
-    cardFields.classList.toggle('d-none', method !== 'card');
-    walletFields.classList.toggle('d-none', !['jazzcash', 'easypaisa'].includes(method));
-    bankFields.classList.toggle('d-none', method !== 'bank_transfer');
+    if (stripeFields) stripeFields.classList.toggle('d-none', method !== 'stripe');
+    if (bankFields) bankFields.classList.toggle('d-none', method !== 'bank_transfer');
   }
 
   methodInputs.forEach((input) => {
     input.addEventListener('change', () => showFields(input.value));
   });
-  showFields('card');
+  showFields('stripe');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -153,7 +130,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       const data = await response.json();
       if (data.success) {
-        window.location.href = data.redirect || '<?= url('student/my-courses.php') ?>';
+        const nextUrl = data.checkout_url || data.redirect || '<?= url('student/my-courses.php') ?>';
+        window.location.href = nextUrl;
         return;
       }
       errorBox.textContent = data.message || 'Payment failed.';

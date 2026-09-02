@@ -81,6 +81,7 @@ require __DIR__ . '/../components/page-hero.php';
                 <button type="button" class="btn btn-sm btn-outline-warning" data-admin-action="refund" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Refund</button>
                 <?php elseif ($p['status'] === 'pending'): ?>
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Confirm</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Reject</button>
                 <?php endif; ?>
               </td>
             </tr>

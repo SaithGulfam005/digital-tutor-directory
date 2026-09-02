@@ -26,13 +26,20 @@
       } else if (table?.id === 'coursesTable') {
         apiAction = uiAction === 'approve' ? 'approve_course' : uiAction === 'reject' ? 'reject_course' : uiAction === 'delete' ? 'delete_course' : apiAction;
       } else if (table?.id === 'paymentsTable') {
-        apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'refund' ? 'refund_payment' : apiAction;
+        apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'reject' ? 'reject_payment' : uiAction === 'refund' ? 'refund_payment' : apiAction;
+      } else if (table?.id === 'payoutRequestsTable') {
+        apiAction = uiAction;
+      }
+
+      if (!apiAction && uiAction.includes('_')) {
+        apiAction = uiAction;
       }
 
       const id = btn.dataset.apiId
         || row?.dataset.userId
         || row?.dataset.courseId
-        || row?.dataset.paymentId;
+        || row?.dataset.paymentId
+        || row?.dataset.payoutRequestId;
 
       if (!apiAction || !id) {
         window.showToast?.('Backend action not available for this item.', 'warning');
