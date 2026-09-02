@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 const PAYMENT_METHODS = [
+    'card' => 'Credit / Debit Card (Stripe)',
     'stripe' => 'Credit / Debit Card (Stripe)',
     'bank_transfer' => 'Bank Transfer (manual approval)',
 ];
@@ -34,7 +35,7 @@ function validate_payment_details(string $method, array $data): ?string
 {
     $method = strtolower($method);
 
-    if ($method === 'stripe') {
+    if (in_array($method, ['card', 'stripe'], true)) {
         return null;
     }
 
