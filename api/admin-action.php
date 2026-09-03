@@ -50,13 +50,11 @@ try {
         case 'confirm_payment':
             admin_confirm_payment($id);
             json_response(['ok' => true, 'message' => 'Payment confirmed and student enrolled.']);
-<<<<<<< HEAD
+            break;
         case 'reject_payment':
             admin_reject_payment($id, trim((string) ($_POST['reason'] ?? '')));
             json_response(['ok' => true, 'message' => 'Payment rejected and the student has been notified.']);
-=======
             break;
->>>>>>> f001ebc88af0f031f4eca83e21e08fae031161be
         case 'refund_payment':
             admin_update_payment_status($id, 'refunded');
             json_response(['ok' => true, 'message' => 'Payment refunded.']);
