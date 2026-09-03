@@ -1,9 +1,10 @@
 <?php /** @var array $teacher */ ?>
+<?php $teacherCategories = $teacher['categories'] ?? [$teacher['subject'] ?? '']; ?>
 <article class="teacher-card card h-100 border-0 shadow-sm text-center p-4"
-  data-subject="<?= htmlspecialchars($teacher['subject']) ?>"
+  data-category="<?= htmlspecialchars(implode('|', $teacherCategories)) ?>"
   data-rating="<?= (float)$teacher['rating'] ?>"
   data-experience="<?= (int)filter_var($teacher['experience'], FILTER_SANITIZE_NUMBER_INT) ?>"
-  data-search="<?= htmlspecialchars(strtolower($teacher['name'] . ' ' . $teacher['qualification'] . ' ' . $teacher['subject'] . ' ' . $teacher['bio'])) ?>">
+  data-search="<?= htmlspecialchars(strtolower($teacher['name'] . ' ' . $teacher['qualification'] . ' ' . implode(' ', $teacherCategories) . ' ' . $teacher['bio'])) ?>">
   <img src="<?= media_url($teacher['photo']) ?>" class="teacher-card__avatar rounded-circle mx-auto mb-3" alt="<?= htmlspecialchars($teacher['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
   <h3 class="h6 mb-1"><?= htmlspecialchars($teacher['name']) ?></h3>
   <p class="text-muted small mb-1"><?= htmlspecialchars($teacher['qualification']) ?></p>

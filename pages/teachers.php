@@ -3,6 +3,7 @@ require_once __DIR__ . '/../components/config.php';
 $pageTitle = 'Teachers | ' . SITE_NAME;
 $loadFilters = true;
 $teachers = mockTeachers();
+$initialCategory = trim($_GET['category'] ?? $_GET['subject'] ?? '');
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/navbar.php';
 ?>
@@ -15,13 +16,17 @@ require __DIR__ . '/../components/page-hero.php';
 <aside class="col-lg-3">
   <div class="filter-panel">
     <h6 class="fw-bold mb-3">Search</h6>
-    <input type="search" id="teacherSearch" class="form-control mb-2" placeholder="Name, subject, qualification...">
+    <input type="search" id="teacherSearch" class="form-control mb-2" placeholder="Name, category, qualification...">
     <p class="small text-muted mb-3" id="teacherFilterCount"></p>
-    <h6 class="fw-bold mb-2">Subject</h6>
-    <?php foreach (['Development', 'Design', 'Data Science', 'Marketing'] as $s): ?>
+    <h6 class="fw-bold mb-2">Category</h6>
+    <?php foreach (getCategories() as $cat):
+      $catName = is_array($cat) ? ($cat['name'] ?? '') : $cat;
+      if ($catName === '') continue;
+      $catId = 'tc' . preg_replace('/[^a-zA-Z0-9]/', '', $catName);
+    ?>
     <div class="form-check">
-      <input class="form-check-input filter-teacher-subject" type="checkbox" value="<?= $s ?>" id="ts<?= str_replace(' ', '', $s) ?>">
-      <label class="form-check-label" for="ts<?= str_replace(' ', '', $s) ?>"><?= $s ?></label>
+      <input class="form-check-input filter-teacher-category" type="checkbox" value="<?= htmlspecialchars($catName) ?>" id="<?= htmlspecialchars($catId) ?>" <?= $initialCategory === $catName ? 'checked' : '' ?>>
+      <label class="form-check-label" for="<?= htmlspecialchars($catId) ?>"><?= htmlspecialchars($catName) ?></label>
     </div>
     <?php endforeach; ?>
     <h6 class="fw-bold mt-3 mb-2">Minimum Rating</h6>

@@ -298,7 +298,7 @@
         const searchText = normalize(card.dataset.search || card.textContent);
         const title = normalize(card.querySelector('.card-title')?.textContent);
         const teacher = normalize(card.dataset.teacher);
-        const category = card.dataset.category || '';
+        const teacherCategories = (card.dataset.category || '').split('|').map(normalize).filter(Boolean);
         const price = parseFloat(card.dataset.price || '0');
         const rating = parseFloat(card.dataset.rating || '0');
 
@@ -309,7 +309,7 @@
           teacher.includes(query) ||
           normalize(category).includes(query);
 
-        const matchCategory = categories.length === 0 || categories.includes(category);
+        const matchCategory = categories.length === 0 || categories.some((category) => teacherCategories.includes(normalize(category)));
         const matchPrice = price <= maxPrice;
         const matchRating = rating >= minRating;
 
@@ -383,30 +383,30 @@
       emptyId: 'teacherGridEmpty',
       itemSelector: '.teacher-card',
       getFilters() {
-        const subjects = [...document.querySelectorAll('.filter-teacher-subject:checked')].map((c) => c.value);
+        const categories = [...document.querySelectorAll('.filter-teacher-category:checked')].map((c) => c.value);
         const minRating = parseFloat(document.querySelector('.filter-teacher-rating:checked')?.value || '0');
         const minExperience = parseInt(document.getElementById('experienceMin')?.value || '0', 10);
-        return { subjects, minRating, minExperience };
+        return { categories, minRating, minExperience };
       },
       hasActiveFilters(filters) {
-        return filters.subjects.length > 0 || filters.minRating > 0 || filters.minExperience > 0;
+        return filters.categories.length > 0 || filters.minRating > 0 || filters.minExperience > 0;
       },
-      matchItem(card, query, { subjects, minRating, minExperience }) {
+      matchItem(card, query, { categories, minRating, minExperience }) {
         const searchText = normalize(card.dataset.search || card.textContent);
         const name = normalize(card.querySelector('h3')?.textContent);
-        const subject = card.dataset.subject || '';
+        const category = card.dataset.category || '';
         const rating = parseFloat(card.dataset.rating || '0');
         const experience = parseInt(card.dataset.experience || '0', 10);
 
         const matchQuery = !query || searchText.includes(query) || name.includes(query);
-        const matchSubject = subjects.length === 0 || subjects.includes(subject);
+        const matchCategory = categories.length === 0 || categories.includes(category);
         const matchRating = rating >= minRating;
         const matchExperience = experience >= minExperience;
 
-        return matchQuery && matchSubject && matchRating && matchExperience;
+        return matchQuery && matchCategory && matchRating && matchExperience;
       },
       bindFilterEvents(apply) {
-        document.querySelectorAll('.filter-teacher-subject, .filter-teacher-rating').forEach((el) => {
+        document.querySelectorAll('.filter-teacher-category, .filter-teacher-rating').forEach((el) => {
           el.addEventListener('change', apply);
         });
         document.getElementById('experienceMin')?.addEventListener('input', () => {
@@ -421,7 +421,7 @@
           e.preventDefault();
           const search = document.getElementById('teacherSearch');
           if (search) search.value = '';
-          document.querySelectorAll('.filter-teacher-subject').forEach((c) => {
+          document.querySelectorAll('.filter-teacher-category').forEach((c) => {
             c.checked = false;
           });
           document.querySelectorAll('.filter-teacher-rating').forEach((r) => {
@@ -434,6 +434,14 @@
             if (label) label.textContent = 'Any';
           }
           apply();
+        });
+      },
+      initialFilters() {
+        const category = new URLSearchParams(location.search).get('category') || new URLSearchParams(location.search).get('subject');
+        if (!category) return;
+
+        document.querySelectorAll('.filter-teacher-category').forEach((checkbox) => {
+          checkbox.checked = checkbox.value === category;
         });
       },
     });

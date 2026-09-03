@@ -1,8 +1,9 @@
 <?php /** @var array $course */ ?>
+<?php $displayRating = (float) ($course['teacher_rating'] ?: $course['rating']); ?>
 <article class="course-card card h-100 border-0 shadow-sm"
   data-category="<?= htmlspecialchars($course['category']) ?>"
   data-price="<?= (float)$course['price'] ?>"
-  data-rating="<?= (float)$course['rating'] ?>"
+  data-rating="<?= $displayRating ?>"
   data-teacher="<?= htmlspecialchars($course['teacher']) ?>"
   data-search="<?= htmlspecialchars(strtolower($course['title'] . ' ' . $course['teacher'] . ' ' . $course['category'] . ' ' . ($course['desc'] ?? ''))) ?>">
   <div class="course-card__thumb position-relative overflow-hidden">
@@ -22,7 +23,7 @@
       </div>
     </div>
     <div class="rating-stars small mb-2">
-      <?php $r = (float) ($course['teacher_rating'] ?: $course['rating']); for ($i = 1; $i <= 5; $i++): ?>
+      <?php $r = $displayRating; for ($i = 1; $i <= 5; $i++): ?>
         <i class="bi bi-star<?= $i <= floor($r) ? '-fill' : ($i - $r < 1 ? '-half' : '') ?> text-warning"></i>
       <?php endfor; ?>
       <span class="text-muted ms-1">(<?= number_format($r, 1) ?>)</span>
