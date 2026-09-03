@@ -1,16 +1,17 @@
 (function () {
   const salesCtx = document.getElementById('salesChart');
   const growthCtx = document.getElementById('growthChart');
+  const chartData = window.adminChartData || {};
   if (!salesCtx && !growthCtx) return;
 
   if (salesCtx) {
     new Chart(salesCtx, {
       type: 'line',
       data: {
-        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        labels: chartData.revenueLabels || [],
         datasets: [{
           label: 'Revenue ($)',
-          data: [12000, 19000, 15000, 22000, 28000, 35000],
+          data: chartData.revenue || [],
           borderColor: '#2563EB',
           backgroundColor: 'rgba(37,99,235,0.1)',
           fill: true,
@@ -25,10 +26,9 @@
     new Chart(growthCtx, {
       type: 'bar',
       data: {
-        labels: ['Students', 'Teachers'],
+        labels: chartData.userLabels || [],
         datasets: [
-          { label: 'Jan', data: [400, 40], backgroundColor: '#2563EB' },
-          { label: 'Jun', data: [1200, 120], backgroundColor: '#F59E0B' }
+          { label: 'Users', data: chartData.users || [], backgroundColor: '#2563EB' }
         ]
       },
       options: { responsive: true }

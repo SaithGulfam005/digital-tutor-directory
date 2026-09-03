@@ -551,26 +551,41 @@ function mockAdminStats(): array { return getAdminStats(); }
 function getAdminChartData(): array
 {
     if (!db_available()) {
+        $paymentsByDate = [];
+        foreach (fallbackPayments() as $payment) {
+            if (($payment['status'] ?? '') !== 'completed') {
+                continue;
+            }
+            $date = date('Y-m-d', strtotime($payment['date'] ?? 'now'));
+            $paymentsByDate[$date] = ($paymentsByDate[$date] ?? 0) + (float) ($payment['amount'] ?? 0);
+        }
+        ksort($paymentsByDate);
+
         return [
-            'revenueLabels' => ['This Month', 'Total Revenue'],
-            'revenue' => [0, 0],
+            'revenueLabels' => $paymentsByDate ? array_keys($paymentsByDate) : ['No completed payments'],
+            'revenue' => $paymentsByDate ? array_values($paymentsByDate) : [0],
             'userLabels' => ['Students', 'Teachers'],
             'users' => [count(fallbackStudents()), count(fallbackTeachers())],
         ];
     }
 
     $pdo = db();
-    $revenueTotal = (float) $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed'")->fetchColumn();
-    $revenueMonth = (float) $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments
-        WHERE status = 'completed' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+    $revenueByDate = [];
+    foreach ($pdo->query("SELECT DATE(created_at) AS payment_date, SUM(amount) AS revenue
+        FROM payments
+        WHERE status = 'completed'
+        GROUP BY DATE(created_at)
+        ORDER BY payment_date") as $row) {
+        $revenueByDate[$row['payment_date']] = (float) $row['revenue'];
+    }
     $userCounts = ['student' => 0, 'teacher' => 0];
     foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher') GROUP BY role") as $row) {
         $userCounts[$row['role']] = (int) $row['total'];
     }
 
     return [
-        'revenueLabels' => ['This Month', 'Total Revenue'],
-        'revenue' => [$revenueMonth, $revenueTotal],
+        'revenueLabels' => $revenueByDate ? array_keys($revenueByDate) : ['No completed payments'],
+        'revenue' => $revenueByDate ? array_values($revenueByDate) : [0],
         'userLabels' => ['Students', 'Teachers'],
         'users' => [$userCounts['student'], $userCounts['teacher']],
     ];
