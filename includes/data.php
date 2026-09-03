@@ -618,6 +618,29 @@ function getTeacherEarnings(?int $teacherId = null): array
     $stmt->execute([$teacherId]);
     $total = (float) $stmt->fetchColumn();
 
+    $payoutRequests = get_teacher_payout_requests($teacherId);
+    $paidOut = 0.0;
+    $pendingPayout = 0.0;
+    $history = [];
+    foreach ($payoutRequests as $request) {
+        $amount = (float) ($request['amount'] ?? 0);
+        $status = (string) ($request['status'] ?? 'pending');
+        if ($status === 'approved') {
+            $paidOut += $amount;
+            $displayStatus = 'paid';
+        } elseif ($status === 'pending') {
+            $pendingPayout += $amount;
+            $displayStatus = 'pending';
+        } else {
+            $displayStatus = $status;
+        }
+        $history[] = [
+            'month' => date('M Y', strtotime((string) ($request['created_at'] ?? 'now'))),
+            'amount' => $amount,
+            'status' => $displayStatus,
+        ];
+    }
+
     $stmt = $pdo->prepare("SELECT p.created_at AS date, c.title AS course, u.name AS student, p.teacher_share AS amount
         FROM payments p JOIN courses c ON c.id=p.course_id JOIN users u ON u.id=p.student_id
         WHERE c.teacher_id=? AND p.status='completed' ORDER BY p.created_at DESC LIMIT 10");
@@ -630,12 +653,12 @@ function getTeacherEarnings(?int $teacherId = null): array
     ], $stmt->fetchAll());
 
     return [
-        'balance' => round($total, 2),
-        'this_month' => $thisMonth,
-        'last_month' => $lastMonth,
-        'total' => $total,
-        'pending_payout' => round($thisMonth, 2),
-        'history' => [],
+        'balance' => max(round($total - $paidOut - $pendingPayout, 2), 0),
+        'this_month' => round($thisMonth, 2),
+        'last_month' => round($lastMonth, 2),
+        'total' => round($total, 2),
+        'pending_payout' => round($pendingPayout, 2),
+        'history' => $history,
         'transactions' => $transactions,
     ];
 }
@@ -1002,7 +1025,7 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
     }
 
     $amount = (float) $course['price'];
-    $teacherShare = round($amount * 0.7, 2);
+    $teacherShare = calculate_teacher_share($amount);
     $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
     $methodLabel = payment_method_label($methodKey);
     if ($transactionRef) {

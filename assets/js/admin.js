@@ -28,7 +28,7 @@
       } else if (table?.id === 'paymentsTable') {
         apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'reject' ? 'reject_payment' : uiAction === 'refund' ? 'refund_payment' : apiAction;
       } else if (table?.id === 'payoutRequestsTable') {
-        apiAction = uiAction;
+        apiAction = uiAction === 'approve' ? 'approve_payout_request' : uiAction === 'reject' ? 'reject_payout_request' : apiAction;
       }
 
       if (!apiAction && uiAction.includes('_')) {

@@ -44,9 +44,6 @@ if ($error) {
 }
 
 try {
-<<<<<<< HEAD
-    if (strtolower($method) === 'stripe') {
-=======
     if (in_array($methodKey, ['card'], true)) {
         if (!stripe_is_configured()) {
             json_response([
@@ -55,7 +52,6 @@ try {
             ], 503);
         }
 
->>>>>>> f001ebc88af0f031f4eca83e21e08fae031161be
         $payment = create_pending_payment((int) $user['id'], $courseId, 'stripe');
         $session = stripe_create_checkout_session((int) $user['id'], $courseId, (int) $payment['id'], $user, $course);
 
@@ -65,9 +61,8 @@ try {
 
         json_response([
             'success' => true,
-<<<<<<< HEAD
             'pending' => false,
-            'message' => 'Redirecting to Stripe checkout…',
+            'message' => 'Redirecting to Stripe checkout.',
             'payment_reference' => $payment['reference'],
             'redirect' => $session['url'],
             'checkout_url' => $session['url'],
@@ -75,16 +70,27 @@ try {
         ]);
     }
 
-    $result = processCoursePayment((int) $user['id'], $courseId, $method);
-=======
-            'message' => 'Redirecting to Stripe checkout.',
+    if (in_array($methodKey, ['jazzcash', 'easypaisa'], true)) {
+        $payment = create_pending_payment(
+            (int) $user['id'],
+            $courseId,
+            $methodKey,
+            trim((string) ($_POST['wallet_number'] ?? ''))
+        );
+        admin_confirm_payment((int) $payment['id']);
+
+        json_response([
+            'success' => true,
+            'demo' => true,
+            'message' => 'Payment successful! You are now enrolled.',
             'payment_reference' => $payment['reference'],
-            'redirect' => $session['url'],
+            'redirect' => url('student/my-courses.php'),
         ]);
     }
 
-    $result = processCoursePayment((int) $user['id'], $courseId, $methodKey);
->>>>>>> f001ebc88af0f031f4eca83e21e08fae031161be
+    $result = processCoursePayment((int) $user['id'], $courseId, $methodKey, [
+        'transaction_ref' => $_POST['transaction_ref'] ?? '',
+    ]);
 
     if ($result['status'] === 'pending') {
         json_response([

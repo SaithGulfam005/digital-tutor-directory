@@ -50,9 +50,10 @@ require_once __DIR__ . '/../components/head.php';
 
               <div class="row g-2 mb-4">
                 <?php foreach (PAYMENT_METHODS as $key => $label): ?>
+                <?php if ($key === 'stripe') continue; ?>
                 <div class="col-md-6">
                   <label class="payment-method-option d-block border rounded p-3 h-100">
-                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'stripe' ? 'checked' : '' ?>>
+                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'card' ? 'checked' : '' ?>>
                     <span class="fw-medium"><?= htmlspecialchars($label) ?></span>
                   </label>
                 </div>
@@ -72,6 +73,23 @@ require_once __DIR__ . '/../components/head.php';
                   <input type="text" class="form-control" name="transaction_ref" placeholder="Enter reference from your bank receipt">
                 </div>
                 <div class="alert alert-warning small mb-0">Transfer to <strong>Digital Tutor Directory</strong> account. Your enrollment activates after admin verifies the payment.</div>
+              </div>
+
+              <div id="fields-demo-wallet" class="payment-fields d-none">
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="walletNumber">Mobile / Wallet Number</label>
+                    <input type="text" class="form-control" id="walletNumber" name="wallet_number" placeholder="03001234567" autocomplete="off">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="walletPin">Wallet PIN</label>
+                    <input type="password" class="form-control" id="walletPin" name="wallet_pin" placeholder="Enter any test PIN" autocomplete="off">
+                  </div>
+                </div>
+                <div class="alert alert-success small mb-0">
+                  <i class="bi bi-check-circle me-2"></i>
+                  Test mode: enter any fake wallet number and PIN. No real money will be charged, and the PIN will not be saved.
+                </div>
               </div>
 
               <div class="form-check mt-4 mb-4">
@@ -96,9 +114,10 @@ require_once __DIR__ . '/../components/head.php';
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('payment-form');
   const methodInputs = form.querySelectorAll('input[name="payment_method"]');
-  const cardFields = document.getElementById('fields-card');
-  const walletFields = document.getElementById('fields-wallet');
   const bankFields = document.getElementById('fields-bank');
+  const demoWalletFields = document.getElementById('fields-demo-wallet');
+  const walletNumber = document.getElementById('walletNumber');
+  const walletPin = document.getElementById('walletPin');
   const errorBox = document.getElementById('payment-error');
   const submitBtn = document.getElementById('submit-btn');
   const btnText = document.getElementById('btn-text');
@@ -107,14 +126,18 @@ document.addEventListener('DOMContentLoaded', function () {
   const stripeFields = document.getElementById('fields-stripe');
 
   function showFields(method) {
-    if (stripeFields) stripeFields.classList.toggle('d-none', method !== 'stripe');
+    if (stripeFields) stripeFields.classList.toggle('d-none', method !== 'stripe' && method !== 'card');
     if (bankFields) bankFields.classList.toggle('d-none', method !== 'bank_transfer');
+    if (demoWalletFields) demoWalletFields.classList.toggle('d-none', !['jazzcash', 'easypaisa'].includes(method));
+    const isDemoWallet = ['jazzcash', 'easypaisa'].includes(method);
+    if (walletNumber) walletNumber.required = isDemoWallet;
+    if (walletPin) walletPin.required = isDemoWallet;
   }
 
   methodInputs.forEach((input) => {
     input.addEventListener('change', () => showFields(input.value));
   });
-  showFields('stripe');
+  showFields('card');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -130,6 +153,14 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       const data = await response.json();
       if (data.success) {
+        if (data.demo) {
+          errorBox.className = 'alert alert-success';
+          errorBox.textContent = data.message || 'Payment successful!';
+          setTimeout(() => {
+            window.location.href = data.redirect || '<?= url('student/my-courses.php') ?>';
+          }, 1200);
+          return;
+        }
         const nextUrl = data.checkout_url || data.redirect || '<?= url('student/my-courses.php') ?>';
         window.location.href = nextUrl;
         return;

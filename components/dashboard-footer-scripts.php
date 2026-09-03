@@ -7,7 +7,7 @@
 <script src="<?= asset('js/list-filters.js') ?>"></script>
 <script src="<?= asset('js/tables.js') ?>"></script>
 <script src="<?= asset('js/charts.js') ?>?v=<?= filemtime(__DIR__ . '/../assets/js/charts.js') ?>"></script>
-<script src="<?= asset('js/admin.js') ?>"></script>
+<script src="<?= asset('js/admin.js') ?>?v=<?= filemtime(__DIR__ . '/../assets/js/admin.js') ?>"></script>
 <script src="<?= asset('js/panel.js') ?>"></script>
 </body>
 </html>

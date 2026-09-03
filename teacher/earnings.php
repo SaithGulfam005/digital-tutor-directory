@@ -79,7 +79,7 @@ require __DIR__ . '/../components/page-hero.php';
                   <td><?= htmlspecialchars($h['month']) ?></td>
                   <td>$<?= number_format($h['amount'], 2) ?></td>
                   <td>
-                    <span class="badge <?= $h['status'] === 'paid' ? 'badge-approved' : 'badge-pending' ?>">
+                    <span class="badge <?= $h['status'] === 'paid' ? 'badge-approved' : ($h['status'] === 'rejected' ? 'badge-danger' : 'badge-pending') ?>">
                       <?= ucfirst($h['status']) ?>
                     </span>
                   </td>
