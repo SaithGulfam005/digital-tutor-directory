@@ -74,8 +74,11 @@ function getTeachers(bool $verifiedOnly = true): array
     $where = $verifiedOnly
         ? "u.role = 'teacher' AND tp.verification_status = 'verified' AND u.status = 'active'"
         : "u.role = 'teacher'";
-    $sql = "SELECT u.id, u.name, u.email, u.bio, u.avatar AS photo, tp.qualification, tp.experience,
+        $sql = "SELECT u.id, u.name, u.email, u.bio, u.avatar AS photo, tp.qualification, tp.experience,
             tp.subject, tp.rating,
+            COALESCE((SELECT GROUP_CONCAT(DISTINCT cat2.name SEPARATOR ',')
+             FROM courses c2 JOIN categories cat2 ON cat2.id = c2.category_id
+             WHERE c2.teacher_id = u.id AND c2.status = 'published'), tp.subject) AS categories,
             (SELECT COUNT(DISTINCT e.student_id) FROM enrollments e
              JOIN courses c ON c.id = e.course_id WHERE c.teacher_id = u.id) AS students
             FROM users u
@@ -92,6 +95,7 @@ function getTeachers(bool $verifiedOnly = true): array
             'experience' => $row['experience'] ?? '',
             'rating' => (float) ($row['rating'] ?? 0),
             'subject' => $row['subject'] ?? '',
+            'categories' => array_values(array_filter(array_map('trim', explode(',', (string) ($row['categories'] ?? $row['subject'] ?? ''))))),
             'photo' => $row['photo'] ?? '',
             'students' => (int) ($row['students'] ?? 0),
             'bio' => $row['bio'] ?? '',
