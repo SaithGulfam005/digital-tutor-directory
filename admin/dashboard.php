@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../components/require-admin.php';
 $stats = mockAdminStats();
+$chartData = getAdminChartData();
 $pageTitle = 'Admin Dashboard | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'overview';
@@ -101,7 +102,7 @@ require __DIR__ . '/../components/page-hero.php';
       </div>
       <div class="col-lg-4">
         <div class="admin-chart-card">
-          <h2 class="h6 fw-bold mb-3">User Growth</h2>
+          <h2 class="h6 fw-bold mb-3">Users by Role</h2>
           <canvas id="growthChart" height="200"></canvas>
         </div>
       </div>
@@ -210,6 +211,8 @@ require __DIR__ . '/../components/page-hero.php';
   </main>
 </div>
 </div>
+<?php
+?><script>window.adminChartData = <?= json_encode($chartData, JSON_THROW_ON_ERROR) ?>;</script>
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';

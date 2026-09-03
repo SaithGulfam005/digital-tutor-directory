@@ -548,6 +548,33 @@ function mockPendingVerifications(): array { return getPendingVerifications(); }
 function mockAdminCourses(): array { return getAdminCourses(); }
 function mockPayments(): array { return getPayments(); }
 function mockAdminStats(): array { return getAdminStats(); }
+function getAdminChartData(): array
+{
+    if (!db_available()) {
+        return [
+            'revenueLabels' => ['This Month', 'Total Revenue'],
+            'revenue' => [0, 0],
+            'userLabels' => ['Students', 'Teachers'],
+            'users' => [count(fallbackStudents()), count(fallbackTeachers())],
+        ];
+    }
+
+    $pdo = db();
+    $revenueTotal = (float) $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed'")->fetchColumn();
+    $revenueMonth = (float) $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments
+        WHERE status = 'completed' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+    $userCounts = ['student' => 0, 'teacher' => 0];
+    foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher') GROUP BY role") as $row) {
+        $userCounts[$row['role']] = (int) $row['total'];
+    }
+
+    return [
+        'revenueLabels' => ['This Month', 'Total Revenue'],
+        'revenue' => [$revenueMonth, $revenueTotal],
+        'userLabels' => ['Students', 'Teachers'],
+        'users' => [$userCounts['student'], $userCounts['teacher']],
+    ];
+}
 function mockCurrentStudent(): array { return getCurrentStudent(); }
 function mockStudentEnrollments(): array { return getStudentEnrollments(); }
 function mockStudentPurchases(): array { return getStudentPurchases(); }

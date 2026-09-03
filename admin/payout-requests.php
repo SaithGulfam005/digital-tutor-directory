@@ -49,8 +49,8 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="small text-muted"><?= htmlspecialchars((string) ($request['created_at'] ?? '')) ?></td>
               <td class="text-end text-nowrap">
                 <?php if (($request['status'] ?? 'pending') === 'pending'): ?>
-                <button type="button" class="btn btn-sm btn-success" data-admin-action="approve_payout_request" data-api-id="<?= (int) ($request['id'] ?? 0) ?>" data-admin-label="Payout #<?= (int) ($request['id'] ?? 0) ?>">Approve</button>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject_payout_request" data-api-id="<?= (int) ($request['id'] ?? 0) ?>" data-admin-label="Payout #<?= (int) ($request['id'] ?? 0) ?>">Reject</button>
+                <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-action="approve_payout_request" data-api-id="<?= (int) ($request['id'] ?? 0) ?>" data-admin-label="Payout #<?= (int) ($request['id'] ?? 0) ?>">Approve</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-action="reject_payout_request" data-api-id="<?= (int) ($request['id'] ?? 0) ?>" data-admin-label="Payout #<?= (int) ($request['id'] ?? 0) ?>">Reject</button>
                 <?php else: ?>
                 <span class="small text-muted">Handled</span>
                 <?php endif; ?>

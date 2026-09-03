@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../components/require-admin.php';
 $stats = mockAdminStats();
+$chartData = getAdminChartData();
 $pageTitle = 'Reports | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'reports';
@@ -55,7 +56,7 @@ $maxEnroll = max($categories) ?: 1;
     <div class="row g-4 mb-4">
       <div class="col-lg-8">
         <div class="admin-chart-card">
-          <h2 class="h6 fw-bold mb-3">Revenue Trend (6 months)</h2>
+          <h2 class="h6 fw-bold mb-3">Revenue Overview</h2>
           <canvas id="salesChart" height="100"></canvas>
         </div>
       </div>
@@ -141,6 +142,8 @@ $maxEnroll = max($categories) ?: 1;
   </main>
 </div>
 </div>
+<?php
+?><script>window.adminChartData = <?= json_encode($chartData, JSON_THROW_ON_ERROR) ?>;</script>
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';
