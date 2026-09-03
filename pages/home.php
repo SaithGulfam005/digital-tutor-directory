@@ -3,6 +3,7 @@ require_once __DIR__ . '/../components/config.php';
 $pageTitle = 'Home | ' . SITE_NAME;
 $courses = mockCourses();
 $teachers = mockTeachers();
+$categories = getCategoriesWithCourses();
 
 // Homepage stats; use DB when available, otherwise fallback to mock content.
 $studentsCount = 0;
@@ -65,8 +66,13 @@ require_once __DIR__ . '/../components/navbar.php';
         <label class="form-label small fw-semibold">Category</label>
         <select name="category" class="form-select form-select-lg">
           <option value="">All Categories</option>
-          <?php foreach (['Development','Design','Business','Marketing','Data Science'] as $c): ?>
-          <option value="<?= htmlspecialchars($c) ?>"><?= $c ?></option>
+          <?php foreach ($categories as $category):
+            $categoryName = is_array($category) ? ($category['name'] ?? '') : $category;
+            if ($categoryName === '') {
+              continue;
+            }
+          ?>
+          <option value="<?= htmlspecialchars($categoryName) ?>"><?= htmlspecialchars($categoryName) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -138,8 +144,7 @@ require_once __DIR__ . '/../components/navbar.php';
     <div class="row g-3">
       <?php
       $icons = ['bi-code-slash','bi-palette','bi-briefcase','bi-megaphone','bi-graph-up','bi-camera','bi-music-note','bi-translate'];
-      $categories = getCategoriesWithCourses();
-      foreach ($categories as $i => $cat): 
+      foreach ($categories as $i => $cat):
         $catName = is_array($cat) ? $cat['name'] : $cat;
       ?>
       <div class="col-6 col-md-3 fade-up">
