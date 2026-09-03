@@ -20,11 +20,16 @@ $password = $_POST['password'] ?? '';
 $confirm = $_POST['password_confirm'] ?? '';
 $otp = trim((string) ($_POST['otp'] ?? ''));
 
+$currentUser = getUserById((int) $user['id']) ?: $user;
+$name = $name !== '' ? $name : trim((string) ($currentUser['name'] ?? ''));
+$email = $email !== '' ? $email : trim((string) ($currentUser['email'] ?? ''));
+$phone = array_key_exists('phone', $_POST) ? $phone : trim((string) ($currentUser['phone'] ?? ''));
+$bio = array_key_exists('bio', $_POST) ? $bio : trim((string) ($currentUser['bio'] ?? ''));
+
 if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirect_with(dashboard_url_for_role($user['role']), 'Invalid profile data.', 'danger');
 }
 
-$currentUser = getUserById((int) $user['id']) ?: $user;
 $currentEmail = trim((string) ($currentUser['email'] ?? ''));
 $currentPhone = trim((string) ($currentUser['phone'] ?? ''));
 
@@ -69,6 +74,12 @@ $data = [
     'phone' => $phone !== '' ? $phone : null,
     'bio' => $bio,
 ];
+
+if ($user['role'] === 'teacher' && (array_key_exists('qualification', $_POST) || array_key_exists('subject', $_POST) || array_key_exists('experience', $_POST))) {
+    $data['qualification'] = trim((string) ($_POST['qualification'] ?? ''));
+    $data['subject'] = trim((string) ($_POST['subject'] ?? ''));
+    $data['experience'] = trim((string) ($_POST['experience'] ?? ''));
+}
 
 if ($password !== '') {
     $data['password'] = $password;
