@@ -70,7 +70,7 @@ require __DIR__ . '/../components/page-hero.php';
                     <input type="hidden" name="lesson_durations[]" value="">
                   </div>
                   <div class="col-auto">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn d-none" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn" title="Remove lesson"><i class="bi bi-trash"></i></button>
                   </div>
                 </div>
                 <div class="row g-2">
@@ -97,7 +97,7 @@ require __DIR__ . '/../components/page-hero.php';
                     <input type="hidden" name="lesson_durations[]" value="">
                   </div>
                   <div class="col-auto">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn d-none" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn" title="Remove lesson"><i class="bi bi-trash"></i></button>
                   </div>
                 </div>
                 <div class="row g-2">
@@ -128,7 +128,7 @@ require __DIR__ . '/../components/page-hero.php';
           <ul class="small text-muted mb-0 ps-3">
             <li class="mb-2">Courses are reviewed by admin before publishing.</li>
             <li class="mb-2">Use a clear title and detailed description.</li>
-            <li class="mb-2">Add at least 3 lessons in your outline.</li>
+            <li class="mb-2">Add at least 1 lesson in your outline.</li>
             <li>High-quality thumbnails improve enrollments.</li>
           </ul>
         </div>
@@ -215,7 +215,7 @@ require __DIR__ . '/../components/page-hero.php';
       const badge = row.querySelector('.lesson-number');
       if (badge) badge.textContent = String(index + 1);
       const removeBtn = row.querySelector('.remove-lesson-btn');
-      if (removeBtn) removeBtn.classList.toggle('d-none', index < 2);
+      if (removeBtn) removeBtn.classList.remove('d-none');
     });
   }
 
@@ -229,7 +229,7 @@ require __DIR__ . '/../components/page-hero.php';
     const btn = e.target.closest('.remove-lesson-btn');
     if (!btn) return;
     const row = btn.closest('.lesson-row');
-    if (!row || lessonFields.querySelectorAll('.lesson-row').length <= 2) return;
+    if (!row || lessonFields.querySelectorAll('.lesson-row').length <= 1) return;
     row.remove();
     renumberLessons();
   });

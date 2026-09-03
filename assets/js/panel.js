@@ -125,8 +125,9 @@
     if (!wrap || document.getElementById('addCourseForm')) return;
     const n = wrap.querySelectorAll('.lesson-row').length + 1;
     const div = document.createElement('div');
-    div.className = 'lesson-row mb-4 p-3 rounded border';
+    div.className = 'lesson-row mb-4 p-3 rounded border position-relative';
     div.innerHTML = `
+      <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
       <div class="row g-3">
         <div class="col-md-5">
           <label class="form-label">Lesson title</label>

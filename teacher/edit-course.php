@@ -72,7 +72,7 @@ $lessons = getCourseLessons($courseId);
               <div class="col-md-6">
                 <label class="form-label" for="courseStatus">Status</label>
                 <select class="form-select" id="courseStatus" name="status" required>
-                  <?php foreach (['draft', 'pending', 'published', 'rejected'] as $status): ?>
+                  <?php foreach (['draft',  'published',] as $status): ?>
                   <option value="<?= $status ?>" <?= $course['status'] === $status ? 'selected' : '' ?>><?= ucfirst($status) ?></option>
                   <?php endforeach; ?>
                 </select>
@@ -81,7 +81,8 @@ $lessons = getCourseLessons($courseId);
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
             <div id="lessonFields">
               <?php foreach ($lessons as $index => $lesson): ?>
-              <div class="lesson-row mb-4 p-3 rounded border">
+              <div class="lesson-row mb-4 p-3 rounded border position-relative">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
                 <div class="row g-3">
                   <div class="col-md-5">
                     <label class="form-label">Lesson title</label>
@@ -108,7 +109,8 @@ $lessons = getCourseLessons($courseId);
               </div>
               <?php endforeach; ?>
               <?php if (count($lessons) === 0): ?>
-              <div class="lesson-row mb-4 p-3 rounded border">
+              <div class="lesson-row mb-4 p-3 rounded border position-relative">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
                 <div class="row g-3">
                   <div class="col-md-5">
                     <label class="form-label">Lesson title</label>
@@ -222,6 +224,12 @@ $lessons = getCourseLessons($courseId);
         window.showToast?.('Each lesson needs an uploaded lesson file or external URL.', 'danger');
       }
     }
+  });
+
+  lessonFields.addEventListener('click', (e) => {
+    const removeButton = e.target.closest('.remove-lesson-btn');
+    if (!removeButton || lessonFields.querySelectorAll('.lesson-row').length <= 1) return;
+    removeButton.closest('.lesson-row')?.remove();
   });
 })();
 </script>
