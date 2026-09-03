@@ -21,7 +21,14 @@ require __DIR__ . '/../components/page-hero.php';
   <main class="dashboard-main flex-grow-1 p-4">
     <div class="row g-4">
       <div class="col-lg-4">
-        <div class="table-card p-4 text-center">
+        <div class="table-card p-4 text-center position-relative">
+          <div class="dropdown position-absolute" style="right:16px;top:16px">
+            <button class="btn btn-sm btn-light" type="button" id="profileMenuStudent" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile options">⋯</button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenuStudent">
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editDetailsModal">Edit Details</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</a></li>
+            </ul>
+          </div>
           <img src="<?= media_url($student['avatar']) ?>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover" alt="<?= htmlspecialchars($student['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
           <h2 class="h5 mb-1"><?= htmlspecialchars($student['name']) ?></h2>
           <p class="text-muted small mb-2"><?= htmlspecialchars($student['email']) ?></p>
@@ -33,20 +40,6 @@ require __DIR__ . '/../components/page-hero.php';
           </form>
         </div>
       </div>
-
-      <div class="col-lg-8">
-        <div class="table-card p-4 position-relative">
-          <div class="dropdown position-absolute" style="right:16px;top:16px">
-            <button class="btn btn-sm btn-light" type="button" id="profileMenuStudent" data-bs-toggle="dropdown" aria-expanded="false">⋯</button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenuStudent">
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editDetailsModal">Edit Details</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeContactModal">Change Email / Phone</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</a></li>
-            </ul>
-          </div>
-          <p class="text-muted small mb-3">Use the menu in the top-right to manage your profile, security, and contact info.</p>
-        </div>
-
         <!-- Edit Details Modal -->
         <div class="modal fade" id="editDetailsModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
@@ -74,42 +67,6 @@ require __DIR__ . '/../components/page-hero.php';
             </div>
           </div>
         </div>
-
-        <!-- Change Contact Modal -->
-        <div class="modal fade" id="changeContactModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <form method="post" action="<?= url('api/profile-update.php') ?>">
-                <div class="modal-header">
-                  <h5 class="modal-title">Change Email / Phone</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($student['email']) ?>" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($student['phone']) ?>">
-                  </div>
-                  <?php if ($pendingProfileUpdate): ?>
-                  <div class="mb-3">
-                    <label class="form-label">Verification Code</label>
-                    <input type="text" name="otp" class="form-control" maxlength="6" inputmode="numeric" placeholder="000000" required>
-                    <div class="form-text">Enter the 6-digit code sent to <?= htmlspecialchars((string) ($pendingProfileUpdate['send_to'] ?? 'your email')) ?>.</div>
-                  </div>
-                  <?php endif; ?>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
         <!-- Change Password Modal -->
         <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">

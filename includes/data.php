@@ -910,6 +910,11 @@ function updateUserProfile(int $userId, array $data): void
         db()->prepare('UPDATE users SET password_hash=? WHERE id=?')->execute([$hash, $userId]);
     }
 
+    if (array_key_exists('qualification', $data) || array_key_exists('subject', $data) || array_key_exists('experience', $data)) {
+        db()->prepare('UPDATE teacher_profiles SET qualification=?, subject=?, experience=? WHERE user_id=?')
+            ->execute([$data['qualification'] ?? null, $data['subject'] ?? null, $data['experience'] ?? null, $userId]);
+    }
+
     if (auth_id() === $userId) {
         $fresh = getUserById($userId);
         if ($fresh) {
