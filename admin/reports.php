@@ -20,7 +20,7 @@ foreach (mockCourses() as $c) {
 // Filter out categories with 0 enrollments
 $categories = array_filter($categories, fn($count) => $count > 0);
 arsort($categories);
-$maxEnroll = max($categories) ?: 1;
+$maxEnroll = $categories ? max($categories) : 1;
 ?>
 <div class="dashboard-wrapper d-flex">
   <?php require __DIR__ . '/../components/sidebar-admin.php'; ?>
