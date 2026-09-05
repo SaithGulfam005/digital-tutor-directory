@@ -3,8 +3,20 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/database.php';
 
+const SESSION_IDLE_TIMEOUT = 300;
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+if (isset($_SESSION['user'])) {
+    $lastActivity = (int) ($_SESSION['last_activity'] ?? time());
+    if (time() - $lastActivity >= SESSION_IDLE_TIMEOUT) {
+        unset($_SESSION['user'], $_SESSION['last_activity']);
+        session_regenerate_id(true);
+    } else {
+        $_SESSION['last_activity'] = time();
+    }
 }
 
 function generate_email_verification_otp(): string
@@ -161,11 +173,12 @@ function auth_login(array $user): void
 {
     unset($user['password_hash']);
     $_SESSION['user'] = $user;
+    $_SESSION['last_activity'] = time();
 }
 
 function auth_logout(): void
 {
-    unset($_SESSION['user']);
+    unset($_SESSION['user'], $_SESSION['last_activity']);
     session_regenerate_id(true);
 }
 

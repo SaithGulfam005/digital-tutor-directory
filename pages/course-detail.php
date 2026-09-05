@@ -27,6 +27,16 @@ require __DIR__ . '/../components/page-hero.php';
 <main class="section"><div class="container"><div class="row g-4">
   <div class="col-lg-8">
     <h2 class="h5 fw-bold">Description</h2><p class="text-muted"><?= htmlspecialchars($course['desc']) ?></p>
+    <div class="d-flex align-items-center gap-3 p-3 rounded border bg-light mb-4">
+      <img src="<?= media_url($course['teacher_photo'] ?? '', 'assets/images/avatars/placeholder.svg') ?>" class="rounded-circle" width="56" height="56" style="object-fit:cover" alt="<?= htmlspecialchars($course['teacher']) ?>">
+      <div class="min-w-0 flex-grow-1">
+        <div class="small text-muted">Uploaded by</div>
+        <div class="fw-semibold"><?= htmlspecialchars($course['teacher']) ?></div>
+      </div>
+      <?php if ($course['teacher_id'] > 0): ?>
+        <a href="<?= url('pages/teacher-profile.php?id=' . (int) $course['teacher_id']) ?>" class="btn btn-sm btn-outline-primary">View profile</a>
+      <?php endif; ?>
+    </div>
     <h2 class="h5 fw-bold mt-4">Curriculum</h2>
     <div class="accordion" id="curriculum">
       <?php $lessons = getCourseLessons($id); ?>
@@ -49,7 +59,7 @@ require __DIR__ . '/../components/page-hero.php';
       <?php endif; ?>
     </div>
     <h2 class="h5 fw-bold mt-4">Learning Outcomes</h2>
-    <ul><li>Build real-world projects</li><li>Master core concepts</li><li>Get certificate on completion</li></ul>
+    <ul><li>Build real-world projects</li><li>Master core concepts</li></ul>
   </div>
   <div class="col-lg-4"><div class="card purchase-card border-0 shadow p-4">
     <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="rounded mb-3" alt="" style="width:100%;height:160px;object-fit:cover">
@@ -59,11 +69,10 @@ require __DIR__ . '/../components/page-hero.php';
     <?php elseif ($user && ($user['role'] ?? '') === 'student'): ?>
     <a href="<?= url('student/checkout.php?course_id=' . $id) ?>" class="btn btn-primary w-100 btn-lg mb-2">Enroll Now</a>
     <?php else: ?>
-    <a href="<?= url('auth/login.php?role=student') ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
+    <a href="<?= url('auth/login.php?role=student&redirect=' . urlencode('student/checkout.php?course_id=' . $id)) ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
     <?php endif; ?>
-    <ul class="list-unstyled small text-muted"><li><i class="bi bi-infinity me-2"></i>Lifetime access</li><li><i class="bi bi-phone me-2"></i>Mobile friendly</li></ul>
-    <hr><h4 class="h6">Instructor</h4>
-    <p class="small mb-2"><strong><?= htmlspecialchars($course['teacher']) ?></strong></p>
+    <ul class="list-unstyled small text-muted"><li><i class="bi bi-infinity me-2"></i>Lifetime access</li></ul>
+  
     <?php if ($enrolled && $teacherProfile): ?>
       <div class="border rounded p-3 bg-light">
         <div class="d-flex align-items-center gap-2 mb-2">
@@ -81,9 +90,7 @@ require __DIR__ . '/../components/page-hero.php';
         <p class="small text-muted mb-2"><strong><?= number_format($teacherProfile['students']) ?></strong> students taught</p>
         <a href="<?= url('pages/teacher-profile.php?id=' . (int)$teacherProfile['id']) ?>" class="btn btn-sm btn-outline-primary w-100">View full profile</a>
       </div>
-    <?php elseif ($teacherProfile): ?>
-      <p class="small text-muted mb-0">Enroll to view the instructor profile and rating.</p>
-    <?php endif; ?>
+      <?php endif; ?>
   </div></div>
 </div></div></main>
 <?php require_once __DIR__.'/../components/footer.php'; require_once __DIR__.'/../components/modals.php'; require_once __DIR__.'/../components/public-footer-scripts.php'; ?>

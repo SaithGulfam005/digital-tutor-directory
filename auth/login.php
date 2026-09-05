@@ -4,6 +4,7 @@ $pageTitle = 'Login | ' . SITE_NAME;
 $bodyClass = 'auth-page';
 require_once __DIR__ . '/../components/head.php';
 $defaultRole = $_GET['role'] ?? 'student';
+$redirect = trim((string) ($_GET['redirect'] ?? ''));
 ?>
 <?php require __DIR__ . '/../components/flash.php'; ?>
 <div class="auth-split min-vh-100 row g-0">
@@ -33,6 +34,9 @@ $defaultRole = $_GET['role'] ?? 'student';
       </ul>
       <form id="loginForm" method="post" action="<?= url('api/login.php') ?>" class="needs-validation" novalidate>
         <input type="hidden" name="role" id="loginRole" value="<?= htmlspecialchars($defaultRole) ?>">
+        <?php if ($redirect !== ''): ?>
+          <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
+        <?php endif; ?>
         <div class="form-floating mb-3">
           <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
           <label for="email">Email address</label>

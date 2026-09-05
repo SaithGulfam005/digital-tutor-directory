@@ -5,7 +5,7 @@ $teacher = getTeacherById($id);
 if (!$teacher) {
     redirect_with(url('pages/teachers.php'), 'Teacher not found.', 'danger');
 }
-$courses = getTeacherCourses($id);
+$courses = getPublishedTeacherCourses($id);
 $pageTitle = $teacher['name'] . ' | ' . SITE_NAME;
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/navbar.php';
@@ -45,7 +45,7 @@ require __DIR__ . '/../components/page-hero.php';
             <div class="row g-3">
               <?php foreach ($courses as $course): ?>
                 <div class="col-md-6">
-                  <div class="border rounded p-3 h-100">
+                  <div class="border rounded p-3 h-100 position-relative">
                     <h4 class="h6 mb-2"><?= htmlspecialchars($course['title']) ?></h4>
                     <p class="small text-muted mb-2"><?= number_format($course['rating'], 1) ?> ★ · <?= number_format($course['students']) ?> students</p>
                     <a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>" class="stretched-link text-decoration-none">View course</a>

@@ -87,6 +87,8 @@ function getTeachers(bool $verifiedOnly = true): array
             ORDER BY tp.rating DESC";
     $stmt = db()->query($sql);
     return array_map(static function ($row) {
+        $subjects = array_values(array_filter(array_map('trim', explode(',', (string) ($row['subject'] ?? '')))));
+        $courseCategories = array_values(array_filter(array_map('trim', explode(',', (string) ($row['categories'] ?? '')))));
         return [
             'id' => (int) $row['id'],
             'name' => $row['name'],
@@ -95,7 +97,8 @@ function getTeachers(bool $verifiedOnly = true): array
             'experience' => $row['experience'] ?? '',
             'rating' => (float) ($row['rating'] ?? 0),
             'subject' => $row['subject'] ?? '',
-            'categories' => array_values(array_filter(array_map('trim', explode(',', (string) ($row['categories'] ?? $row['subject'] ?? ''))))),
+            'subjects' => $subjects,
+            'categories' => array_values(array_unique(array_merge($courseCategories, $subjects))),
             'photo' => $row['photo'] ?? '',
             'students' => (int) ($row['students'] ?? 0),
             'bio' => $row['bio'] ?? '',
@@ -601,6 +604,17 @@ function getTeacherCourses(?int $teacherId = null): array
         $c['revenue'] = round($c['students'] * $c['price'] * 0.7, 2);
         return $c;
     }, $stmt->fetchAll());
+}
+
+function getPublishedTeacherCourses(int $teacherId): array
+{
+    if ($teacherId <= 0 || !db_available()) {
+        return [];
+    }
+
+    $stmt = db()->prepare(courses_base_sql("c.teacher_id = ? AND c.status = 'published'") . ' ORDER BY c.created_at DESC, c.id DESC');
+    $stmt->execute([$teacherId]);
+    return array_map('map_course_row', $stmt->fetchAll());
 }
 
 function getTeacherEarnings(?int $teacherId = null): array

@@ -384,29 +384,32 @@
       itemSelector: '.teacher-card',
       getFilters() {
         const categories = [...document.querySelectorAll('.filter-teacher-category:checked')].map((c) => c.value);
+        const subjects = [...document.querySelectorAll('.filter-teacher-subject:checked')].map((c) => c.value);
         const minRating = parseFloat(document.querySelector('.filter-teacher-rating:checked')?.value || '0');
         const minExperience = parseInt(document.getElementById('experienceMin')?.value || '0', 10);
-        return { categories, minRating, minExperience };
+        return { categories, subjects, minRating, minExperience };
       },
       hasActiveFilters(filters) {
-        return filters.categories.length > 0 || filters.minRating > 0 || filters.minExperience > 0;
+        return filters.categories.length > 0 || filters.subjects.length > 0 || filters.minRating > 0 || filters.minExperience > 0;
       },
-      matchItem(card, query, { categories, minRating, minExperience }) {
+      matchItem(card, query, { categories, subjects, minRating, minExperience }) {
         const searchText = normalize(card.dataset.search || card.textContent);
         const name = normalize(card.querySelector('h3')?.textContent);
-        const category = card.dataset.category || '';
+        const categoriesForTeacher = (card.dataset.category || '').split('|').filter(Boolean);
+        const teacherSubjects = (card.dataset.subject || '').split('|').filter(Boolean);
         const rating = parseFloat(card.dataset.rating || '0');
         const experience = parseInt(card.dataset.experience || '0', 10);
 
         const matchQuery = !query || searchText.includes(query) || name.includes(query);
-        const matchCategory = categories.length === 0 || categories.includes(category);
+        const matchCategory = categories.length === 0 || categories.some((category) => categoriesForTeacher.includes(category));
+        const matchSubject = subjects.length === 0 || subjects.some((subject) => teacherSubjects.includes(subject));
         const matchRating = rating >= minRating;
         const matchExperience = experience >= minExperience;
 
-        return matchQuery && matchCategory && matchRating && matchExperience;
+        return matchQuery && matchCategory && matchSubject && matchRating && matchExperience;
       },
       bindFilterEvents(apply) {
-        document.querySelectorAll('.filter-teacher-category, .filter-teacher-rating').forEach((el) => {
+        document.querySelectorAll('.filter-teacher-category, .filter-teacher-subject, .filter-teacher-rating').forEach((el) => {
           el.addEventListener('change', apply);
         });
         document.getElementById('experienceMin')?.addEventListener('input', () => {
@@ -422,6 +425,9 @@
           const search = document.getElementById('teacherSearch');
           if (search) search.value = '';
           document.querySelectorAll('.filter-teacher-category').forEach((c) => {
+            c.checked = false;
+          });
+          document.querySelectorAll('.filter-teacher-subject').forEach((c) => {
             c.checked = false;
           });
           document.querySelectorAll('.filter-teacher-rating').forEach((r) => {
@@ -440,7 +446,7 @@
         const category = new URLSearchParams(location.search).get('category') || new URLSearchParams(location.search).get('subject');
         if (!category) return;
 
-        document.querySelectorAll('.filter-teacher-category').forEach((checkbox) => {
+        document.querySelectorAll('.filter-teacher-category, .filter-teacher-subject').forEach((checkbox) => {
           checkbox.checked = checkbox.value === category;
         });
       },

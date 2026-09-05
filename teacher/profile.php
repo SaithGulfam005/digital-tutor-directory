@@ -60,8 +60,9 @@ require __DIR__ . '/../components/page-hero.php';
                     <textarea name="bio" class="form-control" rows="4" required><?= htmlspecialchars($teacher['bio']) ?></textarea>
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Subject</label>
-                    <input type="text" name="subject" class="form-control" value="<?= htmlspecialchars($teacher['subject']) ?>">
+                    <label class="form-label">Subjects</label>
+                    <textarea name="subject" class="form-control" rows="2" placeholder="e.g. Trading, Finance, Technical Analysis"><?= htmlspecialchars($teacher['subject']) ?></textarea>
+                    <div class="form-text">Enter multiple subjects separated by commas.</div>
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Experience</label>
