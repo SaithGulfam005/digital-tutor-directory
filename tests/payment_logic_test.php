@@ -20,6 +20,6 @@ assert_true(validate_payment_details('bank_transfer', ['transaction_ref' => 'TXN
 assert_true(validate_payment_details('bank_transfer', []) === 'Enter your bank transaction reference.', 'bank transfer should require a reference');
 assert_true(validate_payment_details('jazzcash', ['wallet_number' => '03001234567', 'wallet_pin' => '1234']) === null, 'jazzcash demo should accept test credentials');
 assert_true(validate_payment_details('easypaisa', ['wallet_number' => '03001234567', 'wallet_pin' => '1234']) === null, 'easypaisa demo should accept test credentials');
-assert_true(validate_payment_details('jazzcash', []) === 'Enter your demo wallet number and PIN.', 'jazzcash demo should require test credentials');
+assert_true(validate_payment_details('jazzcash', []) === 'Enter your wallet number and PIN.', 'jazzcash should require wallet credentials');
 
 echo "PASS\n";

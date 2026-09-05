@@ -36,7 +36,7 @@ require_once __DIR__ . '/../components/head.php';
             <hr>
             <div class="d-flex justify-content-between mb-2"><span>Course Price</span><strong>$<?= number_format($course['price'], 2) ?></strong></div>
             <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><strong class="fs-5 text-primary">$<?= number_format($course['price'], 2) ?></strong></div>
-            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Card payments are processed securely via Stripe. Bank transfer payments require admin approval before enrollment is activated.</div>
+            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Card payments are processed securely via Stripe. Bank transfer and wallet payments require admin approval before enrollment is activated.</div>
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../components/head.php';
                 <div class="col-md-6">
                   <label class="payment-method-option d-block border rounded p-3 h-100">
                     <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'card' ? 'checked' : '' ?>>
-                    <span class="fw-medium"><?= htmlspecialchars($label) ?></span>
+                    <span class="fw-medium"><?= htmlspecialchars(str_replace(' (demo payment)', '', $label)) ?></span>
                   </label>
                 </div>
                 <?php endforeach; ?>
@@ -88,7 +88,7 @@ require_once __DIR__ . '/../components/head.php';
                 </div>
                 <div class="alert alert-success small mb-0">
                   <i class="bi bi-check-circle me-2"></i>
-                  Test mode: enter any fake wallet number and PIN. No real money will be charged, and the PIN will not be saved.
+                  Enter the wallet number and transaction PIN used for your payment. Your PIN will not be saved. The payment will remain pending until an admin verifies it.
                 </div>
               </div>
 
@@ -153,11 +153,11 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       const data = await response.json();
       if (data.success) {
-        if (data.demo) {
+        if (data.pending) {
           errorBox.className = 'alert alert-success';
-          errorBox.textContent = data.message || 'Payment successful!';
+          errorBox.textContent = data.message || 'Payment submitted for admin approval.';
           setTimeout(() => {
-            window.location.href = data.redirect || '<?= url('student/my-courses.php') ?>';
+            window.location.href = data.redirect || '<?= url('student/purchases.php') ?>';
           }, 1200);
           return;
         }

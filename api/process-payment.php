@@ -77,14 +77,13 @@ try {
             $methodKey,
             trim((string) ($_POST['wallet_number'] ?? ''))
         );
-        admin_confirm_payment((int) $payment['id']);
 
         json_response([
             'success' => true,
-            'demo' => true,
-            'message' => 'Payment successful! You are now enrolled.',
+            'pending' => true,
+            'message' => 'Payment submitted. An admin will verify your JazzCash/Easypaisa payment and activate your enrollment.',
             'payment_reference' => $payment['reference'],
-            'redirect' => url('student/my-courses.php'),
+            'redirect' => url('student/purchases.php'),
         ]);
     }
 

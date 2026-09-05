@@ -9,8 +9,8 @@ const PAYMENT_METHODS = [
     'card' => 'Credit / Debit Card (Stripe)',
     'stripe' => 'Credit / Debit Card (Stripe)',
     'bank_transfer' => 'Bank Transfer (manual approval)',
-    'jazzcash' => 'JazzCash (demo payment)',
-    'easypaisa' => 'Easypaisa (demo payment)',
+    'jazzcash' => 'JazzCash',
+    'easypaisa' => 'Easypaisa',
 ];
 
 const PAYMENT_CURRENCY = 'usd';
@@ -50,7 +50,7 @@ function validate_payment_details(string $method, array $data): ?string
 
     if (in_array($method, ['jazzcash', 'easypaisa'], true)) {
         if (trim($data['wallet_number'] ?? '') === '' || trim($data['wallet_pin'] ?? '') === '') {
-            return 'Enter your demo wallet number and PIN.';
+            return 'Enter your wallet number and PIN.';
         }
         return null;
     }

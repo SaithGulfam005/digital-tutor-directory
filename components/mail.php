@@ -232,3 +232,63 @@ function build_contact_email(string $name, string $email, string $subject, strin
 </html>
 HTML;
 }
+
+function build_payment_approved_email(string $studentName, string $courseTitle, float $amount, string $reference): string
+{
+        $year = date('Y');
+        $site = SITE_NAME;
+        $safeName = htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8');
+        $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
+        $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
+        $formattedAmount = number_format($amount, 2);
+
+        return <<<HTML
+<html>
+<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">
+    <div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">
+        <h2 style="color:#198754;margin-top:0;">Payment approved</h2>
+        <p>Hello {$safeName},</p>
+        <p>Your payment has been approved and your enrollment is now active.</p>
+        <div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:16px;margin:20px 0;">
+            <p style="margin:0 0 8px;"><strong>Course:</strong> {$safeCourseTitle}</p>
+            <p style="margin:0 0 8px;"><strong>Amount:</strong> {$formattedAmount}</p>
+            <p style="margin:0;"><strong>Payment reference:</strong> {$safeReference}</p>
+        </div>
+        <p>You can now access the course from your student dashboard.</p>
+        <p style="font-size:12px;color:#999;">&copy; {$year} {$site}</p>
+    </div>
+</body>
+</html>
+HTML;
+}
+
+function build_payment_rejected_email(string $studentName, string $courseTitle, float $amount, string $reference, string $reason = ''): string
+{
+        $year = date('Y');
+        $site = SITE_NAME;
+        $safeName = htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8');
+        $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
+        $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
+        $safeReason = htmlspecialchars(trim($reason) !== '' ? $reason : 'No reason was provided.', ENT_QUOTES, 'UTF-8');
+        $formattedAmount = number_format($amount, 2);
+
+        return <<<HTML
+<html>
+<body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">
+    <div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">
+        <h2 style="color:#dc3545;margin-top:0;">Payment not approved</h2>
+        <p>Hello {$safeName},</p>
+        <p>Unfortunately, your payment could not be approved.</p>
+        <div style="background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:16px;margin:20px 0;">
+            <p style="margin:0 0 8px;"><strong>Course:</strong> {$safeCourseTitle}</p>
+            <p style="margin:0 0 8px;"><strong>Amount:</strong> {$formattedAmount}</p>
+            <p style="margin:0 0 8px;"><strong>Payment reference:</strong> {$safeReference}</p>
+            <p style="margin:0;"><strong>Reason:</strong> {$safeReason}</p>
+        </div>
+        <p>Please contact support if you need help with this payment.</p>
+        <p style="font-size:12px;color:#999;">&copy; {$year} {$site}</p>
+    </div>
+</body>
+</html>
+HTML;
+}
