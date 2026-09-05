@@ -193,7 +193,7 @@ function require_auth(?string $role = null): array
     }
     if ($role === 'teacher' && ($user['status'] ?? '') !== 'active') {
         auth_logout();
-        redirect_with(url('auth/login.php?role=teacher'), 'Your teacher account is pending admin approval.', 'warning');
+        redirect_with(url('auth/login.php?role=teacher'), 'Your teacher account is inactive. Please contact support.', 'warning');
     }
     return $user;
 }

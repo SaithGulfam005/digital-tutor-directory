@@ -1232,16 +1232,51 @@ function get_payment_details(int $paymentId): ?array
 
 function admin_update_user_status(int $userId, string $status): void
 {
-    db()->prepare('UPDATE users SET status=? WHERE id=?')->execute([$status, $userId]);
+    if (!in_array($status, ['active', 'inactive'], true)) {
+        throw new InvalidArgumentException('Invalid user status.');
+    }
+
+    $pdo = db();
+    $userStmt = $pdo->prepare('SELECT role FROM users WHERE id=? LIMIT 1');
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch();
+    if (!$user) {
+        throw new RuntimeException('User not found.');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE users SET status=? WHERE id=?')->execute([$status, $userId]);
+        if ($user['role'] === 'teacher' && $status === 'inactive') {
+            $pdo->prepare("UPDATE courses SET status='pending' WHERE teacher_id=? AND status='published'")
+                ->execute([$userId]);
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
 function admin_verify_teacher(int $userId, bool $approve): void
 {
     $status = $approve ? 'verified' : 'rejected';
     $userStatus = $approve ? 'active' : 'inactive';
-    db()->prepare('UPDATE teacher_profiles SET verification_status=?, verified_at=? WHERE user_id=?')
-        ->execute([$status, $approve ? date('Y-m-d') : null, $userId]);
-    db()->prepare('UPDATE users SET status=? WHERE id=?')->execute([$userStatus, $userId]);
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE teacher_profiles SET verification_status=?, verified_at=? WHERE user_id=?')
+            ->execute([$status, $approve ? date('Y-m-d') : null, $userId]);
+        $pdo->prepare('UPDATE users SET status=? WHERE id=?')->execute([$userStatus, $userId]);
+        if (!$approve) {
+            $pdo->prepare("UPDATE courses SET status='pending' WHERE teacher_id=? AND status='published'")
+                ->execute([$userId]);
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
 }
 
 function admin_update_course_status(int $courseId, string $status): void
