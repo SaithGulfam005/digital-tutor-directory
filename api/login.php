@@ -24,7 +24,7 @@ $result = attempt_login($email, $password, $role);
 if (!$result['user']) {
     $message = match ($result['error']) {
         'pending_approval' => 'Your teacher account is pending admin approval. You can log in after an administrator approves your registration.',
-        'inactive' => 'Your account has been deactivated. Please contact support.',
+        'inactive' => 'Your account has been deactivated. Please contact support to request reactivation.',
         'unverified' => 'Please verify your email address before logging in. We can send a new verification code from the verification page.',
         default => 'Invalid email or password.',
     };
