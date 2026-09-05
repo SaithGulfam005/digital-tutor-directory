@@ -48,7 +48,13 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="text-muted small"><?= htmlspecialchars($v['submitted']) ?></td>
               <td><span class="badge status-badge badge-pending">Pending</span></td>
               <td class="text-end text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-demo title="View documents"><i class="bi bi-file-earmark"></i></button>
+                <?php if (!empty($v['documents'])): ?>
+                  <?php foreach ($v['documents'] as $document): ?>
+                    <a href="<?= url((string) $document['path']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" title="View <?= htmlspecialchars($document['name']) ?>"><i class="bi bi-file-earmark"></i></a>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <span class="small text-muted">No documents</span>
+                <?php endif; ?>
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) $v['id'] ?>" data-admin-label="<?= htmlspecialchars($v['name']) ?>"><i class="bi bi-check-lg"></i> Approve</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) $v['id'] ?>" data-admin-label="<?= htmlspecialchars($v['name']) ?>"><i class="bi bi-x-lg"></i></button>
               </td>

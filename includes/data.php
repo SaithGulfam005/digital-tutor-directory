@@ -176,6 +176,13 @@ function getPendingVerifications(): array
             ORDER BY tp.created_at DESC";
     $stmt = db()->query($sql);
     return array_map(static function ($row) {
+                $docStmt = db()->prepare('SELECT original_name, file_path FROM teacher_documents WHERE teacher_profile_id = (SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1) ORDER BY uploaded_at ASC');
+                $docStmt->execute([(int) $row['id']]);
+                $documents = array_map(static fn (array $document): array => [
+                    'name' => $document['original_name'],
+                    'path' => $document['file_path'],
+                ], $docStmt->fetchAll());
+
         return [
             'id' => (int) $row['id'],
             'name' => $row['name'],
@@ -184,6 +191,7 @@ function getPendingVerifications(): array
             'cnic' => $row['cnic'],
             'submitted' => date('Y-m-d', strtotime($row['submitted'])),
             'status' => 'pending',
+            'documents' => $documents,
         ];
     }, $stmt->fetchAll());
 }
