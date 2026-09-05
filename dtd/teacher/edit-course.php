@@ -1,0 +1,238 @@
+<?php
+require_once __DIR__ . '/../components/require-teacher.php';
+$courseId = (int) ($_GET['id'] ?? 0);
+$course = getCourseById($courseId);
+if (!$course || (int) $course['teacher_id'] !== auth_id()) {
+    redirect_with(url('teacher/courses.php'), 'Course not found or access denied.', 'danger');
+}
+$categories = getCategories();
+$pageTitle = 'Edit Course | ' . SITE_NAME;
+$dashboardLayout = true;
+$dashSection = 'courses';
+$bodyClass = 'dashboard-body';
+$pageHeading = 'Edit Course';
+$pageSubheading = 'Update course details or delete the course';
+$pageActions = '<a href="' . url('teacher/courses.php') . '" class="btn btn-outline-secondary btn-sm">Back to Courses</a>';
+require_once __DIR__ . '/../components/head.php';
+$heroClass = 'page-hero--compact';
+require __DIR__ . '/../components/page-hero.php';
+$lessons = getCourseLessons($courseId);
+?>
+<div class="dashboard-layout">
+<div class="dashboard-wrapper d-flex">
+  <?php require __DIR__ . '/../components/sidebar-teacher.php'; ?>
+  <main class="dashboard-main flex-grow-1 p-4">
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="table-card p-4">
+          <form class="needs-validation" novalidate id="editCourseForm" method="post" enctype="multipart/form-data" action="<?= url('api/course-update.php') ?>">
+            <input type="hidden" name="id" value="<?= (int) $courseId ?>">
+            <div class="mb-3">
+              <label class="form-label" for="courseTitle">Course Title</label>
+              <input type="text" class="form-control" id="courseTitle" name="title" value="<?= htmlspecialchars($course['title']) ?>" required>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label" for="courseCategorySelect">Category</label>
+                <select class="form-select" id="courseCategorySelect" required>
+                  <option value="">Select category</option>
+                  <?php foreach ($categories as $cat): ?>
+                    <?php $catName = is_array($cat) ? $cat['name'] : $cat; ?>
+                    <option value="<?= htmlspecialchars($catName) ?>" <?= $course['category'] === $catName ? 'selected' : '' ?>><?= htmlspecialchars($catName) ?></option>
+                  <?php endforeach; ?>
+                  <option value="__custom__" <?= !in_array($course['category'], array_map(static function ($cat) { return is_array($cat) ? $cat['name'] : $cat; }, $categories), true) ? 'selected' : '' ?>>Custom category...</option>
+                </select>
+                <input type="hidden" class="form-control mt-2 d-none" id="courseCategory" name="category" value="<?= htmlspecialchars((string) $course['category']) ?>" placeholder="Enter a custom category">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="coursePrice">Price (USD)</label>
+                <input type="number" class="form-control" id="coursePrice" name="price" min="1" step="0.01" value="<?= htmlspecialchars((string) $course['price']) ?>" required>
+                <div class="form-text mt-2" id="courseFeeNotice" role="status">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Students pay the full course fee. The platform takes <strong data-platform-fee>$0.00</strong> (10%) and you receive <strong data-teacher-share>$0.00</strong>.
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="courseDesc">Description</label>
+              <textarea class="form-control" id="courseDesc" name="description" rows="4" required><?= htmlspecialchars($course['desc']) ?></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="courseThumb">Course Thumbnail</label>
+              <input type="file" class="form-control" id="courseThumb" name="thumb" accept="image/*">
+              <small class="form-text text-muted">Upload a new image to replace the current course thumbnail.</small>
+              <?php if (!empty($course['thumb'])): ?>
+              <div class="mt-2">
+                <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" alt="Current course thumbnail" class="img-fluid rounded" style="max-height:120px;object-fit:cover">
+              </div>
+              <?php endif; ?>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label" for="courseStatus">Status</label>
+                <select class="form-select" id="courseStatus" name="status" required>
+                  <?php foreach (['draft',  'published',] as $status): ?>
+                  <option value="<?= $status ?>" <?= $course['status'] === $status ? 'selected' : '' ?>><?= ucfirst($status) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
+            <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
+            <div id="lessonFields">
+              <?php foreach ($lessons as $index => $lesson): ?>
+              <div class="lesson-row mb-4 p-3 rounded border position-relative">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" value="<?= htmlspecialchars($lesson['title']) ?>" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM" value="<?= htmlspecialchars($lesson['duration']) ?>">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson URL or file path</label>
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf or uploads/lessons/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <?php if (!empty($lesson['content_url']) && !preg_match('#^https?://#i', $lesson['content_url'])): ?>
+                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded lesson file on server</small>
+                    <?php endif; ?>
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload new lesson file (optional)</label>
+                    <input type="file" class="form-control lesson-video-file" accept="*/*">
+                  </div>
+                </div>
+              </div>
+              <?php endforeach; ?>
+              <?php if (count($lessons) === 0): ?>
+              <div class="lesson-row mb-4 p-3 rounded border position-relative">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson title</label>
+                    <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Duration</label>
+                    <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Lesson URL or file path</label>
+                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf">
+                  </div>
+                </div>
+                <div class="row g-3 mt-3">
+                  <div class="col-12">
+                    <label class="form-label">Upload lesson file (optional)</label>
+                    <input type="file" class="form-control lesson-video-file" accept="*/*">
+                  </div>
+                </div>
+              </div>
+              <?php endif; ?>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="addLessonBtn"><i class="bi bi-plus me-1"></i>Add Lesson</button>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <a href="<?= url('teacher/courses.php') ?>" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="table-card p-4">
+          <h3 class="h6 fw-bold mb-3"><i class="bi bi-exclamation-circle text-primary me-1"></i> Note</h3>
+          <p class="small text-muted mb-3">Saving this course updates its details for review or publication.</p>
+          <form method="post" action="<?= url('api/course-delete.php') ?>" onsubmit="return confirm('Delete this course? This cannot be undone.')">
+            <input type="hidden" name="id" value="<?= (int) $courseId ?>">
+            <button type="submit" class="btn btn-outline-danger w-100">Delete Course</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+<script src="<?= asset('js/video-upload.js') ?>"></script>
+<script>
+(function () {
+  'use strict';
+  const editCourseForm = document.getElementById('editCourseForm');
+  const lessonFields = document.getElementById('lessonFields');
+  const priceInput = document.getElementById('coursePrice');
+  const feeNotice = document.getElementById('courseFeeNotice');
+  const categorySelect = document.getElementById('courseCategorySelect');
+  const categoryInput = document.getElementById('courseCategory');
+  if (!editCourseForm || !lessonFields) return;
+
+  if (categorySelect && categoryInput) {
+    const syncCategoryField = () => {
+      if (categorySelect.value === '__custom__') {
+        categoryInput.type = 'text';
+        categoryInput.value = categoryInput.value || '';
+        categoryInput.classList.remove('d-none');
+        categoryInput.required = true;
+      } else {
+        categoryInput.type = 'hidden';
+        categoryInput.value = categorySelect.value || '';
+        categoryInput.classList.add('d-none');
+        categoryInput.required = false;
+      }
+    };
+    categorySelect.addEventListener('change', syncCategoryField);
+    syncCategoryField();
+  }
+
+  if (priceInput && feeNotice) {
+    const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');
+    const teacherShareEl = feeNotice.querySelector('[data-teacher-share]');
+    const syncFeeNotice = () => {
+      const rawValue = parseFloat(priceInput.value);
+      const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
+      const platformFee = price * 0.10;
+      const teacherShare = price - platformFee;
+      if (platformFeeEl) platformFeeEl.textContent = '$' + platformFee.toFixed(2);
+      if (teacherShareEl) teacherShareEl.textContent = '$' + teacherShare.toFixed(2);
+    };
+    priceInput.addEventListener('input', syncFeeNotice);
+    priceInput.addEventListener('change', syncFeeNotice);
+    syncFeeNotice();
+  }
+
+  editCourseForm.addEventListener('submit', (e) => {
+    if (window.isLessonVideoUploading?.(lessonFields)) {
+      e.preventDefault();
+      window.showToast?.('Please wait for all lesson uploads to finish.', 'warning');
+      return;
+    }
+
+    let valid = true;
+    lessonFields.querySelectorAll('.lesson-row').forEach((row) => {
+      const urlInput = row.querySelector('.lesson-video-url');
+      const hasUrl = Boolean(urlInput?.value?.trim());
+      urlInput?.classList.toggle('is-invalid', !hasUrl);
+      if (!hasUrl) valid = false;
+    });
+
+    if (!valid || !editCourseForm.checkValidity()) {
+      e.preventDefault();
+      editCourseForm.classList.add('was-validated');
+      if (!valid) {
+        window.showToast?.('Each lesson needs an uploaded lesson file or external URL.', 'danger');
+      }
+    }
+  });
+
+  lessonFields.addEventListener('click', (e) => {
+    const removeButton = e.target.closest('.remove-lesson-btn');
+    if (!removeButton || lessonFields.querySelectorAll('.lesson-row').length <= 1) return;
+    removeButton.closest('.lesson-row')?.remove();
+  });
+})();
+</script>
+<?php
+require_once __DIR__ . '/../components/modals.php';
+require_once __DIR__ . '/../components/dashboard-footer-scripts.php';

@@ -1,0 +1,171 @@
+(function () {
+  'use strict';
+
+  function mediaUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    const base = (window.BASE_URL || '').replace(/\/$/, '');
+    if (base && path.startsWith(base + '/')) return path;
+    if (path.startsWith('/')) return path;
+    return base ? base + '/' + path.replace(/^\//, '') : path;
+  }
+
+  function videoMimeType(path) {
+    const ext = (path.split('?')[0].split('.').pop() || '').toLowerCase();
+    const map = { webm: 'video/webm', ogg: 'video/ogg', mov: 'video/quicktime', avi: 'video/x-msvideo', m4v: 'video/mp4' };
+    return map[ext] || 'video/mp4';
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function buildVideoHtml(title, url) {
+    if (!url) {
+      return '<div class="video-placeholder mb-3"><i class="bi bi-play-circle"></i><p class="small text-muted mt-2 mb-0">Lesson content will be available soon.</p></div>';
+    }
+
+    const safeTitle = escapeHtml(title);
+
+    const youtube = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/i);
+    if (youtube) {
+      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://www.youtube.com/embed/${youtube[1]}" title="${safeTitle}" allowfullscreen></iframe></div>`;
+    }
+
+    const vimeo = url.match(/vimeo\.com\/(\d+)/i);
+    if (vimeo) {
+      return `<div class="ratio ratio-16x9 mb-3"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="${safeTitle}" allowfullscreen></iframe></div>`;
+    }
+
+    const src = mediaUrl(url);
+    const ext = (src.split('?')[0].split('.').pop() || '').toLowerCase();
+    const downloadableExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    if (downloadableExtensions.includes(ext)) {
+      return `<div class="card border-0 bg-light p-3 mb-3"><div class="d-flex align-items-center justify-content-between gap-3"><div><h3 class="h6 mb-1">Lesson file</h3><p class="small text-muted mb-0">This lesson includes a downloadable file.</p></div><a class="btn btn-primary btn-sm" href="${escapeHtml(src)}" target="_blank" rel="noopener">Open file</a></div></div>`;
+    }
+
+    const mime = videoMimeType(src);
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+  }
+
+  document.querySelectorAll('.lesson-list .list-group-item[data-lesson]').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.lesson-list .list-group-item').forEach((el) => el.classList.remove('active'));
+      item.classList.add('active');
+
+      const title = item.dataset.lessonTitle || '';
+      const duration = item.dataset.lessonDuration || '';
+      const url = item.dataset.lessonUrl || '';
+      const lessonId = item.dataset.lesson;
+
+      const titleEl = document.getElementById('currentLessonTitle');
+      const durationEl = document.getElementById('currentLessonDuration');
+      const videoWrap = document.getElementById('lessonVideoWrap');
+      const completeBtn = document.getElementById('markLessonComplete');
+
+      if (titleEl && title) titleEl.textContent = title;
+      if (durationEl && duration) durationEl.textContent = duration;
+      if (videoWrap) videoWrap.innerHTML = buildVideoHtml(title, url);
+      if (completeBtn && lessonId) completeBtn.dataset.lessonId = lessonId;
+    });
+  });
+
+  document.getElementById('markLessonComplete')?.addEventListener('click', async () => {
+    const btn = document.getElementById('markLessonComplete');
+    const courseId = btn?.dataset.courseId;
+    const lessonId = btn?.dataset.lessonId;
+    if (!courseId || !lessonId) return;
+
+    btn.disabled = true;
+    try {
+      const response = await fetch((window.BASE_URL || '') + '/api/student-progress.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: new URLSearchParams({ course_id: courseId, lesson_id: lessonId }),
+        credentials: 'same-origin',
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Unable to mark lesson complete.');
+      }
+
+      const active = document.querySelector('.lesson-list .list-group-item.active');
+      if (active) {
+        active.classList.add('text-success');
+        const icon = active.querySelector('.lesson-status');
+        if (icon) {
+          icon.className = 'bi bi-check-circle-fill text-success lesson-status';
+        }
+      }
+      const progressBar = document.getElementById('courseProgressBar');
+      const progressText = document.getElementById('courseProgressText');
+      if (progressBar) progressBar.style.width = data.progress + '%';
+      if (progressText) progressText.textContent = data.progress + '% complete · ' + data.completed_count + ' of ' + data.total_lessons + ' lessons done';
+
+      if (data.status === 'completed') {
+        window.showToast?.('Course completed! You can now rate this course and teacher.', 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        window.showToast?.('Lesson marked complete!', 'success');
+      }
+    } catch (error) {
+      window.showToast?.(error.message || 'Unable to mark lesson complete.', 'danger');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('addLessonBtn')?.addEventListener('click', () => {
+    const wrap = document.getElementById('lessonFields');
+    if (!wrap || document.getElementById('addCourseForm')) return;
+    const n = wrap.querySelectorAll('.lesson-row').length + 1;
+    const div = document.createElement('div');
+    div.className = 'lesson-row mb-4 p-3 rounded border position-relative';
+    div.innerHTML = `
+      <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label">Lesson title</label>
+          <input type="text" class="form-control" name="lessons[]" placeholder="Lesson title" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Duration</label>
+          <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Video URL</label>
+          <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+        </div>
+      </div>
+      <div class="row g-3 mt-3">
+        <div class="col-12">
+          <label class="form-label">Upload video (optional)</label>
+          <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+        </div>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+
+  document.querySelectorAll('[data-panel-form]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+      }
+      const redirect = form.dataset.redirect;
+      window.showToast?.(form.dataset.successMessage || 'Saved successfully.', 'success');
+      if (redirect) {
+        setTimeout(() => {
+          window.location.href = redirect;
+        }, 800);
+      }
+    });
+  });
+})();

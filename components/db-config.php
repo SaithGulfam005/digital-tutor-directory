@@ -12,8 +12,8 @@
 return [
     'host'    => 'localhost',
     'port'    => '3306',
-    'name'    => 'digital_tutor_directory',
-    'user'    => 'root',
-    'pass'    => '',          // <-- Add your MySQL password here if you set one
+    'name'    => 'digitalt_dtd',
+    'user'    => 'digitalt_dtd',
+    'pass'    => 'dtd12345',          // <-- Add your MySQL password here if you set one
     'charset' => 'utf8mb4',
 ];
