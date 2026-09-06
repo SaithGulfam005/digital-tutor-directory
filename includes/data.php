@@ -265,6 +265,24 @@ function getAdminStats(): array
     ];
 }
 
+function getAdminNotificationCounts(): array
+{
+    if (!db_available()) {
+        return [
+            'verifications' => count(fallbackPendingVerifications()),
+            'courses' => count(array_filter(fallbackAdminCourses(), static fn($course) => $course['status'] === 'pending')),
+            'payments' => count(array_filter(fallbackPayments(), static fn($payment) => $payment['status'] === 'pending')),
+        ];
+    }
+
+    $pdo = db();
+    return [
+        'verifications' => (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles WHERE verification_status = 'pending'")->fetchColumn(),
+        'courses' => (int) $pdo->query("SELECT COUNT(*) FROM courses WHERE status = 'pending'")->fetchColumn(),
+        'payments' => (int) $pdo->query("SELECT COUNT(*) FROM payments WHERE status = 'pending'")->fetchColumn(),
+    ];
+}
+
 function getUserById(int $id): ?array
 {
     $stmt = db()->prepare('SELECT * FROM users WHERE id = ?');

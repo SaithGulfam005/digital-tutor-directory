@@ -32,12 +32,29 @@
 }
 .dashboard-sidebar--admin .sidebar-brand { color: #fff; border-color: #1E293B !important; }
 .dashboard-sidebar .nav-link {
+  display: flex;
+  align-items: center;
   color: var(--text-muted);
   border-radius: 8px;
   margin-bottom: 2px;
   font-weight: 500;
   padding: 0.65rem 1rem;
   transition: all var(--transition);
+}
+.admin-nav-notification {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  margin-left: auto;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #2563EB;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
 }
 .dashboard-sidebar .nav-link:hover {
   background: var(--secondary-bg);

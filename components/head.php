@@ -15,7 +15,7 @@
   <link href="<?= asset('css/main.css') ?>" rel="stylesheet">
   <link href="<?= asset('css/components.css') ?>" rel="stylesheet">
   <link href="<?= asset('css/chatbot.css') ?>" rel="stylesheet">
-  <?php if (!empty($dashboardLayout)): ?><link href="<?= asset('css/dashboard.css') ?>" rel="stylesheet"><?php endif; ?>
+  <?php if (!empty($dashboardLayout)): ?><link href="<?= asset('css/dashboard.css') ?>?v=<?= filemtime(__DIR__ . '/../assets/css/dashboard.css') ?>" rel="stylesheet"><?php endif; ?>
   <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
 </head>
 <body class="<?= htmlspecialchars($bodyClass ?? '') ?>">
