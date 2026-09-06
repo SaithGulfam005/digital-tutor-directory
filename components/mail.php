@@ -13,8 +13,13 @@ function mail_config(): array
 function send_app_mail(string $to, string $subject, string $htmlBody, ?string $replyTo = null): bool
 {
     $config = mail_config();
-    $fromEmail = $config['from_email'];
-    $fromName = $config['from_name'];
+    $fromEmail = trim((string) ($config['from_email'] ?? ''));
+    $fromName = trim((string) ($config['from_name'] ?? SITE_NAME));
+
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL) || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+        error_log('Mail configuration error: invalid recipient or sender address.');
+        return false;
+    }
 
     if (!empty($config['use_smtp']) && !empty($config['smtp_pass'])) {
         return send_smtp_mail($to, $subject, $htmlBody, $fromEmail, $fromName, $config, $replyTo);
@@ -27,15 +32,24 @@ function send_app_mail(string $to, string $subject, string $htmlBody, ?string $r
         $headers .= 'Reply-To: ' . $replyTo . "\r\n";
     }
 
-    return @mail($to, $subject, $htmlBody, $headers);
+    $sent = mail($to, $subject, $htmlBody, $headers);
+    if (!$sent) {
+        error_log('PHP mail() failed. Configure SMTP in components/mail-config.php.');
+    }
+    return $sent;
 }
 
 function send_smtp_mail(string $to, string $subject, string $htmlBody, string $fromEmail, string $fromName, array $config, ?string $replyTo = null): bool
 {
-    $host = $config['smtp_host'];
+    $host = trim((string) ($config['smtp_host'] ?? ''));
     $port = (int) ($config['smtp_port'] ?? 587);
-    $user = $config['smtp_user'];
-    $pass = $config['smtp_pass'];
+    $user = trim((string) ($config['smtp_user'] ?? ''));
+    $pass = (string) ($config['smtp_pass'] ?? '');
+
+    if ($host === '' || $port < 1 || $user === '' || $pass === '') {
+        error_log('SMTP configuration error: host, port, username, and password are required.');
+        return false;
+    }
 
     $socket = @stream_socket_client("tcp://{$host}:{$port}", $errno, $errstr, 20);
     if (!$socket) {
@@ -60,71 +74,76 @@ function send_smtp_mail(string $to, string $subject, string $htmlBody, string $f
         fwrite($socket, $command . "\r\n");
     };
 
-    $expect = static function (string $response, array $codes) use ($read): bool {
+    $expect = static function (string $response, array $codes, string $phase): bool {
         $code = (int) substr(trim($response), 0, 3);
-        return in_array($code, $codes, true);
+        if (!in_array($code, $codes, true)) {
+            error_log("SMTP {$phase} failed: " . trim($response));
+            return false;
+        }
+        return true;
     };
 
-    if (!$expect($read(), [220])) {
+    if (!$expect($read(), [220], 'connect')) {
         fclose($socket);
         return false;
     }
 
     $write('EHLO localhost');
-    if (!$expect($read(), [250])) {
+    if (!$expect($read(), [250], 'EHLO')) {
         fclose($socket);
         return false;
     }
 
     $write('STARTTLS');
-    if (!$expect($read(), [220])) {
+    if (!$expect($read(), [220], 'STARTTLS')) {
         fclose($socket);
         return false;
     }
 
     if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+        error_log('SMTP TLS negotiation failed: ' . (openssl_error_string() ?: 'unknown OpenSSL error'));
         fclose($socket);
         return false;
     }
 
     $write('EHLO localhost');
-    if (!$expect($read(), [250])) {
+    if (!$expect($read(), [250], 'EHLO after TLS')) {
         fclose($socket);
         return false;
     }
 
     $write('AUTH LOGIN');
-    if (!$expect($read(), [334])) {
+    if (!$expect($read(), [334], 'AUTH LOGIN')) {
         fclose($socket);
         return false;
     }
 
     $write(base64_encode($user));
-    if (!$expect($read(), [334])) {
+    if (!$expect($read(), [334], 'SMTP username')) {
         fclose($socket);
         return false;
     }
 
     $write(base64_encode($pass));
-    if (!$expect($read(), [235])) {
+    if (!$expect($read(), [235], 'SMTP password')) {
         fclose($socket);
         return false;
     }
 
     $write('MAIL FROM:<' . $fromEmail . '>');
-    if (!$expect($read(), [250])) {
+    if (!$expect($read(), [250], 'MAIL FROM')) {
         fclose($socket);
         return false;
     }
 
     $write('RCPT TO:<' . $to . '>');
-    if (!$expect($read(), [250, 251])) {
+    if (!$expect($read(), [250, 251], 'RCPT TO')) {
         fclose($socket);
         return false;
     }
 
     $write('DATA');
-    if (!$expect($read(), [354])) {
+    if (!$expect($read(), [354], 'DATA')) {
         fclose($socket);
         return false;
     }
@@ -139,10 +158,10 @@ function send_smtp_mail(string $to, string $subject, string $htmlBody, string $f
     $message .= "MIME-Version: 1.0\r\n";
     $message .= "Content-Type: text/html; charset=UTF-8\r\n";
     $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $message .= $htmlBody . "\r\n.";
+    $message .= str_replace("\r\n.", "\r\n..", str_replace("\n.", "\n..", $htmlBody)) . "\r\n.";
 
     fwrite($socket, $message . "\r\n");
-    if (!$expect($read(), [250])) {
+    if (!$expect($read(), [250], 'message body')) {
         fclose($socket);
         return false;
     }

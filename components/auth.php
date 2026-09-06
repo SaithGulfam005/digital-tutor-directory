@@ -53,7 +53,7 @@ function create_or_resend_email_verification(int $userId, string $email): array
     $sent = send_app_mail($email, 'Verify your email address - ' . SITE_NAME, build_verification_email($otp));
     if (!$sent) {
         db()->prepare('DELETE FROM email_verifications WHERE user_id = ?')->execute([$userId]);
-        throw new RuntimeException('We could not send the verification email. Please try again.');
+        throw new RuntimeException('We could not send the verification email. Please check the SMTP configuration and try again.');
     }
 
     return ['otp' => $otp, 'expires_at' => $expiresAt];

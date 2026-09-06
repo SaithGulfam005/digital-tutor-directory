@@ -1,7 +1,8 @@
 <?php
 /**
  * Email configuration for OTP and notifications.
- * For Gmail: enable 2FA and create an App Password for digitaltutordirectory@gmail.com
+ * For Gmail: enable 2FA and create an App Password for digitaltutordirectory@gmail.com.
+ * Set DTD_SMTP_PASS in the hosting environment; never commit the app password.
  */
 declare(strict_types=1);
 
@@ -12,7 +13,7 @@ return [
     'smtp_host' => 'smtp.gmail.com',
     'smtp_port' => 587,
     'smtp_user' => 'digitaltutordirectory@gmail.com',
-    // Set your Gmail App Password here (16 characters, no spaces)
-    'smtp_pass' => 'zmmfiewpewxqhtwq',
+    'smtp_user' => 'digitaltutordirectory@gmail.com',
+    'smtp_pass' => (string) (getenv('DTD_SMTP_PASS') ?: ($_SERVER['DTD_SMTP_PASS'] ?? '')),
     'use_smtp' => true,
 ];
