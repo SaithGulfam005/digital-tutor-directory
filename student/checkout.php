@@ -45,7 +45,7 @@ require_once __DIR__ . '/../components/head.php';
         <div class="card border-0 shadow-sm">
           <div class="card-body p-4">
             <h5 class="fw-bold mb-4">Choose Payment Method</h5>
-            <form id="payment-form">
+            <form id="payment-form" enctype="multipart/form-data">
               <input type="hidden" name="course_id" value="<?= $courseId ?>">
 
               <div class="row g-2 mb-4">
@@ -68,28 +68,34 @@ require_once __DIR__ . '/../components/head.php';
               </div>
 
               <div id="fields-bank" class="payment-fields d-none">
-                <div class="mb-3">
-                  <label class="form-label">Bank Transaction Reference</label>
-                  <input type="text" class="form-control" name="transaction_ref" placeholder="Enter reference from your bank receipt">
+                <?php $bankDetails = manual_payment_details('bank_transfer'); ?>
+                <div class="alert alert-info small mb-3">
+                  <strong><?= htmlspecialchars($bankDetails['title']) ?></strong>
+                  <ul class="mb-0 mt-2">
+                    <?php foreach ($bankDetails['lines'] as $line): ?><li><?= htmlspecialchars($line) ?></li><?php endforeach; ?>
+                  </ul>
                 </div>
-                <div class="alert alert-warning small mb-0">Transfer to <strong>Digital Tutor Directory</strong> account. Your enrollment activates after admin verifies the payment.</div>
+                <div class="mb-3">
+                  <label class="form-label">Transaction Reference</label>
+                  <input type="text" class="form-control" name="transaction_ref" placeholder="Enter the reference from your bank receipt">
+                </div>
               </div>
 
               <div id="fields-demo-wallet" class="payment-fields d-none">
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label" for="walletNumber">Mobile / Wallet Number</label>
-                    <input type="text" class="form-control" id="walletNumber" name="wallet_number" placeholder="03001234567" autocomplete="off">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="walletPin">Wallet PIN</label>
-                    <input type="password" class="form-control" id="walletPin" name="wallet_pin" placeholder="Enter any test PIN" autocomplete="off">
-                  </div>
+                <div id="walletDetails" class="alert alert-info small mb-3"></div>
+                <div class="mb-3">
+                  <label class="form-label">Transaction Reference</label>
+                  <input type="text" class="form-control" name="transaction_ref" placeholder="Enter the reference from your wallet receipt">
                 </div>
-                <div class="alert alert-success small mb-0">
-                  <i class="bi bi-check-circle me-2"></i>
-                  Enter the wallet number and transaction PIN used for your payment. Your PIN will not be saved. The payment will remain pending until an admin verifies it.
+              </div>
+
+              <div id="fields-manual-receipt" class="payment-fields d-none">
+                <div class="mb-3">
+                  <label class="form-label" for="paymentReceipt">Payment Receipt</label>
+                  <input type="file" class="form-control" id="paymentReceipt" name="receipt" accept="application/pdf,image/jpeg,image/png,image/webp">
+                  <div class="form-text">Upload a clear PDF, JPG, PNG, or WEBP receipt (maximum 5 MB).</div>
                 </div>
+                <div class="alert alert-warning small mb-0">Your enrollment will be activated after an admin checks and approves this payment.</div>
               </div>
 
               <div class="form-check mt-4 mb-4">
@@ -116,8 +122,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const methodInputs = form.querySelectorAll('input[name="payment_method"]');
   const bankFields = document.getElementById('fields-bank');
   const demoWalletFields = document.getElementById('fields-demo-wallet');
-  const walletNumber = document.getElementById('walletNumber');
-  const walletPin = document.getElementById('walletPin');
+  const manualReceiptFields = document.getElementById('fields-manual-receipt');
+  const receiptInput = document.getElementById('paymentReceipt');
+  const transactionInputs = form.querySelectorAll('input[name="transaction_ref"]');
+  const walletDetails = document.getElementById('walletDetails');
   const errorBox = document.getElementById('payment-error');
   const submitBtn = document.getElementById('submit-btn');
   const btnText = document.getElementById('btn-text');
@@ -129,9 +137,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (stripeFields) stripeFields.classList.toggle('d-none', method !== 'stripe' && method !== 'card');
     if (bankFields) bankFields.classList.toggle('d-none', method !== 'bank_transfer');
     if (demoWalletFields) demoWalletFields.classList.toggle('d-none', !['jazzcash', 'easypaisa'].includes(method));
-    const isDemoWallet = ['jazzcash', 'easypaisa'].includes(method);
-    if (walletNumber) walletNumber.required = isDemoWallet;
-    if (walletPin) walletPin.required = isDemoWallet;
+    const isManual = method !== 'card' && method !== 'stripe';
+    if (manualReceiptFields) manualReceiptFields.classList.toggle('d-none', !isManual);
+    if (receiptInput) receiptInput.required = isManual;
+    transactionInputs.forEach((input) => { input.required = input.closest('.payment-fields')?.classList.contains('d-none') === false; });
+    if (walletDetails) {
+      const details = <?= json_encode(['jazzcash' => manual_payment_details('jazzcash'), 'easypaisa' => manual_payment_details('easypaisa')]) ?>[method];
+      walletDetails.innerHTML = details ? '<strong>' + details.title + '</strong><ul class="mb-0 mt-2">' + details.lines.map((line) => '<li>' + line.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</li>').join('') + '</ul>' : '';
+    }
   }
 
   methodInputs.forEach((input) => {

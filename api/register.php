@@ -53,6 +53,14 @@ $user = null;
 try {
     $user = register_user($data, $role);
     create_or_resend_email_verification((int) $user['id'], (string) $user['email']);
+    try {
+        send_admin_notification(
+            'New ' . ucfirst($role) . ' registration - ' . SITE_NAME,
+            build_registration_admin_email((string) $user['name'], (string) $user['email'], $role)
+        );
+    } catch (Throwable $mailError) {
+        error_log('Registration admin notification failed: ' . $mailError->getMessage());
+    }
     redirect_with(
         url('auth/verify-email.php?email=' . urlencode((string) $user['email'])),
         'A verification code has been sent to your email. Please verify your address to activate your account.',

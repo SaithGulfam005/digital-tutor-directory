@@ -43,6 +43,15 @@ if ($error) {
     json_response(['success' => false, 'message' => $error], 400);
 }
 
+$receiptPath = null;
+if ($methodKey !== 'card') {
+    try {
+        $receiptPath = save_uploaded_payment_receipt($_FILES['receipt'] ?? []);
+    } catch (Throwable $e) {
+        json_response(['success' => false, 'message' => $e->getMessage()], 400);
+    }
+}
+
 try {
     if (in_array($methodKey, ['card'], true)) {
         if (!stripe_is_configured()) {
@@ -75,8 +84,10 @@ try {
             (int) $user['id'],
             $courseId,
             $methodKey,
-            trim((string) ($_POST['wallet_number'] ?? ''))
+            trim((string) ($_POST['transaction_ref'] ?? '')),
+            $receiptPath
         );
+        notify_payment_submitted((int) $payment['id']);
 
         json_response([
             'success' => true,
@@ -89,9 +100,11 @@ try {
 
     $result = processCoursePayment((int) $user['id'], $courseId, $methodKey, [
         'transaction_ref' => $_POST['transaction_ref'] ?? '',
+        'receipt_path' => $receiptPath,
     ]);
 
     if ($result['status'] === 'pending') {
+        notify_payment_submitted((int) ($result['id'] ?? 0));
         json_response([
             'success' => true,
             'pending' => true,

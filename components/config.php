@@ -199,6 +199,51 @@ function save_uploaded_course_thumbnail(array $file): string
     return 'uploads/courses/' . $filename;
 }
 
+function save_uploaded_payment_receipt(array $file): string
+{
+    if ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Please upload your payment receipt.');
+    }
+
+    $tmpName = $file['tmp_name'] ?? '';
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('Invalid receipt upload. Please try again.');
+    }
+
+    $size = (int) ($file['size'] ?? 0);
+    if ($size <= 0 || $size > 5 * 1024 * 1024) {
+        throw new RuntimeException('Payment receipt must be smaller than 5 MB.');
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = $finfo ? (string) finfo_file($finfo, $tmpName) : '';
+    if ($finfo) {
+        finfo_close($finfo);
+    }
+
+    $extensions = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+    if (!isset($extensions[$mime])) {
+        throw new RuntimeException('Only PDF, JPG, PNG, or WEBP receipts are allowed.');
+    }
+
+    $uploadDir = __DIR__ . '/../uploads/payment-receipts';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
+        throw new RuntimeException('Could not create the receipt upload folder.');
+    }
+
+    $filename = 'receipt_' . bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+    if (!move_uploaded_file($tmpName, $uploadDir . '/' . $filename)) {
+        throw new RuntimeException('Failed to save the payment receipt.');
+    }
+
+    return 'uploads/payment-receipts/' . $filename;
+}
+
 function save_uploaded_lesson_video(array $file): ?string
 {
     $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);

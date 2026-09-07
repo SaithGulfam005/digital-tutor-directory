@@ -120,6 +120,21 @@ Redirects to my-courses.php
 
 ## Troubleshooting
 
+### Manual payment setup
+Students can submit Bank Transfer, JazzCash, or Easypaisa payments with a transaction reference and receipt. Add these values to the server `.env` file so the checkout shows the correct admin payment details:
+
+```env
+DTD_BANK_NAME=Your bank name
+DTD_BANK_ACCOUNT_TITLE=Your account title
+DTD_BANK_ACCOUNT_NUMBER=Your account number or IBAN
+DTD_JAZZCASH_NAME=Your JazzCash account name
+DTD_JAZZCASH_NUMBER=Your JazzCash number
+DTD_EASYPAISA_NAME=Your Easypaisa account name
+DTD_EASYPAISA_NUMBER=Your Easypaisa number
+```
+
+The receipt is limited to PDF, JPG, PNG, or WEBP files up to 5 MB. Admins review it from the Payments dashboard and use Confirm to activate the student's enrollment.
+
 ### Payment form not loading:
 - Check if `STRIPE_PUBLISHABLE_KEY` is configured correctly
 - Verify HTTPS is being used (Stripe requires it)

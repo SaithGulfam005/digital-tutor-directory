@@ -37,7 +37,7 @@ if (!empty($_FILES['thumb']['name'])) {
 }
 
 try {
-    createCourse((int) $user['id'], [
+    $courseId = createCourse((int) $user['id'], [
         'title' => $title,
         'category' => $category,
         'price' => $price,
@@ -46,6 +46,14 @@ try {
         'thumb' => $thumbPath,
         'status' => 'pending',
     ]);
+    try {
+        send_admin_notification(
+            'Course awaiting approval - ' . SITE_NAME,
+            build_course_submitted_admin_email((string) $user['name'], $title, $price)
+        );
+    } catch (Throwable $mailError) {
+        error_log('Course submission admin notification failed: ' . $mailError->getMessage());
+    }
     redirect_with(url('teacher/courses.php'), 'Course submitted for admin approval!');
 } catch (Throwable $e) {
     redirect_with(url('teacher/add-course.php'), $e->getMessage(), 'danger');

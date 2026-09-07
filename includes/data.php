@@ -214,6 +214,7 @@ function getPayments(): array
     if (!db_available()) {
         return fallbackPayments();
     }
+    ensure_manual_payment_schema();
     $sql = "SELECT p.*, u.name AS student_name, c.title AS course_title
             FROM payments p
             JOIN users u ON u.id = p.student_id
@@ -227,6 +228,8 @@ function getPayments(): array
             'course' => $row['course_title'],
             'amount' => (float) $row['amount'],
             'method' => $row['method'],
+            'transaction_ref' => $row['transaction_ref'] ?? '',
+            'receipt_path' => $row['receipt_path'] ?? '',
             'date' => date('Y-m-d H:i', strtotime($row['created_at'])),
             'status' => $row['status'],
             'payment_id' => (int) $row['id'],
@@ -356,7 +359,8 @@ function getStudentPurchases(?int $studentId = null): array
     if (!$studentId || !db_available()) {
         return fallbackStudentPurchases();
     }
-    $sql = "SELECT p.reference, p.amount, p.method, p.status, p.created_at, c.title AS course_title
+    ensure_manual_payment_schema();
+    $sql = "SELECT p.reference, p.amount, p.method, p.status, p.transaction_ref, p.created_at, c.title AS course_title
             FROM payments p JOIN courses c ON c.id = p.course_id
             WHERE p.student_id = ? ORDER BY p.created_at DESC";
     $stmt = db()->prepare($sql);
@@ -369,6 +373,7 @@ function getStudentPurchases(?int $studentId = null): array
             'method' => $row['method'],
             'date' => date('Y-m-d', strtotime($row['created_at'])),
             'status' => $row['status'],
+            'transaction_ref' => $row['transaction_ref'] ?? '',
         ];
     }, $stmt->fetchAll());
 }
@@ -1031,9 +1036,10 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
         throw new RuntimeException('Invalid payment method.');
     }
 
-    $payment = create_pending_payment($studentId, $courseId, $methodKey, $billing['transaction_ref'] ?? null);
+    $payment = create_pending_payment($studentId, $courseId, $methodKey, $billing['transaction_ref'] ?? null, $billing['receipt_path'] ?? null);
 
     return [
+        'id' => $payment['id'],
         'reference' => $payment['reference'],
         'status' => 'pending',
         'amount' => $payment['amount'],
@@ -1041,7 +1047,23 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
     ];
 }
 
-function create_pending_payment(int $studentId, int $courseId, string $method, ?string $transactionRef = null): array
+function ensure_manual_payment_schema(): void
+{
+    static $checked = false;
+    if ($checked || !db_available()) {
+        return;
+    }
+    $checked = true;
+    foreach (['transaction_ref' => 'VARCHAR(120) DEFAULT NULL', 'receipt_path' => 'VARCHAR(255) DEFAULT NULL', 'rejection_reason' => 'TEXT DEFAULT NULL'] as $column => $definition) {
+        $stmt = db()->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
+        $stmt->execute(['payments', $column]);
+        if ((int) $stmt->fetchColumn() === 0) {
+            db()->exec("ALTER TABLE payments ADD COLUMN {$column} {$definition}");
+        }
+    }
+}
+
+function create_pending_payment(int $studentId, int $courseId, string $method, ?string $transactionRef = null, ?string $receiptPath = null): array
 {
     $course = getCourseById($courseId);
     if (!$course) {
@@ -1074,16 +1096,13 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
     $teacherShare = calculate_teacher_share($amount);
     $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
     $methodLabel = payment_method_label($methodKey);
-    if ($transactionRef) {
-        $methodLabel .= ' (Ref: ' . substr(trim($transactionRef), 0, 40) . ')';
-    }
-
     ensure_stripe_payment_columns();
+    ensure_manual_payment_schema();
 
     $pdo->beginTransaction();
     try {
-        $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, status, teacher_share, created_at) VALUES (?,?,?,?,?,?,?,NOW())');
-        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $methodLabel, 'pending', $teacherShare]);
+        $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, transaction_ref, receipt_path, status, teacher_share, created_at) VALUES (?,?,?,?,?,?,?,?,?,NOW())');
+        $pay->execute([$paymentRef, $studentId, $courseId, $amount, $methodLabel, $transactionRef ? substr(trim($transactionRef), 0, 120) : null, $receiptPath, 'pending', $teacherShare]);
         $paymentId = (int) $pdo->lastInsertId();
         $pdo->commit();
 
@@ -1155,6 +1174,7 @@ function complete_stripe_payment(int $paymentId, string $sessionId, int $student
 
 function admin_confirm_payment(int $paymentId): void
 {
+    ensure_manual_payment_schema();
     $pdo = db();
     $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
     $stmt->execute([$paymentId]);
@@ -1188,6 +1208,7 @@ function admin_confirm_payment(int $paymentId): void
 
 function admin_reject_payment(int $paymentId, string $reason = ''): void
 {
+    ensure_manual_payment_schema();
     $pdo = db();
     $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
     $stmt->execute([$paymentId]);
@@ -1199,14 +1220,14 @@ function admin_reject_payment(int $paymentId, string $reason = ''): void
         throw new RuntimeException('Only pending payments can be rejected.');
     }
 
-    $pdo->prepare("UPDATE payments SET status='failed' WHERE id=?")->execute([$paymentId]);
+    $pdo->prepare("UPDATE payments SET status='failed', rejection_reason=? WHERE id=?")->execute([trim($reason) ?: null, $paymentId]);
     notify_payment_rejected($paymentId, $reason);
 }
 
 function notify_payment_approved(int $paymentId): void
 {
     $payment = get_payment_details($paymentId);
-    if (!$payment || empty($payment['student_email'])) {
+    if (!$payment) {
         return;
     }
 
@@ -1217,10 +1238,44 @@ function notify_payment_approved(int $paymentId): void
         (float) $payment['amount'],
         $payment['reference']
     );
+    if (!empty($payment['student_email'])) {
+        try {
+            send_app_mail($payment['student_email'], $subject, $body);
+        } catch (Throwable $e) {
+            error_log('Payment approval email failed: ' . $e->getMessage());
+        }
+    }
     try {
-        send_app_mail($payment['student_email'], $subject, $body);
+        send_admin_notification(
+            'Payment confirmed - ' . SITE_NAME,
+            build_payment_admin_email((string) $payment['student_name'], (string) $payment['course_title'], (float) $payment['amount'], (string) $payment['reference'], true)
+        );
     } catch (Throwable $e) {
-        error_log('Payment approval email failed: ' . $e->getMessage());
+        error_log('Payment approval admin notification failed: ' . $e->getMessage());
+    }
+}
+
+function notify_payment_submitted(int $paymentId): void
+{
+    $payment = get_payment_details($paymentId);
+    if (!$payment) {
+        return;
+    }
+
+    try {
+        if (!empty($payment['student_email'])) {
+            send_app_mail(
+                (string) $payment['student_email'],
+                'Payment received - ' . SITE_NAME,
+                build_payment_submitted_email((string) $payment['student_name'], (string) $payment['course_title'], (float) $payment['amount'], (string) $payment['reference'])
+            );
+        }
+        send_admin_notification(
+            'New payment awaiting confirmation - ' . SITE_NAME,
+            build_payment_admin_email((string) $payment['student_name'], (string) $payment['course_title'], (float) $payment['amount'], (string) $payment['reference'])
+        );
+    } catch (Throwable $e) {
+        error_log('Payment submission notification failed: ' . $e->getMessage());
     }
 }
 
@@ -1291,6 +1346,12 @@ function admin_verify_teacher(int $userId, bool $approve): void
     $status = $approve ? 'verified' : 'rejected';
     $userStatus = $approve ? 'active' : 'inactive';
     $pdo = db();
+    $userStmt = $pdo->prepare('SELECT name, email FROM users WHERE id=? LIMIT 1');
+    $userStmt->execute([$userId]);
+    $teacher = $userStmt->fetch();
+    if (!$teacher) {
+        throw new RuntimeException('Teacher not found.');
+    }
     $pdo->beginTransaction();
     try {
         $pdo->prepare('UPDATE teacher_profiles SET verification_status=?, verified_at=? WHERE user_id=?')
@@ -1305,13 +1366,34 @@ function admin_verify_teacher(int $userId, bool $approve): void
         $pdo->rollBack();
         throw $e;
     }
+
+    try {
+        if ($approve) {
+            send_app_mail((string) $teacher['email'], 'Teacher account approved - ' . SITE_NAME, build_teacher_approved_email((string) $teacher['name']));
+        }
+    } catch (Throwable $mailError) {
+        error_log('Teacher approval notification failed: ' . $mailError->getMessage());
+    }
 }
 
 function admin_update_course_status(int $courseId, string $status): void
 {
     $map = ['approved' => 'published', 'published' => 'published', 'pending' => 'pending', 'rejected' => 'rejected'];
     $dbStatus = $map[$status] ?? $status;
+    $stmt = db()->prepare('SELECT c.title, u.name AS teacher_name, u.email AS teacher_email FROM courses c JOIN users u ON u.id = c.teacher_id WHERE c.id=? LIMIT 1');
+    $stmt->execute([$courseId]);
+    $course = $stmt->fetch();
+    if (!$course) {
+        throw new RuntimeException('Course not found.');
+    }
     db()->prepare('UPDATE courses SET status=? WHERE id=?')->execute([$dbStatus, $courseId]);
+    if ($dbStatus === 'published') {
+        try {
+            send_app_mail((string) $course['teacher_email'], 'Course approved - ' . SITE_NAME, build_course_approved_email((string) $course['teacher_name'], (string) $course['title']));
+        } catch (Throwable $mailError) {
+            error_log('Course approval notification failed: ' . $mailError->getMessage());
+        }
+    }
 }
 
 function admin_delete_course(int $courseId): void

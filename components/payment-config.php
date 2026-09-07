@@ -54,22 +54,39 @@ function payment_env(string $name, string $default = ''): string
     return trim((string) ($values[$name] ?? $default));
 }
 
-<<<<<<< HEAD
-define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPpk_test_51UCEEgI4LP85Flua5degTUL955fsYds1t7vcFbI0KvbKSB78iNzGU8TbTtTJsInWzr4yy0hUwJNYwlt9baRlQ6I300yfyqX4fhE_PUBLISHABLE_KEY'));
-define('STRIPE_SECRET_KEY', payment_env('STRIPE_Ssk_test_51UCEEgI4LP85FluaAPTwlngANdOttc1OoZw02ME509kQsRJnCF87YPEYqSn97rkd2HUAucBk2XFCormiknwUh2Rk00cBBI5KkMECRET_KEY'));
-define('STRIPE_WEBHOOK_SECRET', payment_env(''));
-=======
 if (!defined('STRIPE_PUBLISHABLE_KEY')) {
-    define('STRIPE_PUBLISHABLE_KEY', '');
+    define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPE_PUBLISHABLE_KEY'));
 }
 if (!defined('STRIPE_SECRET_KEY')) {
-    define('STRIPE_SECRET_KEY', '');
+    define('STRIPE_SECRET_KEY', payment_env('STRIPE_SECRET_KEY'));
 }
 if (!defined('STRIPE_WEBHOOK_SECRET')) {
-    define('STRIPE_WEBHOOK_SECRET', '');
+    define('STRIPE_WEBHOOK_SECRET', payment_env('STRIPE_WEBHOOK_SECRET'));
 }
 define('STRIPE_CONFIGURED', STRIPE_SECRET_KEY !== '');
->>>>>>> e197dfe5d2019edeba9ea831a6c37eccf1d4a9b7
+
+function manual_payment_details(string $method): array
+{
+    return match (strtolower($method)) {
+        'bank_transfer' => [
+            'title' => 'Bank transfer details',
+            'lines' => [
+                'Bank: ' . payment_env('DTD_BANK_NAME', 'Naya Pay'),
+                'Account title: ' . payment_env('DTD_BANK_ACCOUNT_TITLE', 'Muhammad Haseeb Rana'),
+                'Account/IBAN: ' . payment_env('DTD_BANK_ACCOUNT_NUMBER', 'PK74NAYA1234503446052282'),
+            ],
+        ],
+        'jazzcash' => [
+            'title' => 'JazzCash account details',
+            'lines' => ['Account name: ' . payment_env('DTD_JAZZCASH_NAME', 'Muhammad Haseeb Rana'), 'Mobile number: ' . payment_env('DTD_JAZZCASH_NUMBER', '03446052282')],
+        ],
+        'easypaisa' => [
+            'title' => 'Easypaisa account details',
+            'lines' => ['Account name: ' . payment_env('DTD_EASYPAISA_NAME', 'Zeeshan Aslam'), 'Mobile number: ' . payment_env('DTD_EASYPAISA_NUMBER', '03101769230')],
+        ],
+        default => ['title' => '', 'lines' => []],
+    };
+}
 
 function payment_method_label(string $method): string
 {
@@ -100,8 +117,8 @@ function validate_payment_details(string $method, array $data): ?string
     }
 
     if (in_array($method, ['jazzcash', 'easypaisa'], true)) {
-        if (trim($data['wallet_number'] ?? '') === '' || trim($data['wallet_pin'] ?? '') === '') {
-            return 'Enter your wallet number and PIN.';
+        if (trim($data['transaction_ref'] ?? '') === '') {
+            return 'Enter the transaction reference from your wallet payment.';
         }
         return null;
     }

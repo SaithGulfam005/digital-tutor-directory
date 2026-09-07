@@ -223,6 +223,16 @@ function contact_inbox_email(): string
     return trim((string) ($config['contact_email'] ?? $config['from_email'] ?? ''));
 }
 
+function send_admin_notification(string $subject, string $htmlBody): bool
+{
+    $adminEmail = contact_inbox_email();
+    if ($adminEmail === '') {
+        error_log('Admin notification skipped: contact email is not configured.');
+        return false;
+    }
+    return send_app_mail($adminEmail, $subject, $htmlBody);
+}
+
 function build_contact_email(string $name, string $email, string $subject, string $message): string
 {
     $year = date('Y');
@@ -250,6 +260,74 @@ function build_contact_email(string $name, string $email, string $subject, strin
 </body>
 </html>
 HTML;
+}
+
+function build_registration_admin_email(string $name, string $email, string $role): string
+{
+    $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+    $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+    $safeRole = htmlspecialchars(ucfirst($role), ENT_QUOTES, 'UTF-8');
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#0d6efd;margin-top:0;">New registration</h2>'
+        . '<p>A new ' . $safeRole . ' account was registered on ' . htmlspecialchars(SITE_NAME, ENT_QUOTES, 'UTF-8') . '.</p>'
+        . '<p><strong>Name:</strong> ' . $safeName . '<br><strong>Email:</strong> ' . $safeEmail . '<br><strong>Role:</strong> ' . $safeRole . '</p>'
+        . '</div></body></html>';
+}
+
+function build_course_submitted_admin_email(string $teacherName, string $courseTitle, float $price): string
+{
+    $safeTeacher = htmlspecialchars($teacherName, ENT_QUOTES, 'UTF-8');
+    $safeCourse = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#0d6efd;margin-top:0;">Course awaiting approval</h2>'
+        . '<p>Teacher <strong>' . $safeTeacher . '</strong> submitted a course for review.</p>'
+        . '<p><strong>Course:</strong> ' . $safeCourse . '<br><strong>Price:</strong> $' . number_format($price, 2) . '</p>'
+        . '</div></body></html>';
+}
+
+function build_course_approved_email(string $teacherName, string $courseTitle): string
+{
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#198754;margin-top:0;">Course approved</h2>'
+        . '<p>Hello ' . htmlspecialchars($teacherName, ENT_QUOTES, 'UTF-8') . ',</p>'
+        . '<p>Your course <strong>' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '</strong> has been approved and is now published.</p>'
+        . '</div></body></html>';
+}
+
+function build_teacher_approved_email(string $teacherName): string
+{
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#198754;margin-top:0;">Teacher account approved</h2>'
+        . '<p>Hello ' . htmlspecialchars($teacherName, ENT_QUOTES, 'UTF-8') . ',</p>'
+        . '<p>Your teacher account has been approved. You can now log in and publish courses.</p>'
+        . '</div></body></html>';
+}
+
+function build_payment_submitted_email(string $studentName, string $courseTitle, float $amount, string $reference): string
+{
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#0d6efd;margin-top:0;">Payment submitted</h2>'
+        . '<p>Hello ' . htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') . ',</p>'
+        . '<p>Your payment submission for <strong>' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '</strong> is awaiting admin verification.</p>'
+        . '<p><strong>Amount:</strong> $' . number_format($amount, 2) . '<br><strong>Payment reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '</div></body></html>';
+}
+
+function build_payment_admin_email(string $studentName, string $courseTitle, float $amount, string $reference, bool $confirmed = false): string
+{
+    $heading = $confirmed ? 'Payment confirmed' : 'New course payment';
+    $message = $confirmed ? 'A payment has been confirmed by an administrator.' : 'A payment requires review.';
+    return '<html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
+        . '<h2 style="color:#0d6efd;margin-top:0;">' . $heading . '</h2>'
+        . '<p>' . $message . '</p>'
+        . '<p><strong>Student:</strong> ' . htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') . '<br><strong>Course:</strong> ' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '<br><strong>Amount:</strong> $' . number_format($amount, 2) . '<br><strong>Reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '</div></body></html>';
 }
 
 function build_payment_approved_email(string $studentName, string $courseTitle, float $amount, string $reference): string

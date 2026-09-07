@@ -61,6 +61,7 @@ require __DIR__ . '/../components/page-hero.php';
               <th>Course</th>
               <th>Amount</th>
               <th>Method</th>
+              <th>Receipt</th>
               <th>Date</th>
               <th>Status</th>
               <th class="text-end">Actions</th>
@@ -73,7 +74,17 @@ require __DIR__ . '/../components/page-hero.php';
               <td><?= htmlspecialchars($p['student']) ?></td>
               <td class="small"><?= htmlspecialchars($p['course']) ?></td>
               <td class="fw-medium">$<?= number_format($p['amount'], 2) ?></td>
-              <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
+              <td>
+                <span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span>
+                <?php if (!empty($p['transaction_ref'])): ?><div class="small text-muted mt-1">Ref: <?= htmlspecialchars($p['transaction_ref']) ?></div><?php endif; ?>
+              </td>
+              <td>
+                <?php if (!empty($p['receipt_path'])): ?>
+                <a class="btn btn-sm btn-outline-primary" href="<?= url('api/payment-receipt.php?id=' . (int) ($p['payment_id'] ?? 0)) ?>" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>View</a>
+                <?php else: ?>
+                <span class="small text-muted">None</span>
+                <?php endif; ?>
+              </td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge status-badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
               <td class="text-end text-nowrap">
