@@ -243,6 +243,7 @@ function getAdminStats(): array
     $totalUsers = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
     $students = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
     $teachers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='teacher' AND status='active'")->fetchColumn();
+    $admins = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn();
     $pendingVerifications = (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles WHERE verification_status='pending'")->fetchColumn();
     $totalCourses = (int) $pdo->query("SELECT COUNT(*) FROM courses")->fetchColumn();
     $pendingCourses = (int) $pdo->query("SELECT COUNT(*) FROM courses WHERE status='pending'")->fetchColumn();
@@ -255,6 +256,7 @@ function getAdminStats(): array
         'total_users' => $totalUsers,
         'students' => $students,
         'teachers' => $teachers,
+        'admins' => $admins,
         'pending_verifications' => $pendingVerifications,
         'total_courses' => $totalCourses,
         'pending_courses' => $pendingCourses,
@@ -766,7 +768,7 @@ function getAdminUsersList(): array
               ELSE (SELECT COUNT(*) FROM enrollments e WHERE e.student_id = u.id)
             END AS courses
             FROM users u
-            WHERE u.role IN ('student', 'teacher')
+            WHERE u.role IN ('student', 'teacher', 'admin')
             ORDER BY u.created_at DESC";
     $stmt = db()->query($sql);
     return array_map(static function ($row) {
@@ -1381,7 +1383,7 @@ function fallbackPayments(): array { return []; }
 function fallbackAdminStats(): array
 {
     return [
-        'total_users' => 0, 'students' => 0, 'teachers' => 0, 'pending_verifications' => 0,
+        'total_users' => 0, 'students' => 0, 'teachers' => 0, 'admins' => 0, 'pending_verifications' => 0,
         'total_courses' => 0, 'pending_courses' => 0, 'revenue_month' => 0, 'revenue_total' => 0,
         'enrollments_month' => 0, 'active_students' => 0,
     ];

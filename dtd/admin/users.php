@@ -6,7 +6,7 @@ $dashboardLayout = true;
 $dashSection = 'users';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'User Management';
-$pageSubheading = 'Manage students and teachers on the platform';
+$pageSubheading = 'Manage students, teachers, and admins on the platform';
 //$pageActions = '<button type="button" class="btn btn-primary btn-sm" data-demo><i class="bi bi-person-plus me-1"></i>Add User</button>';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
@@ -21,6 +21,7 @@ require __DIR__ . '/../components/page-hero.php';
       <li class="nav-item"><a class="nav-link active" href="#" data-filter-role="all" data-filter-table="usersTable">All</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-filter-role="student" data-filter-table="usersTable">Students</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-filter-role="teacher" data-filter-table="usersTable">Teachers</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" data-filter-role="admin" data-filter-table="usersTable">Admins</a></li>
     </ul>
 
     <div class="table-card">
@@ -51,8 +52,10 @@ require __DIR__ . '/../components/page-hero.php';
               <td>
                 <?php if ($u['role'] === 'teacher'): ?>
                 <span class="badge bg-warning-subtle text-dark">Teacher</span>
-                <?php else: ?>
+                <?php elseif ($u['role'] === 'student'): ?>
                 <span class="badge bg-primary-subtle text-primary">Student</span>
+                <?php else: ?>
+                <span class="badge bg-dark-subtle text-dark">Admin</span>
                 <?php endif; ?>
               </td>
               <td class="small"><?= htmlspecialchars($u['phone'] ?: '—') ?></td>

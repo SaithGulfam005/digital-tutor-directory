@@ -34,6 +34,17 @@ require __DIR__ . '/../components/page-hero.php';
         <div class="kpi-card">
           <div class="d-flex justify-content-between">
             <div>
+              <p class="text-muted small mb-1">Admins</p>
+              <h3 class="mb-0 fw-bold" data-count="<?= $stats['admins'] ?>">0</h3>
+            </div>
+            <div class="kpi-card__icon kpi-card__icon--primary"><i class="bi bi-shield-lock"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+          <div class="d-flex justify-content-between">
+            <div>
               <p class="text-muted small mb-1">Students</p>
               <h3 class="mb-0 fw-bold" data-count="<?= $stats['students'] ?>">0</h3>
             </div>
