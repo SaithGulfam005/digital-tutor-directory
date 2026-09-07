@@ -7,7 +7,7 @@ $dashboardLayout = true;
 $dashSection = 'purchases';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Purchase History';
-$pageSubheading = 'Receipts for all your course purchases';
+$pageSubheading = 'Payment history for all your course purchases';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
@@ -53,7 +53,6 @@ require __DIR__ . '/../components/page-hero.php';
               <th>Method</th>
               <th>Date</th>
               <th>Status</th>
-              <th class="text-end">Receipt</th>
             </tr>
           </thead>
           <tbody>
@@ -65,7 +64,6 @@ require __DIR__ . '/../components/page-hero.php';
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge <?= $p['status'] === 'completed' ? 'badge-approved' : ($p['status'] === 'pending' ? 'badge-pending' : 'badge-rejected') ?>"><?= ucfirst($p['status']) ?></span></td>
-              <td class="text-end text-muted small">—</td>
             </tr>
             <?php endforeach; ?>
           </tbody>

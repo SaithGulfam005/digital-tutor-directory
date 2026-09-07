@@ -18,7 +18,7 @@ Open `components/payment-config.php` and replace:
 
 ```php
 define('STRIPE_PUBLISHABLE_KEY', 'pk_test_51UCEEgI4LP85Flua5degTUL955fsYds1t7vcFbI0KvbKSB78iNzGU8TbTtTJsInWzr4yy0hUwJNYwlt9baRlQ6I300yfyqX4fh');
-define('STRIPE_SECRET_KEY', 'STRIPE_SECRET_KEY');
+define('STRIPE_SECRET_KEY', 'sk_test_51UCEEgI4LP85FluaAPTwlngANdOttc1OoZw02ME509kQsRJnCF87YPEYqSn97rkd2HUAucBk2XFCormiknwUh2Rk00cBBI5KkM');
 ```
 
 With your actual keys from Step 1.

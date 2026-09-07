@@ -49,7 +49,7 @@
     }
 
     const mime = videoMimeType(src);
-    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
   }
 
   document.querySelectorAll('.lesson-list .list-group-item[data-lesson]').forEach((item) => {

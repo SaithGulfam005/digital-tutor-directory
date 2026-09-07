@@ -79,3 +79,11 @@ require __DIR__ . '/../components/page-hero.php';
 <?php
 require_once __DIR__ . '/../components/modals.php';
 require_once __DIR__ . '/../components/dashboard-footer-scripts.php';
+?>
+<script>
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+</script>

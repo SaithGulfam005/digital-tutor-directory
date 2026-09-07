@@ -49,8 +49,8 @@ function payment_env(string $name, string $default = ''): string
     return trim((string) ($values[$name] ?? $default));
 }
 
-define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPE_PUBLISHABLE_KEY'));
-define('STRIPE_SECRET_KEY', payment_env('STRIPE_SECRET_KEY'));
+define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPpk_test_51UCEEgI4LP85Flua5degTUL955fsYds1t7vcFbI0KvbKSB78iNzGU8TbTtTJsInWzr4yy0hUwJNYwlt9baRlQ6I300yfyqX4fhE_PUBLISHABLE_KEY'));
+define('STRIPE_SECRET_KEY', payment_env('STRIPE_Ssk_test_51UCEEgI4LP85FluaAPTwlngANdOttc1OoZw02ME509kQsRJnCF87YPEYqSn97rkd2HUAucBk2XFCormiknwUh2Rk00cBBI5KkMECRET_KEY'));
 define('STRIPE_WEBHOOK_SECRET', payment_env(''));
 
 function payment_method_label(string $method): string
