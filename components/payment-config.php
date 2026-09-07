@@ -15,10 +15,43 @@ const PAYMENT_METHODS = [
 
 const PAYMENT_CURRENCY = 'usd';
 
-// Stripe test keys — replace with your keys from Stripe Dashboard
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51ReplaceWithYourPublishableKey';
-const STRIPE_SECRET_KEY = 'sk_test_51ReplaceWithYourSecretKey';
-const STRIPE_WEBHOOK_SECRET = '';
+function payment_env(string $name, string $default = ''): string
+{
+    $value = getenv($name);
+    if ($value !== false && trim($value) !== '') {
+        return trim($value);
+    }
+
+    $envFile = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env';
+    if (!is_readable($envFile)) {
+        return $default;
+    }
+
+    static $values;
+    if ($values === null) {
+        $values = [];
+        foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+                continue;
+            }
+
+            [$key, $rawValue] = explode('=', $line, 2);
+            $key = trim($key);
+            $rawValue = trim($rawValue);
+            if ($rawValue !== '' && (($rawValue[0] ?? '') === '"' || ($rawValue[0] ?? '') === "'")) {
+                $rawValue = trim($rawValue, "\"'");
+            }
+            $values[$key] = $rawValue;
+        }
+    }
+
+    return trim((string) ($values[$name] ?? $default));
+}
+
+define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPE_PUBLISHABLE_KEY'));
+define('STRIPE_SECRET_KEY', payment_env('STRIPE_SECRET_KEY'));
+define('STRIPE_WEBHOOK_SECRET', payment_env(''));
 
 function payment_method_label(string $method): string
 {
