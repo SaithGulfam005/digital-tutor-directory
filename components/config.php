@@ -1,6 +1,27 @@
 <?php
 define('SITE_NAME', 'Digital Tutor Directory');
-define('BASE_URL', '/digital-tutor-directory');
+
+function detect_base_url(): string
+{
+    $configuredBaseUrl = trim((string) getenv('DTD_BASE_URL'));
+    if ($configuredBaseUrl !== '') {
+        return '/' . trim($configuredBaseUrl, '/');
+    }
+
+    $documentRoot = realpath($_SERVER['DOCUMENT_ROOT'] ?? '');
+    $projectRoot = realpath(dirname(__DIR__));
+    if ($documentRoot !== false && $projectRoot !== false) {
+        $documentRoot = str_replace('\\', '/', rtrim($documentRoot, DIRECTORY_SEPARATOR));
+        $projectRoot = str_replace('\\', '/', rtrim($projectRoot, DIRECTORY_SEPARATOR));
+        if (str_starts_with($projectRoot, $documentRoot)) {
+            return substr($projectRoot, strlen($documentRoot)) ?: '';
+        }
+    }
+
+    return '/digital-tutor-directory';
+}
+
+define('BASE_URL', detect_base_url());
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
