@@ -49,7 +49,7 @@ $redirect = trim((string) ($_GET['redirect'] ?? ''));
         </div>
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="remember">
+            <input class="form-check-input" type="checkbox" id="remember" name="remember" value="1">
             <label class="form-check-label small" for="remember">Remember me</label>
           </div>
           <a href="<?= url('auth/forgot-password.php') ?>" class="small">Forgot password?</a>

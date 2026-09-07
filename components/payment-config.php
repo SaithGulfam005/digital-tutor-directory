@@ -15,6 +15,11 @@ const PAYMENT_METHODS = [
 
 const PAYMENT_CURRENCY = 'usd';
 
+$localConfig = __DIR__ . DIRECTORY_SEPARATOR . 'payment-config.local.php';
+if (is_readable($localConfig)) {
+    require_once $localConfig;
+}
+
 function payment_env(string $name, string $default = ''): string
 {
     $value = getenv($name);
@@ -49,9 +54,22 @@ function payment_env(string $name, string $default = ''): string
     return trim((string) ($values[$name] ?? $default));
 }
 
+<<<<<<< HEAD
 define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPpk_test_51UCEEgI4LP85Flua5degTUL955fsYds1t7vcFbI0KvbKSB78iNzGU8TbTtTJsInWzr4yy0hUwJNYwlt9baRlQ6I300yfyqX4fhE_PUBLISHABLE_KEY'));
 define('STRIPE_SECRET_KEY', payment_env('STRIPE_Ssk_test_51UCEEgI4LP85FluaAPTwlngANdOttc1OoZw02ME509kQsRJnCF87YPEYqSn97rkd2HUAucBk2XFCormiknwUh2Rk00cBBI5KkMECRET_KEY'));
 define('STRIPE_WEBHOOK_SECRET', payment_env(''));
+=======
+if (!defined('STRIPE_PUBLISHABLE_KEY')) {
+    define('STRIPE_PUBLISHABLE_KEY', '');
+}
+if (!defined('STRIPE_SECRET_KEY')) {
+    define('STRIPE_SECRET_KEY', '');
+}
+if (!defined('STRIPE_WEBHOOK_SECRET')) {
+    define('STRIPE_WEBHOOK_SECRET', '');
+}
+define('STRIPE_CONFIGURED', STRIPE_SECRET_KEY !== '');
+>>>>>>> e197dfe5d2019edeba9ea831a6c37eccf1d4a9b7
 
 function payment_method_label(string $method): string
 {

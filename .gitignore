@@ -2,3 +2,5 @@ components/gemini-config.php
 components/ai-config.local.php
 .vscode
 .env
+payment-config.local.php
+components/payment-config.local.php

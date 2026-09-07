@@ -31,6 +31,8 @@ CREATE TABLE users (
   role ENUM('student','teacher','admin') NOT NULL DEFAULT 'student',
   status ENUM('active','inactive','pending','pending_verification') NOT NULL DEFAULT 'active',
   email_verified_at TIMESTAMP NULL DEFAULT NULL,
+  remember_token_hash VARCHAR(255) DEFAULT NULL,
+  remember_token_expires DATETIME DEFAULT NULL,
   bio TEXT DEFAULT NULL,
   avatar VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
