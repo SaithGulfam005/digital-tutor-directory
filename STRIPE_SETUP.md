@@ -14,18 +14,25 @@ Your Digital Tutor Directory now has Stripe payment integration implemented! Fol
 
 ## Step 2: Update Configuration
 
-Open `components/payment-config.php` and replace:
+Copy `components/payment-config.local.php` and keep it in the same `components/` directory. Add your keys there:
 
 ```php
-define('STRIPE_PUBLISHABLE_KEY', 'pk_test_51UCEEgI4LP85Flua5degTUL955fsYds1t7vcFbI0KvbKSB78iNzGU8TbTtTJsInWzr4yy0hUwJNYwlt9baRlQ6I300yfyqX4fh');
-define('STRIPE_SECRET_KEY', 'STRIPE_SECRET_KEY');
+define('STRIPE_PUBLISHABLE_KEY', 'pk_test_YOUR_PUBLISHABLE_KEY');
+define('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY');
+define('STRIPE_WEBHOOK_SECRET', 'whsec_YOUR_WEBHOOK_SECRET');
 ```
 
-With your actual keys from Step 1.
+Never edit the tracked `components/payment-config.php` with real credentials. Upload the local file separately through the hosting File Manager or FTP.
 
 ## Step 3: Install Stripe SDK (Optional but Recommended)
 
-For production use with full Stripe features, install the Stripe PHP SDK:
+This project currently calls Stripe through PHP cURL, so the SDK is optional. Composer and the SDK are present in the development checkout, but free hosting may not provide Composer or SSH. If you need SDK-only features, upload the complete `vendor/stripe/stripe-php` directory and its dependencies, or run `composer install` locally and upload the resulting `vendor/` directory.
+
+The existing direct API path requires PHP cURL and OpenSSL. Check both in the hosting control panel or with a temporary diagnostic script before testing payments. Do not leave a diagnostic script publicly accessible after the check.
+
+If cURL is unavailable, install the SDK locally and upload it, but the SDK still needs an HTTPS-capable PHP transport. If outbound HTTPS is blocked, ask the host to enable it or move payment requests to a server that permits Stripe API traffic.
+
+Composer setup, when available:
 
 ```bash
 composer require stripe/stripe-php
@@ -65,7 +72,8 @@ This will enable:
 - `api/fix-avatars.php` - Fix user avatar paths (admin only)
 
 ### Configuration:
-- `components/payment-config.php` - Stripe configuration
+- `components/payment-config.php` - tracked loader and safe defaults
+- `components/payment-config.local.php` - ignored deployment credentials
 - `database/schema.sql` - Updated with password_resets table
 
 ## Step 6: Webhook Setup (Production Only)
@@ -113,9 +121,20 @@ Redirects to my-courses.php
 - Check browser console for JavaScript errors
 
 ### Payments not processing:
-- Verify `STRIPE_SECRET_KEY` is set correctly
+- Verify `components/payment-config.local.php` exists on the server and has the correct test-mode keys
 - Check database connection is working
 - Review error logs in `uploads/` directory
+
+### Live connectivity check:
+After uploading the local config, open a course checkout and complete a test payment with Stripe's test card `4242 4242 4242 4242`. A successful redirect and payment record confirms the application request. Also check the Stripe Dashboard in test mode. For a lower-risk API-only check, temporarily upload a script that requests `GET https://api.stripe.com/v1/account` with the secret key, report only the HTTP status and generic success/failure, then delete it immediately.
+
+Free-hosting checks:
+- Confirm the selected PHP version supports this project and that `curl` and `openssl` are enabled.
+- Confirm the site has HTTPS; Stripe Checkout redirects and webhook delivery should use HTTPS.
+- Confirm outbound HTTPS requests to `api.stripe.com` are allowed. Port 443 is required; no custom Stripe port is needed.
+- Confirm inbound HTTPS POST requests are allowed for `/api/stripe-webhook.php`; webhook delivery can fail if the host blocks them or sleeps accounts.
+- Confirm the control panel's upload limit before uploading `vendor/`; the public plan advertises 10 GB storage, but individual file and request limits are host settings.
+- FreeHosting publicly advertises FTP/File Manager, PHP, MySQL, and HTTPS availability, but cURL, OpenSSL, outbound API access, webhook behavior, disabled PHP functions, and per-file limits must be confirmed on the actual account.
 
 ### Test payments not appearing in dashboard:
 - Ensure you're using test mode keys (pk_test_, sk_test_)
@@ -125,6 +144,7 @@ Redirects to my-courses.php
 ## Production Checklist
 
 Before going live:
+- [ ] Upload `components/payment-config.local.php` separately; do not commit it
 - [ ] Switch to live API keys (pk_live_, sk_live_)
 - [ ] Implement webhook handling (api/stripe-webhook.php)
 - [ ] Set up HTTPS certificate

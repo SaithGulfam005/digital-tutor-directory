@@ -15,6 +15,11 @@ const PAYMENT_METHODS = [
 
 const PAYMENT_CURRENCY = 'usd';
 
+$localConfig = __DIR__ . DIRECTORY_SEPARATOR . 'payment-config.local.php';
+if (is_readable($localConfig)) {
+    require_once $localConfig;
+}
+
 function payment_env(string $name, string $default = ''): string
 {
     $value = getenv($name);
@@ -49,9 +54,16 @@ function payment_env(string $name, string $default = ''): string
     return trim((string) ($values[$name] ?? $default));
 }
 
-define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPE_PUBLISHABLE_KEY'));
-define('STRIPE_SECRET_KEY', payment_env('STRIPE_SECRET_KEY'));
-define('STRIPE_WEBHOOK_SECRET', payment_env(''));
+if (!defined('STRIPE_PUBLISHABLE_KEY')) {
+    define('STRIPE_PUBLISHABLE_KEY', '');
+}
+if (!defined('STRIPE_SECRET_KEY')) {
+    define('STRIPE_SECRET_KEY', '');
+}
+if (!defined('STRIPE_WEBHOOK_SECRET')) {
+    define('STRIPE_WEBHOOK_SECRET', '');
+}
+define('STRIPE_CONFIGURED', STRIPE_SECRET_KEY !== '');
 
 function payment_method_label(string $method): string
 {
