@@ -564,8 +564,8 @@ function getAdminChartData(): array
         return [
             'revenueLabels' => $paymentsByDate ? array_keys($paymentsByDate) : ['No completed payments'],
             'revenue' => $paymentsByDate ? array_values($paymentsByDate) : [0],
-            'userLabels' => ['Students', 'Teachers'],
-            'users' => [count(fallbackStudents()), count(fallbackTeachers())],
+            'userLabels' => ['Students', 'Teachers', 'Admins'],
+            'users' => [count(fallbackStudents()), count(fallbackTeachers()), 0],
         ];
     }
 
@@ -578,16 +578,16 @@ function getAdminChartData(): array
         ORDER BY payment_date") as $row) {
         $revenueByDate[$row['payment_date']] = (float) $row['revenue'];
     }
-    $userCounts = ['student' => 0, 'teacher' => 0];
-    foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher') GROUP BY role") as $row) {
+    $userCounts = ['student' => 0, 'teacher' => 0, 'admin' => 0];
+    foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher', 'admin') GROUP BY role") as $row) {
         $userCounts[$row['role']] = (int) $row['total'];
     }
 
     return [
         'revenueLabels' => $revenueByDate ? array_keys($revenueByDate) : ['No completed payments'],
         'revenue' => $revenueByDate ? array_values($revenueByDate) : [0],
-        'userLabels' => ['Students', 'Teachers'],
-        'users' => [$userCounts['student'], $userCounts['teacher']],
+        'userLabels' => ['Students', 'Teachers', 'Admins'],
+        'users' => [$userCounts['student'], $userCounts['teacher'], $userCounts['admin']],
     ];
 }
 function mockCurrentStudent(): array { return getCurrentStudent(); }
