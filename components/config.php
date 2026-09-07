@@ -1,6 +1,6 @@
 <?php
 define('SITE_NAME', 'Digital Tutor Directory');
-define('BASE_URL', '');
+define('BASE_URL', '/digital-tutor-directory');
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
