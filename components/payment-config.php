@@ -93,7 +93,7 @@ function format_pkr(float $amount, int $decimals = 2): string
 
 function format_course_price(float $amount, int $decimals = 2): string
 {
-    return 'PKR ' . number_format(round($amount, $decimals), $decimals);
+    return 'PKR ' . number_format(round($amount * PAYMENT_USD_TO_PKR_RATE, $decimals), $decimals);
 }
 
 function validate_payment_details(string $method, array $data): ?string

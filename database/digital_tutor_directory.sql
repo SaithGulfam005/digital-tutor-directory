@@ -87,7 +87,7 @@ CREATE TABLE `courses` (
   `title` varchar(200) NOT NULL,
   `slug` varchar(220) NOT NULL,
   `description` text NOT NULL,
-  `price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `price` decimal(12,4) NOT NULL DEFAULT 0.0000,
   `thumb` varchar(255) DEFAULT 'assets/images/courses/placeholder.jpg',
   `status` enum('draft','pending','published','rejected') NOT NULL DEFAULT 'pending',
   `rating` decimal(3,2) NOT NULL DEFAULT 0.00,
