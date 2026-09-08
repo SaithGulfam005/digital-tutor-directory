@@ -785,6 +785,49 @@ function getTeacherVerification(?int $teacherId = null): array
     ];
 }
 
+function teacher_is_verified(?int $teacherId = null): bool
+{
+    $teacherId = $teacherId ?? auth_id();
+    if (!$teacherId || !db_available()) {
+        return false;
+    }
+
+    $stmt = db()->prepare("SELECT verification_status FROM teacher_profiles WHERE user_id = ? LIMIT 1");
+    $stmt->execute([$teacherId]);
+    return $stmt->fetchColumn() === 'verified';
+}
+
+function submit_teacher_verification(int $teacherId, string $qualification, string $cnic, array $documents): void
+{
+    $pdo = db();
+    $profileStmt = $pdo->prepare('SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1');
+    $profileStmt->execute([$teacherId]);
+    $profileId = (int) $profileStmt->fetchColumn();
+    if ($profileId <= 0) {
+        throw new RuntimeException('Teacher profile not found.');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare("UPDATE teacher_profiles SET qualification = ?, cnic = ?, verification_status = 'pending', verified_at = NULL WHERE user_id = ?")
+            ->execute([$qualification, $cnic, $teacherId]);
+
+        if ($documents !== []) {
+            $docStmt = $pdo->prepare('INSERT INTO teacher_documents (teacher_profile_id, original_name, file_path) VALUES (?,?,?)');
+            foreach ($documents as $document) {
+                $docStmt->execute([$profileId, $document['original_name'], $document['file_path']]);
+            }
+        }
+
+        $pdo->prepare("UPDATE users SET status = 'pending' WHERE id = ? AND role = 'teacher' AND status <> 'inactive'")
+            ->execute([$teacherId]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
 function getStudentStats(?int $studentId = null): array
 {
     $enrollments = getStudentEnrollments($studentId);
@@ -1333,7 +1376,7 @@ function admin_update_user_status(int $userId, string $status): void
 function admin_verify_teacher(int $userId, bool $approve): void
 {
     $status = $approve ? 'verified' : 'rejected';
-    $userStatus = $approve ? 'active' : 'inactive';
+    $userStatus = $approve ? 'active' : 'pending';
     $pdo = db();
     $userStmt = $pdo->prepare('SELECT name, email FROM users WHERE id=? LIMIT 1');
     $userStmt->execute([$userId]);

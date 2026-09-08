@@ -2,6 +2,9 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../components/config.php';
 $user = require_auth('teacher');
+if (!teacher_is_verified((int) $user['id'])) {
+    redirect_with(url('teacher/verification.php'), 'You must receive admin verification before managing courses.', 'warning');
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_with(url('teacher/courses.php'), 'Invalid request method.', 'warning');

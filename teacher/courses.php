@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
+$isVerified = teacher_is_verified(auth_id());
 $courses = getTeacherCourses();
 $pageTitle = 'My Courses | ' . SITE_NAME;
 $dashboardLayout = true;
@@ -7,7 +8,7 @@ $dashSection = 'courses';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'My Courses';
 $pageSubheading = 'Manage your published and draft courses';
-$pageActions = '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Course</a>';
+$pageActions = $isVerified ? '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Course</a>' : '';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';

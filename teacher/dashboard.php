@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
 $teacher = mockCurrentTeacher();
+$isVerified = teacher_is_verified(auth_id());
 $stats = mockTeacherStats();
 $earnings = mockTeacherEarnings();
 $courses = array_filter(mockTeacherCourses(), fn($c) => ($c['status'] ?? '') === 'published');
@@ -18,7 +19,7 @@ $dashSection = 'overview';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Welcome, ' . explode(' ', $teacher['name'])[0];
 $pageSubheading = htmlspecialchars($teacher['subject']) . ' instructor';
-$pageActions = '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>New Course</a>';
+$pageActions = $isVerified ? '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>New Course</a>' : '';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';

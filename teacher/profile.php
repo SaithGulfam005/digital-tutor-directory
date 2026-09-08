@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
 $teacher = mockCurrentTeacher();
+$isVerified = teacher_is_verified(auth_id());
 $categories = getCategories();
 $selectedSubjects = array_values(array_filter(array_map('trim', explode(',', (string) ($teacher['subject'] ?? '')))));
 $pageTitle = 'Edit Profile | ' . SITE_NAME;
@@ -24,7 +25,7 @@ require __DIR__ . '/../components/page-hero.php';
           <img src="<?= media_url($teacher['photo']) ?>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover" alt="<?= htmlspecialchars($teacher['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
           <h2 class="h5 mb-1"><?= htmlspecialchars($teacher['name']) ?></h2>
           <p class="text-muted small mb-2"><?= htmlspecialchars($teacher['qualification']) ?></p>
-          <span class="badge badge-approved"><i class="bi bi-patch-check me-1"></i>Verified</span>
+          <span class="badge <?= $isVerified ? 'badge-approved' : 'badge-pending' ?>"><i class="bi bi-<?= $isVerified ? 'patch-check' : 'hourglass-split' ?> me-1"></i><?= $isVerified ? 'Verified' : 'Verification pending' ?></span>
           <div class="rating-stars mt-2">
             <i class="bi bi-star-fill text-warning"></i>
             <span class="fw-medium"><?= number_format($teacher['rating'], 1) ?></span>

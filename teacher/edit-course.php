@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
+if (!teacher_is_verified(auth_id())) {
+  redirect_with(url('teacher/verification.php'), 'You must receive admin verification before managing courses.', 'warning');
+}
 $courseId = (int) ($_GET['id'] ?? 0);
 $course = getCourseById($courseId);
 if (!$course || (int) $course['teacher_id'] !== auth_id()) {

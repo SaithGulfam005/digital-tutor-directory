@@ -96,7 +96,10 @@ function verify_email_otp(int $userId, string $otp): array
         $roleStmt->execute([$userId]);
         $role = (string) $roleStmt->fetchColumn();
 
-        $newStatus = $role === 'teacher' ? 'pending' : 'active';
+        $newStatus = 'active';
+        if ($role === 'teacher') {
+            $newStatus = 'pending';
+        }
         $updateStmt = db()->prepare('UPDATE users SET email_verified_at = NOW(), status = ? WHERE id = ?');
         $updateStmt->execute([$newStatus, $userId]);
         db()->prepare('DELETE FROM email_verifications WHERE user_id = ?')->execute([$userId]);
@@ -191,7 +194,7 @@ function require_auth(?string $role = null): array
     if ($role && ($user['role'] ?? '') !== $role) {
         redirect_with(url('pages/home.php'), 'Access denied.', 'danger');
     }
-    if ($role === 'teacher' && ($user['status'] ?? '') !== 'active') {
+    if ($role === 'teacher' && ($user['status'] ?? '') === 'inactive') {
         auth_logout();
         redirect_with(url('auth/login.php?role=teacher'), 'Your teacher account is inactive. Please contact support.', 'warning');
     }
@@ -223,9 +226,6 @@ function attempt_login(string $email, string $password, string $expectedRole): a
     }
     if ($user['status'] === 'inactive') {
         return ['user' => null, 'error' => 'inactive'];
-    }
-    if ($expectedRole === 'teacher' && $user['status'] !== 'active') {
-        return ['user' => null, 'error' => 'pending_approval'];
     }
     return ['user' => $user, 'error' => null];
 }

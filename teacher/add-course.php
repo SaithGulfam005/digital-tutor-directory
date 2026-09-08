@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
+if (!teacher_is_verified(auth_id())) {
+  redirect_with(url('teacher/verification.php'), 'You must submit documents and receive admin verification before adding a course.', 'warning');
+}
 $pageTitle = 'Add Course | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'add';

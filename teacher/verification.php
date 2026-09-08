@@ -3,6 +3,7 @@ require_once __DIR__ . '/../components/require-teacher.php';
 $teacher = mockCurrentTeacher();
 $verification = mockTeacherVerification();
 $isVerified = ($verification['status'] ?? '') === 'verified';
+$isRejected = ($verification['status'] ?? '') === 'rejected';
 $pageTitle = 'Verification | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'verification';
@@ -29,7 +30,7 @@ require __DIR__ . '/../components/page-hero.php';
               <?php if ($isVerified): ?>
               <h2 class="h5 fw-bold mb-1 text-success">Verified Teacher</h2>
               <p class="text-muted small mb-0">Verified on <?= htmlspecialchars($verification['verified_at']) ?></p>
-              <?php elseif (($verification['status'] ?? '') === 'rejected'): ?>
+              <?php elseif ($isRejected): ?>
               <h2 class="h5 fw-bold mb-1 text-danger">Verification Rejected</h2>
               <p class="text-muted small mb-0">Contact support to resubmit your documents.</p>
               <?php else: ?>
@@ -45,11 +46,11 @@ require __DIR__ . '/../components/page-hero.php';
             </div>
             <div class="col-md-6">
               <label class="text-muted small">Qualification</label>
-              <p class="fw-medium mb-0"><?= htmlspecialchars($verification['qualification']) ?></p>
+              <p class="fw-medium mb-0"><?= htmlspecialchars($verification['qualification'] ?: 'Not submitted') ?></p>
             </div>
             <div class="col-md-6">
               <label class="text-muted small">CNIC</label>
-              <p class="fw-medium mb-0 font-monospace"><?= htmlspecialchars($verification['cnic']) ?></p>
+              <p class="fw-medium mb-0 font-monospace"><?= htmlspecialchars($verification['cnic'] ?: 'Not submitted') ?></p>
             </div>
             <div class="col-md-6">
               <label class="text-muted small">Subject</label>
@@ -57,6 +58,29 @@ require __DIR__ . '/../components/page-hero.php';
             </div>
           </div>
         </div>
+
+        <?php if (!$isVerified): ?>
+        <div class="table-card p-4">
+          <h2 class="h6 fw-bold mb-2"><?= $isRejected ? 'Resubmit Verification' : 'Submit Verification Documents' ?></h2>
+          <p class="small text-muted mb-3">Upload your qualification and identity documents for admin review.</p>
+          <form method="post" action="<?= url('api/teacher-verification.php') ?>" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label" for="verificationQualification">Qualification</label>
+              <input type="text" class="form-control" id="verificationQualification" name="qualification" value="<?= htmlspecialchars($verification['qualification']) ?>" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="verificationCnic">CNIC</label>
+              <input type="text" class="form-control" id="verificationCnic" name="cnic" value="<?= htmlspecialchars($verification['cnic']) ?>" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="verificationDocuments">Documents</label>
+              <input type="file" class="form-control" id="verificationDocuments" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" required>
+              <div class="form-text">Upload your CNIC, degree, or other qualification proof.</div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>Submit for Review</button>
+          </form>
+        </div>
+        <?php endif; ?>
 
       </div>
       <div class="col-lg-4">
