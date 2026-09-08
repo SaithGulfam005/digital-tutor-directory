@@ -17,7 +17,6 @@ if (studentIsEnrolled((int) $user['id'], $courseId)) {
 
 $pageTitle = 'Checkout | ' . SITE_NAME;
 $bodyClass = 'checkout-page';
-$coursePricePkr = course_price_pkr((float) $course['price']);
 require_once __DIR__ . '/../components/head.php';
 ?>
 <main class="min-vh-100 py-5">

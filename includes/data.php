@@ -663,7 +663,7 @@ function getTeacherCourses(?int $teacherId = null): array
         $c = map_course_row($row);
         $status = $row['status'] === 'published' ? 'published' : ($row['status'] === 'draft' ? 'draft' : 'pending');
         $c['status'] = $status;
-        $c['revenue'] = round($c['students'] * $c['price'] * 0.7, 2);
+        $c['revenue'] = calculate_teacher_share($c['students'] * $c['price']);
         return $c;
     }, $stmt->fetchAll());
 }
@@ -861,8 +861,11 @@ function enrollStudent(int $studentId, int $courseId, string $method = 'Card'): 
     $pdo->beginTransaction();
     try {
         $ref = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
-        $amount = (float) $course['price'];
-        $share = round($amount * 0.7, 2);
+        $amount = normalize_money_input((string) $course['price']);
+        if ($amount === null) {
+            throw new RuntimeException('Course price is invalid.');
+        }
+        $share = calculate_teacher_share((float) $amount);
 
         $pay = $pdo->prepare('INSERT INTO payments (reference, student_id, course_id, amount, method, status, teacher_share) VALUES (?,?,?,?,?,?,?)');
         $pay->execute([$ref, $studentId, $courseId, $amount, $method, 'completed', $share]);
@@ -910,7 +913,7 @@ function createCourse(int $teacherId, array $data): int
         $data['title'],
         $slug,
         $data['description'],
-        (float) $data['price'],
+        (string) $data['price'],
         $data['thumb'] ?? 'assets/images/avatars/placeholder.svg',
         $data['status'] ?? 'pending',
     ]);
@@ -951,7 +954,7 @@ function updateCourse(int $courseId, int $teacherId, array $data): void
     $title = $data['title'] ?? $course['title'];
     $slug = slugify($title);
     $description = $data['description'] ?? $course['desc'];
-    $price = isset($data['price']) ? (float) $data['price'] : $course['price'];
+    $price = isset($data['price']) ? (string) $data['price'] : number_format((float) $course['price'], 2, '.', '');
     $status = $data['status'] ?? $course['status'];
 
     db()->prepare('UPDATE courses SET category_id = ?, title = ?, slug = ?, description = ?, price = ?, status = ? WHERE id = ? AND teacher_id = ?')
@@ -1110,8 +1113,11 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
         throw new RuntimeException('Invalid payment method.');
     }
 
-    $amount = course_price_pkr((float) $course['price']);
-    $teacherShare = calculate_teacher_share($amount);
+    $amount = normalize_money_input((string) $course['price']);
+    if ($amount === null) {
+        throw new RuntimeException('Course price is invalid.');
+    }
+    $teacherShare = calculate_teacher_share((float) $amount);
     $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
     $methodLabel = payment_method_label($methodKey);
     ensure_manual_payment_schema();

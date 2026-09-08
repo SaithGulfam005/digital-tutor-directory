@@ -23,6 +23,17 @@ function detect_base_url(): string
 
 define('BASE_URL', detect_base_url());
 
+function normalize_money_input(mixed $value): ?string
+{
+    $value = trim((string) $value);
+    if (!preg_match('/^(?:0|[1-9]\d{0,7})(?:\.\d{1,2})?$/', $value)) {
+        return null;
+    }
+
+    [$whole, $fraction] = array_pad(explode('.', $value, 2), 2, '');
+    return $whole . '.' . str_pad($fraction, 2, '0');
+}
+
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/mail.php';

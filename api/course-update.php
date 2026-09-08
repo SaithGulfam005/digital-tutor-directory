@@ -36,8 +36,8 @@ if (isset($_POST['category'])) {
 }
 
 if (isset($_POST['price'])) {
-    $price = (float) $_POST['price'];
-    if ($price <= 0) {
+    $price = normalize_money_input($_POST['price']);
+    if ($price === null || $price === '0.00') {
         redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Price must be greater than zero.', 'danger');
     }
     $update['price'] = $price;

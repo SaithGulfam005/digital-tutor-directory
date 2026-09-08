@@ -192,10 +192,10 @@ $lessons = getCourseLessons($courseId);
     const syncFeeNotice = () => {
       const rawValue = parseFloat(priceInput.value);
       const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
-      const platformFee = price * 0.10;
-      const teacherShare = price - platformFee;
-      if (platformFeeEl) platformFeeEl.textContent = 'PKR ' + (platformFee * 280).toFixed(2);
-      if (teacherShareEl) teacherShareEl.textContent = 'PKR ' + (teacherShare * 280).toFixed(2);
+      const platformFee = Math.round(price * 0.10 * 100) / 100;
+      const teacherShare = Math.round((price - platformFee) * 100) / 100;
+      if (platformFeeEl) platformFeeEl.textContent = 'PKR ' + platformFee.toFixed(2);
+      if (teacherShareEl) teacherShareEl.textContent = 'PKR ' + teacherShare.toFixed(2);
     };
     priceInput.addEventListener('input', syncFeeNotice);
     priceInput.addEventListener('change', syncFeeNotice);

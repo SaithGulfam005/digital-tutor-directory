@@ -24,7 +24,7 @@
     <p class="course-card__instructor mb-2"><?= htmlspecialchars($course['teacher']) ?><?php if ($course['category'] !== ''): ?> <span aria-hidden="true">|</span> <?= htmlspecialchars($course['category']) ?><?php endif; ?></p>
     <p class="course-card__students mb-3"><?= number_format((int) $course['students']) ?> enrolled</p>
     <div class="mt-auto course-card__footer">
-      <strong class="text-primary fs-5"><?= format_pkr((float) $course['price']) ?></strong>
+      <strong class="text-primary fs-5"><?= format_course_price((float) $course['price']) ?></strong>
       <a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>" class="btn btn-primary btn-sm px-3">Enroll Now</a>
     </div>
   </div>
