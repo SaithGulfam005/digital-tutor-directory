@@ -44,7 +44,7 @@ require __DIR__ . '/../components/page-hero.php';
               <td><?= htmlspecialchars((string) ($request['teacher_name'] ?? '')) ?></td>
               <td><?= htmlspecialchars((string) ($request['bank_name'] ?? '')) ?></td>
               <td><?= htmlspecialchars((string) ($request['account_name'] ?? '')) ?></td>
-              <td class="fw-medium">$<?= number_format((float) ($request['amount'] ?? 0), 2) ?></td>
+              <td class="fw-medium"><?= format_pkr((float) ($request['amount'] ?? 0)) ?></td>
               <td><span class="badge status-badge badge-<?= htmlspecialchars((string) ($request['status'] ?? 'pending')) ?>"><?= ucfirst((string) ($request['status'] ?? 'pending')) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars((string) ($request['created_at'] ?? '')) ?></td>
               <td class="text-end text-nowrap">

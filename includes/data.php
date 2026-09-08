@@ -1021,18 +1021,7 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
 {
     $methodKey = strtolower(trim($method));
 
-    if ($methodKey === 'stripe') {
-        $payment = create_pending_payment($studentId, $courseId, $methodKey);
-        return [
-            'reference' => $payment['reference'],
-            'status' => 'pending',
-            'amount' => $payment['amount'],
-            'method' => $payment['method'],
-            'checkout_url' => '',
-        ];
-    }
-
-    if ($methodKey !== 'bank_transfer') {
+    if (!in_array($methodKey, ['bank_transfer', 'jazzcash', 'easypaisa'], true)) {
         throw new RuntimeException('Invalid payment method.');
     }
 
@@ -1092,11 +1081,10 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
         throw new RuntimeException('Invalid payment method.');
     }
 
-    $amount = (float) $course['price'];
+    $amount = course_price_pkr((float) $course['price']);
     $teacherShare = calculate_teacher_share($amount);
     $paymentRef = 'PAY-' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
     $methodLabel = payment_method_label($methodKey);
-    ensure_stripe_payment_columns();
     ensure_manual_payment_schema();
 
     $pdo->beginTransaction();
@@ -1117,59 +1105,6 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
         $pdo->rollBack();
         throw $e;
     }
-}
-
-function complete_stripe_payment(int $paymentId, string $sessionId, int $studentId, int $courseId): array
-{
-    if (!db_available()) {
-        throw new RuntimeException('Database not available.');
-    }
-
-    $pdo = db();
-    ensure_stripe_payment_columns();
-
-    $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
-    $stmt->execute([$paymentId]);
-    $payment = $stmt->fetch();
-    if (!$payment) {
-        throw new RuntimeException('Payment record not found.');
-    }
-
-    if ((int) $payment['student_id'] !== $studentId || (int) $payment['course_id'] !== $courseId) {
-        throw new RuntimeException('Payment does not match this purchase.');
-    }
-
-    if ($payment['status'] === 'completed') {
-        $course = getCourseById($courseId);
-        return ['course_title' => $course['title'] ?? 'Course', 'already_completed' => true];
-    }
-
-    $course = getCourseById($courseId);
-    if (!$course) {
-        throw new RuntimeException('Course not found.');
-    }
-
-    $pdo->beginTransaction();
-    try {
-        $pdo->prepare("UPDATE payments SET status='completed', stripe_session_id=? WHERE id=?")
-            ->execute([$sessionId, $paymentId]);
-
-        $check = $pdo->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=? LIMIT 1');
-        $check->execute([$studentId, $courseId]);
-        if (!$check->fetch()) {
-            $en = $pdo->prepare('INSERT INTO enrollments (student_id, course_id, progress, status, last_access) VALUES (?,?,0,?,CURDATE())');
-            $en->execute([$studentId, $courseId, 'active']);
-        }
-
-        $pdo->commit();
-    } catch (Throwable $e) {
-        $pdo->rollBack();
-        throw $e;
-    }
-
-    notify_payment_approved($paymentId);
-
-    return ['course_title' => $course['title'], 'already_completed' => false];
 }
 
 function admin_confirm_payment(int $paymentId): void

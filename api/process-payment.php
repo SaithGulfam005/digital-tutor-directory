@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../components/config.php';
 require_once __DIR__ . '/../components/payment-config.php';
-require_once __DIR__ . '/../components/stripe.php';
 
 $user = auth_user();
 if (!$user || ($user['role'] ?? '') !== 'student') {
@@ -15,11 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $courseId = (int) ($_POST['course_id'] ?? 0);
-$method = trim($_POST['payment_method'] ?? 'card');
+$method = trim($_POST['payment_method'] ?? '');
 $methodKey = strtolower($method);
-if ($methodKey === 'stripe') {
-    $methodKey = 'card';
-}
 
 if (!$courseId) {
     json_response(['success' => false, 'message' => 'Course not found'], 400);
@@ -44,41 +40,13 @@ if ($error) {
 }
 
 $receiptPath = null;
-if ($methodKey !== 'card') {
-    try {
-        $receiptPath = save_uploaded_payment_receipt($_FILES['receipt'] ?? []);
-    } catch (Throwable $e) {
-        json_response(['success' => false, 'message' => $e->getMessage()], 400);
-    }
+try {
+    $receiptPath = save_uploaded_payment_receipt($_FILES['receipt'] ?? []);
+} catch (Throwable $e) {
+    json_response(['success' => false, 'message' => $e->getMessage()], 400);
 }
 
 try {
-    if (in_array($methodKey, ['card'], true)) {
-        if (!stripe_is_configured()) {
-            json_response([
-                'success' => false,
-                'message' => 'Stripe is not configured yet. Ask the administrator to add Stripe API keys in payment-config.php.',
-            ], 503);
-        }
-
-        $payment = create_pending_payment((int) $user['id'], $courseId, 'stripe');
-        $session = stripe_create_checkout_session((int) $user['id'], $courseId, (int) $payment['id'], $user, $course);
-
-        if (empty($session['url'])) {
-            throw new RuntimeException('Stripe did not return a checkout URL.');
-        }
-
-        json_response([
-            'success' => true,
-            'pending' => false,
-            'message' => 'Redirecting to Stripe checkout.',
-            'payment_reference' => $payment['reference'],
-            'redirect' => $session['url'],
-            'checkout_url' => $session['url'],
-            'session_id' => $session['id'] ?? '',
-        ]);
-    }
-
     if (in_array($methodKey, ['jazzcash', 'easypaisa'], true)) {
         $payment = create_pending_payment(
             (int) $user['id'],

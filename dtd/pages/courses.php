@@ -30,7 +30,7 @@ require __DIR__ . '/../components/page-hero.php';
           <label class="form-check-label" for="c<?= htmlspecialchars($catId) ?>"><?= htmlspecialchars($catName) ?></label>
         </div>
         <?php endforeach; ?>
-        <h6 class="fw-bold mt-3 mb-2">Max Price: <span id="priceLabel">$100</span></h6>
+        <h6 class="fw-bold mt-3 mb-2">Max Price: <span id="priceLabel">PKR 100</span></h6>
         <input type="range" class="form-range" id="priceMax" min="10" max="100" value="100" step="1">
         <h6 class="fw-bold mt-3 mb-2">Minimum Rating</h6>
         <div class="form-check">

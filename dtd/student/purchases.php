@@ -21,7 +21,7 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-md-4">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Total Spent</p>
-          <h3 class="mb-0 fw-bold text-primary">$<?= number_format($totalSpent, 2) ?></h3>
+          <h3 class="mb-0 fw-bold text-primary"><?= format_pkr((float) $totalSpent) ?></h3>
         </div>
       </div>
       <div class="col-md-4">
@@ -61,7 +61,7 @@ require __DIR__ . '/../components/page-hero.php';
             <tr data-status="<?= htmlspecialchars($p['status']) ?>" data-search="<?= htmlspecialchars(strtolower($p['id'] . ' ' . $p['course'] . ' ' . $p['method'] . ' ' . $p['status'])) ?>">
               <td class="font-monospace small"><?= htmlspecialchars($p['id']) ?></td>
               <td class="fw-medium"><?= htmlspecialchars($p['course']) ?></td>
-              <td>$<?= number_format($p['amount'], 2) ?></td>
+              <td><?= format_pkr((float) $p['amount']) ?></td>
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge <?= $p['status'] === 'completed' ? 'badge-approved' : ($p['status'] === 'pending' ? 'badge-pending' : 'badge-rejected') ?>"><?= ucfirst($p['status']) ?></span></td>

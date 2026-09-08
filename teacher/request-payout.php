@@ -46,7 +46,7 @@ $teacherRequests = get_teacher_payout_requests((int) $teacher['id']);
               <div class="col-12">
                 <label class="form-label" for="amount">Requested Amount</label>
                 <input type="number" class="form-control" id="amount" name="amount" min="1" max="<?= number_format($maxPayoutAmount, 2, '.', '') ?>" step="0.01" value="<?= number_format($maxPayoutAmount, 2, '.', '') ?>" required>
-                <div class="form-text">You can request up to $<?= number_format($maxPayoutAmount, 2) ?> from your 90% fee share balance.</div>
+                <div class="form-text">You can request up to <?= format_pkr((float) $maxPayoutAmount) ?> from your 90% fee share balance.</div>
               </div>
               <div class="col-12">
                 <label class="form-label" for="notes">Additional Notes</label>
@@ -60,7 +60,7 @@ $teacherRequests = get_teacher_payout_requests((int) $teacher['id']);
       <div class="col-lg-5">
         <div class="table-card p-4 mb-4">
           <h2 class="h6 fw-bold mb-3">Your Available Balance</h2>
-          <h3 class="text-primary fw-bold mb-2">$<?= number_format($maxPayoutAmount, 2) ?></h3>
+          <h3 class="text-primary fw-bold mb-2"><?= format_pkr((float) $maxPayoutAmount) ?></h3>
           <p class="small text-muted mb-0">This balance reflects your available 90% fee share and can be requested as payout. Requests are reviewed by admin and processed within 24 hours.</p>
         </div>
         <div class="table-card p-4">
@@ -72,7 +72,7 @@ $teacherRequests = get_teacher_payout_requests((int) $teacher['id']);
               <?php foreach ($teacherRequests as $request): ?>
                 <div class="border rounded p-3">
                   <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong>$<?= number_format((float) ($request['amount'] ?? 0), 2) ?></strong>
+                    <strong><?= format_pkr((float) ($request['amount'] ?? 0)) ?></strong>
                     <span class="badge <?= $request['status'] === 'approved' ? 'badge-approved' : ($request['status'] === 'rejected' ? 'badge-danger' : 'badge-pending') ?>">
                       <?= ucfirst($request['status']) ?>
                     </span>

@@ -22,7 +22,7 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-md-4">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Completed</p>
-          <h3 class="mb-0 fw-bold text-success">$<?= number_format($totalCompleted, 2) ?></h3>
+          <h3 class="mb-0 fw-bold text-success"><?= format_pkr((float) $totalCompleted) ?></h3>
         </div>
       </div>
       <div class="col-md-4">
@@ -72,7 +72,7 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="font-monospace small fw-medium"><?= htmlspecialchars($p['id']) ?></td>
               <td><?= htmlspecialchars($p['student']) ?></td>
               <td class="small"><?= htmlspecialchars($p['course']) ?></td>
-              <td class="fw-medium">$<?= number_format($p['amount'], 2) ?></td>
+              <td class="fw-medium"><?= format_pkr((float) $p['amount']) ?></td>
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['method']) ?></span></td>
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge status-badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>

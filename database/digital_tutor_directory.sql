@@ -269,7 +269,6 @@ INSERT INTO `password_resets` (`id`, `email`, `otp`, `attempts`, `created_at`, `
 CREATE TABLE `payments` (
   `id` int(10) UNSIGNED NOT NULL,
   `reference` varchar(20) NOT NULL,
-  `stripe_session_id` varchar(255) DEFAULT NULL,
   `student_id` int(10) UNSIGNED NOT NULL,
   `course_id` int(10) UNSIGNED NOT NULL,
   `amount` decimal(10,2) NOT NULL,
@@ -283,13 +282,13 @@ CREATE TABLE `payments` (
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `reference`, `stripe_session_id`, `student_id`, `course_id`, `amount`, `method`, `status`, `teacher_share`, `created_at`) VALUES
-(13, 'PAY-58946', NULL, 22, 16, 50.00, 'Bank Transfer (manual approval)', 'completed', 35.00, '2026-06-11 02:36:32'),
-(15, 'PAY-98394', NULL, 24, 17, 50.00, 'JazzCash', 'completed', 35.00, '2026-06-30 04:15:28'),
-(16, 'PAY-51209', NULL, 23, 18, 50.00, 'JazzCash', 'refunded', 35.00, '2026-07-01 07:10:27'),
-(17, 'PAY-68890', NULL, 24, 18, 50.00, 'JazzCash', 'completed', 35.00, '2026-07-01 07:18:39'),
-(18, 'PAY-80404', NULL, 24, 20, 70.00, 'JazzCash', 'completed', 49.00, '2026-07-04 15:35:31'),
-(19, 'PAY-85867', NULL, 24, 21, 50.00, 'Credit / Debit Card (Stripe)', 'completed', 35.00, '2026-08-29 16:16:12');
+INSERT INTO `payments` (`id`, `reference`, `student_id`, `course_id`, `amount`, `method`, `status`, `teacher_share`, `created_at`) VALUES
+(13, 'PAY-58946', 22, 16, 50.00, 'Bank Transfer (manual approval)', 'completed', 35.00, '2026-06-11 02:36:32'),
+(15, 'PAY-98394', 24, 17, 50.00, 'JazzCash', 'completed', 35.00, '2026-06-30 04:15:28'),
+(16, 'PAY-51209', 23, 18, 50.00, 'JazzCash', 'refunded', 35.00, '2026-07-01 07:10:27'),
+(17, 'PAY-68890', 24, 18, 50.00, 'JazzCash', 'completed', 35.00, '2026-07-01 07:18:39'),
+(18, 'PAY-80404', 24, 20, 70.00, 'JazzCash', 'completed', 49.00, '2026-07-04 15:35:31'),
+(19, 'PAY-85867', 24, 21, 50.00, 'Manual payment', 'completed', 35.00, '2026-08-29 16:16:12');
 
 -- --------------------------------------------------------
 

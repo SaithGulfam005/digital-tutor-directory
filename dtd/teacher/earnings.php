@@ -37,25 +37,25 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Available Balance</p>
-          <h3 class="mb-0 fw-bold text-primary">$<?= number_format($earnings['balance'], 2) ?></h3>
+          <h3 class="mb-0 fw-bold text-primary"><?= format_pkr((float) $earnings['balance']) ?></h3>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">This Month</p>
-          <h3 class="mb-0 fw-bold">$<?= number_format($earnings['this_month'], 2) ?></h3>
+          <h3 class="mb-0 fw-bold"><?= format_pkr((float) $earnings['this_month']) ?></h3>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Last Month</p>
-          <h3 class="mb-0 fw-bold">$<?= number_format($earnings['last_month'], 2) ?></h3>
+          <h3 class="mb-0 fw-bold"><?= format_pkr((float) $earnings['last_month']) ?></h3>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Lifetime Earnings</p>
-          <h3 class="mb-0 fw-bold">$<?= number_format($earnings['total'], 2) ?></h3>
+          <h3 class="mb-0 fw-bold"><?= format_pkr((float) $earnings['total']) ?></h3>
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@ require __DIR__ . '/../components/page-hero.php';
                 <?php foreach ($earnings['history'] as $h): ?>
                 <tr>
                   <td><?= htmlspecialchars($h['month']) ?></td>
-                  <td>$<?= number_format($h['amount'], 2) ?></td>
+                  <td><?= format_pkr((float) $h['amount']) ?></td>
                   <td>
                     <span class="badge <?= $h['status'] === 'paid' ? 'badge-approved' : ($h['status'] === 'rejected' ? 'badge-danger' : 'badge-pending') ?>">
                       <?= ucfirst($h['status']) ?>
@@ -88,7 +88,7 @@ require __DIR__ . '/../components/page-hero.php';
               </tbody>
             </table>
           </div>
-          <p class="small text-muted mt-3 mb-0">Pending payout: <strong>$<?= number_format($earnings['pending_payout'], 2) ?></strong></p>
+          <p class="small text-muted mt-3 mb-0">Pending payout: <strong><?= format_pkr((float) $earnings['pending_payout']) ?></strong></p>
         </div>
       </div>
       <div class="col-lg-7">
@@ -116,7 +116,7 @@ require __DIR__ . '/../components/page-hero.php';
                   <td class="small text-muted"><?= htmlspecialchars($t['date']) ?></td>
                   <td class="small"><?= htmlspecialchars($t['course']) ?></td>
                   <td><?= htmlspecialchars($t['student']) ?></td>
-                  <td class="text-end fw-medium text-success">+$<?= number_format($t['amount'], 2) ?></td>
+                  <td class="text-end fw-medium text-success">+<?= format_pkr((float) $t['amount']) ?></td>
                 </tr>
                 <?php endforeach; ?>
               </tbody>

@@ -240,7 +240,7 @@ function build_payment_approved_email(string $studentName, string $courseTitle, 
         $safeName = htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8');
         $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
         $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
-        $formattedAmount = number_format($amount, 2);
+        $formattedAmount = format_pkr($amount);
 
         return <<<HTML
 <html>
@@ -270,7 +270,7 @@ function build_payment_rejected_email(string $studentName, string $courseTitle, 
         $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
         $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
         $safeReason = htmlspecialchars(trim($reason) !== '' ? $reason : 'No reason was provided.', ENT_QUOTES, 'UTF-8');
-        $formattedAmount = number_format($amount, 2);
+        $formattedAmount = format_pkr($amount);
 
         return <<<HTML
 <html>

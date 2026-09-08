@@ -319,7 +319,7 @@
         document.getElementById('priceMax')?.addEventListener('input', () => {
           const label = document.getElementById('priceLabel');
           const slider = document.getElementById('priceMax');
-          if (label && slider) label.textContent = '$' + slider.value;
+          if (label && slider) label.textContent = 'PKR ' + slider.value;
           apply();
         });
         document.querySelectorAll('.filter-category, .filter-rating').forEach((el) => {
@@ -339,7 +339,7 @@
           if (priceMax) {
             priceMax.value = priceMax.max || '100';
             const label = document.getElementById('priceLabel');
-            if (label) label.textContent = '$' + priceMax.value;
+            if (label) label.textContent = 'PKR ' + priceMax.value;
           }
           apply();
         });

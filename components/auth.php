@@ -9,74 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-function ensure_remember_token_schema(): void
-{
-    if (!db_available()) {
-        return;
-    }
-
-    $pdo = db();
-    foreach ([
-        'remember_token_hash' => 'VARCHAR(255) DEFAULT NULL',
-        'remember_token_expires' => 'DATETIME DEFAULT NULL',
-    ] as $column => $definition) {
-        try {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
-            $stmt->execute(['users', $column]);
-            if ((int) $stmt->fetchColumn() === 0) {
-                $pdo->exec("ALTER TABLE users ADD COLUMN {$column} {$definition}");
-            }
-        } catch (Throwable) {
-            return;
-        }
-    }
-}
-
-function remember_cookie_options(int $expires): array
-{
-    return [
-        'expires' => $expires,
-        'path' => BASE_URL ?: '/',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ];
-}
-
-function clear_remember_cookie(): void
-{
-    setcookie('dtd_remember', '', remember_cookie_options(time() - 3600));
-    unset($_COOKIE['dtd_remember']);
-}
-
-function restore_remembered_login(): void
-{
-    $cookie = (string) ($_COOKIE['dtd_remember'] ?? '');
-    if ($cookie === '' || !preg_match('/^(\d+):([a-f0-9]{64})$/', $cookie, $matches)) {
-        return;
-    }
-
-    $stmt = db()->prepare('SELECT * FROM users WHERE id = ? AND remember_token_expires > NOW() LIMIT 1');
-    $stmt->execute([(int) $matches[1]]);
-    $user = $stmt->fetch();
-    if (!$user || !hash_equals((string) $user['remember_token_hash'], hash('sha256', $matches[2]))) {
-        clear_remember_cookie();
-        return;
-    }
-
-    if ($user['status'] === 'inactive' || ($user['role'] === 'teacher' && $user['status'] !== 'active')) {
-        clear_remember_cookie();
-        return;
-    }
-
-    auth_login($user);
-}
-
-ensure_remember_token_schema();
-if (!isset($_SESSION['user']) && db_available()) {
-    restore_remembered_login();
-}
-
 if (isset($_SESSION['user'])) {
     $lastActivity = (int) ($_SESSION['last_activity'] ?? time());
     if (time() - $lastActivity >= SESSION_IDLE_TIMEOUT) {
@@ -237,32 +169,15 @@ function auth_role(): ?string
     return $_SESSION['user']['role'] ?? null;
 }
 
-function auth_login(array $user, bool $remember = false): void
+function auth_login(array $user): void
 {
-    ensure_remember_token_schema();
     unset($user['password_hash']);
     $_SESSION['user'] = $user;
     $_SESSION['last_activity'] = time();
-
-    if (!$remember) {
-        clear_remember_cookie();
-        return;
-    }
-
-    $token = bin2hex(random_bytes(32));
-    $expires = time() + (60 * 60 * 24 * 30);
-    db()->prepare('UPDATE users SET remember_token_hash = ?, remember_token_expires = ? WHERE id = ?')
-        ->execute([hash('sha256', $token), date('Y-m-d H:i:s', $expires), (int) $user['id']]);
-    setcookie('dtd_remember', (int) $user['id'] . ':' . $token, remember_cookie_options($expires));
 }
 
 function auth_logout(): void
 {
-    if (auth_id() !== null && db_available()) {
-        ensure_remember_token_schema();
-        db()->prepare('UPDATE users SET remember_token_hash = NULL, remember_token_expires = NULL WHERE id = ?')->execute([auth_id()]);
-    }
-    clear_remember_cookie();
     unset($_SESSION['user'], $_SESSION['last_activity']);
     session_regenerate_id(true);
 }

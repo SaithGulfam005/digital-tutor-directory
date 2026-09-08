@@ -26,6 +26,7 @@ define('BASE_URL', detect_base_url());
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/mail.php';
+require_once __DIR__ . '/payment-config.php';
 require_once __DIR__ . '/../includes/data.php';
 
 function url(string $path = ''): string

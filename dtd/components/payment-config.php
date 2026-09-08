@@ -8,12 +8,14 @@ declare(strict_types=1);
 const PAYMENT_METHODS = [
     'card' => 'Credit / Debit Card (Stripe)',
     'stripe' => 'Credit / Debit Card (Stripe)',
-    'bank_transfer' => 'Bank Transfer (manual approval)',
+    'bank_transfer' => 'Bank Transfer',
     'jazzcash' => 'JazzCash',
     'easypaisa' => 'Easypaisa',
 ];
 
 const PAYMENT_CURRENCY = 'usd';
+const PAYMENT_DISPLAY_CURRENCY = 'PKR';
+const PAYMENT_USD_TO_PKR_RATE = 280;
 
 // Stripe test keys — replace with your keys from Stripe Dashboard
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51ReplaceWithYourPublishableKey';
@@ -23,6 +25,11 @@ const STRIPE_WEBHOOK_SECRET = '';
 function payment_method_label(string $method): string
 {
     return PAYMENT_METHODS[strtolower($method)] ?? ucfirst($method);
+}
+
+function format_pkr(float $amount, int $decimals = 2): string
+{
+    return 'PKR ' . number_format($amount * PAYMENT_USD_TO_PKR_RATE, $decimals);
 }
 
 function stripe_is_configured(): bool

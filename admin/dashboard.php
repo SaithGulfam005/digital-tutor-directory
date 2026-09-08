@@ -87,13 +87,13 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-sm-6 col-lg-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Revenue (This Month)</p>
-          <h3 class="mb-0 fw-bold">$<?= number_format($stats['revenue_month']) ?></h3>
+          <h3 class="mb-0 fw-bold"><?= format_pkr((float) $stats['revenue_month'], 0) ?></h3>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="kpi-card">
           <p class="text-muted small mb-1">Total Revenue</p>
-          <h3 class="mb-0 fw-bold">$<?= number_format($stats['revenue_total']) ?></h3>
+          <h3 class="mb-0 fw-bold"><?= format_pkr((float) $stats['revenue_total'], 0) ?></h3>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
@@ -179,7 +179,7 @@ require __DIR__ . '/../components/page-hero.php';
                     <?= htmlspecialchars($p['student']) ?>
                     <br><small class="text-muted"><?= htmlspecialchars($p['course']) ?></small>
                   </td>
-                  <td>$<?= number_format($p['amount'], 2) ?></td>
+                  <td><?= format_pkr((float) $p['amount']) ?></td>
                   <td><span class="badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
                 </tr>
                 <?php endforeach; ?>

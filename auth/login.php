@@ -47,11 +47,7 @@ $redirect = trim((string) ($_GET['redirect'] ?? ''));
           <label for="password">Password</label>
           <div class="invalid-feedback">Password required (min 6 chars).</div>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="remember" name="remember" value="1">
-            <label class="form-check-label small" for="remember">Remember me</label>
-          </div>
+        <div class="d-flex justify-content-end align-items-center mb-4">
           <a href="<?= url('auth/forgot-password.php') ?>" class="small">Forgot password?</a>
         </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>

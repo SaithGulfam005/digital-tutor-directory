@@ -11,7 +11,6 @@ $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 $role = $_POST['role'] ?? 'student';
 $redirect = trim((string) ($_POST['redirect'] ?? ''));
-$remember = !empty($_POST['remember']) && $_POST['remember'] === '1';
 
 if (!in_array($role, ['student', 'teacher', 'admin'], true)) {
     redirect_with(url('auth/login.php'), 'Invalid role.', 'danger');
@@ -37,7 +36,7 @@ if (!$result['user']) {
 }
 
 $user = $result['user'];
-auth_login($user, $remember);
+auth_login($user);
 $destination = dashboard_url_for_role($role);
 if ($role === 'student' && preg_match('#^student/checkout\.php\?course_id=\d+$#', $redirect)) {
     $destination = url($redirect);

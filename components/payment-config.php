@@ -1,19 +1,18 @@
 <?php
 /**
- * Payment & Stripe configuration.
- * Get test keys from https://dashboard.stripe.com/test/apikeys
+ * Manual payment configuration.
  */
 declare(strict_types=1);
 
 const PAYMENT_METHODS = [
-    'card' => 'Credit / Debit Card (Stripe)',
-    'stripe' => 'Credit / Debit Card (Stripe)',
-    'bank_transfer' => 'Bank Transfer (manual approval)',
+    'bank_transfer' => 'Bank Transfer',
     'jazzcash' => 'JazzCash',
     'easypaisa' => 'Easypaisa',
 ];
 
 const PAYMENT_CURRENCY = 'usd';
+const PAYMENT_DISPLAY_CURRENCY = 'PKR';
+const PAYMENT_USD_TO_PKR_RATE = 280;
 
 $localConfig = __DIR__ . DIRECTORY_SEPARATOR . 'payment-config.local.php';
 if (is_readable($localConfig)) {
@@ -54,17 +53,6 @@ function payment_env(string $name, string $default = ''): string
     return trim((string) ($values[$name] ?? $default));
 }
 
-if (!defined('STRIPE_PUBLISHABLE_KEY')) {
-    define('STRIPE_PUBLISHABLE_KEY', payment_env('STRIPE_PUBLISHABLE_KEY'));
-}
-if (!defined('STRIPE_SECRET_KEY')) {
-    define('STRIPE_SECRET_KEY', payment_env('STRIPE_SECRET_KEY'));
-}
-if (!defined('STRIPE_WEBHOOK_SECRET')) {
-    define('STRIPE_WEBHOOK_SECRET', payment_env('STRIPE_WEBHOOK_SECRET'));
-}
-define('STRIPE_CONFIGURED', STRIPE_SECRET_KEY !== '');
-
 function manual_payment_details(string $method): array
 {
     return match (strtolower($method)) {
@@ -93,21 +81,19 @@ function payment_method_label(string $method): string
     return PAYMENT_METHODS[strtolower($method)] ?? ucfirst($method);
 }
 
-function stripe_is_configured(): bool
+function course_price_pkr(float $price): float
 {
-    return STRIPE_SECRET_KEY !== ''
-        && STRIPE_PUBLISHABLE_KEY !== ''
-        && !str_contains(STRIPE_SECRET_KEY, 'ReplaceWithYour')
-        && !str_contains(STRIPE_PUBLISHABLE_KEY, 'ReplaceWithYour');
+    return round($price * PAYMENT_USD_TO_PKR_RATE, 2);
+}
+
+function format_pkr(float $amount, int $decimals = 2): string
+{
+    return 'PKR ' . number_format(course_price_pkr($amount), $decimals);
 }
 
 function validate_payment_details(string $method, array $data): ?string
 {
     $method = strtolower($method);
-
-    if (in_array($method, ['card', 'stripe'], true)) {
-        return null;
-    }
 
     if ($method === 'bank_transfer') {
         if (trim($data['transaction_ref'] ?? '') === '') {

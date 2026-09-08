@@ -62,22 +62,10 @@ Comprehensive update to the Digital Tutor Directory platform with security enhan
 - **Note:** Requires mail server configuration in php.ini
 - **Future:** Ready for PHPMailer upgrade
 
-### 7. **Stripe Payment Gateway Integration** 💳
-- **Files Created:**
-  - `components/payment-config.php` - Payment configuration
-  - `student/checkout.php` - Stripe checkout page
-  - `api/process-payment.php` - Payment processing
-  - `STRIPE_SETUP.md` - Setup documentation
-- **Features:**
-  - Stripe payment form
-  - Test mode ready
-  - Credit/debit card support
-  - Order summary display
-  - Automatic enrollment on payment
-  - Teacher earning calculation (70% teacher, 30% platform)
-- **Test Card:** 4242 4242 4242 4242 (any future date, any CVC)
-- **Page Flow:** Course detail → Checkout page → Stripe form → Enrollment created
-- **Database:** Payments tracked with reference, status, and teacher share
+### 7. **Manual Payment Verification** 💳
+- Bank transfer, JazzCash, and Easypaisa payment methods are supported.
+- Students submit a transaction reference and payment receipt.
+- Admin approval activates enrollment and records the teacher share.
 
 ### 8. **Removed Demo Database Content** 🧹
 - **Files Modified:**
@@ -122,7 +110,7 @@ password_resets (
 |------|--------|
 | `auth/login.php` | Forgot password link now active |
 | `pages/course-detail.php` | "Enroll Now" redirects to checkout |
-| `student/checkout.php` | New Stripe payment page |
+| `student/checkout.php` | Manual payment submission page |
 | `api/process-payment.php` | New payment processing endpoint |
 | `api/send-otp.php` | New OTP sending endpoint |
 | `api/verify-otp.php` | New OTP verification endpoint |
@@ -132,12 +120,8 @@ password_resets (
 
 ## 🛠️ Configuration Required
 
-### 1. **Stripe Setup** (Required for Payments)
-Edit `components/payment-config.php`:
-```php
-define('STRIPE_PUBLISHABLE_KEY', 'pk_test_YOUR_KEY');
-define('STRIPE_SECRET_KEY', 'sk_test_YOUR_KEY');
-```
+### 1. **Manual Payment Settings** (Required for Payments)
+Set bank and wallet account details through the `DTD_*` environment variables.
 
 ### 2. **Email Configuration** (Required for OTP)
 Configure mail server in `php.ini`:
@@ -158,7 +142,7 @@ Run admin tool: `api/fix-avatars.php`
 ✅ OTP expiration (10 minutes)
 ✅ OTP attempt limiting (5 tries)
 ✅ Email verification for password reset
-✅ Secure payment processing via Stripe
+✅ Secure manual payment processing with admin approval
 ✅ Password visibility toggle
 ✅ Database transaction safety for payments
 
@@ -170,7 +154,7 @@ Run admin tool: `api/fix-avatars.php`
 |------|-------------|--------|
 | Security | Password reset with OTP | ✅ Complete |
 | UX | Password visibility toggle | ✅ Complete |
-| Payments | Stripe integration | ✅ Complete |
+| Payments | Manual payment verification | ✅ Complete |
 | Navigation | Dynamic pagination | ✅ Complete |
 | Data | Profile pictures fix | ✅ Complete |
 | Admin | Teacher document download removed | ✅ Complete |
@@ -181,24 +165,24 @@ Run admin tool: `api/fix-avatars.php`
 ## 🚀 Next Steps (Recommended)
 
 ### Immediate (Today)
-1. Configure Stripe API keys in `components/payment-config.php`
+1. Configure manual bank and wallet details through the `DTD_*` environment variables
 2. Run `/api/fix-avatars.php` to fix user avatars
 3. Test password reset with OTP
 
 ### This Week
 1. Set up SMTP for email notifications
-2. Test complete payment flow with test card
+2. Test the complete manual payment flow
 3. Implement video player in learning page
 4. Test admin course approval workflow
 
 ### Next Week
 1. Add PayPal as secondary payment method
-2. Set up webhook handling for Stripe
+2. Review payment approval notifications
 3. Configure email templates
 4. Test teacher earnings calculations
 
 ### Before Production
-1. Switch Stripe to live API keys
+1. Verify production payment account details
 2. Enable HTTPS/SSL certificate
 3. Set up proper email service
 4. Complete security audit
@@ -208,9 +192,7 @@ Run admin tool: `api/fix-avatars.php`
 
 ## 📖 Documentation Files Created
 
-1. **`STRIPE_SETUP.md`** - Complete Stripe integration guide
-2. **`VIDEO_PAYMENT_SETUP.md`** - Video player and payment methods guide
-3. **`api/fix-avatars.php`** - Avatar path repair script
+1. **`api/fix-avatars.php`** - Avatar path repair script
 
 ---
 
@@ -225,7 +207,6 @@ Run admin tool: `api/fix-avatars.php`
 - `api/process-payment.php`
 - `components/payment-config.php`
 - `student/checkout.php`
-- `STRIPE_SETUP.md`, `VIDEO_PAYMENT_SETUP.md`
 
 ### Modified Files (5)
 - `assets/js/forms.js` - Added password toggle
@@ -241,8 +222,7 @@ Run admin tool: `api/fix-avatars.php`
 ## ⚙️ Configuration Files to Update
 
 1. **`components/payment-config.php`**
-   - Add your Stripe API keys
-   - Configure payment currency if needed
+  - Configure manual payment account details through environment variables
 
 2. **`php.ini`**
    - Configure SMTP for email sending
@@ -257,7 +237,7 @@ Run admin tool: `api/fix-avatars.php`
 ## 🧪 Testing Checklist
 
 - [ ] Password reset with OTP works end-to-end
-- [ ] Payment with test Stripe card succeeds
+- [ ] Manual payment submission and admin approval work end-to-end
 - [ ] Course pagination works correctly
 - [ ] User avatars display properly
 - [ ] Teacher documents can be viewed but not downloaded
@@ -273,13 +253,11 @@ Run admin tool: `api/fix-avatars.php`
 
 ### For Users
 - **Students:** Go to forgot-password.php if they need to reset password
-- **Students:** Payment process is now via Stripe checkout
+- **Students:** Payment process uses manual payment submission and admin approval
 - **Teachers:** Documents are uploaded but not downloadable by them
 - **Admin:** Approve courses from admin/courses.php
 
 ### For Developers
-- Reference `STRIPE_SETUP.md` for payment configuration
-- Reference `VIDEO_PAYMENT_SETUP.md` for video integration
 - All APIs return JSON for easy AJAX integration
 - Database schema is backward compatible
 

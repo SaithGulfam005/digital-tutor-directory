@@ -37,15 +37,6 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'stripe/stripe-php' => array(
-            'pretty_version' => 'v21.3.1',
-            'version' => '21.3.1.0',
-            'reference' => '12986995cd5e229cc094d4b57de056f8e2e6e5a9',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../stripe/stripe-php',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'symfony/polyfill-ctype' => array(
             'pretty_version' => 'v1.37.0',
             'version' => '1.37.0.0',

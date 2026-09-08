@@ -133,7 +133,7 @@ $maxEnroll = $categories ? max($categories) : 1;
             </li>
             <li class="admin-activity-item d-flex justify-content-between">
               <span class="text-muted">Lifetime revenue</span>
-              <strong>$<?= number_format($stats['revenue_total']) ?></strong>
+              <strong><?= format_pkr((float) $stats['revenue_total'], 0) ?></strong>
             </li>
           </ul>
         </div>

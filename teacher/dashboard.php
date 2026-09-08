@@ -67,7 +67,7 @@ require __DIR__ . '/../components/page-hero.php';
           <div class="d-flex justify-content-between">
             <div>
               <p class="text-muted small mb-1">Earnings (Month)</p>
-              <h3 class="mb-0 fw-bold">$<?= number_format($stats['revenue_month'], 0) ?></h3>
+              <h3 class="mb-0 fw-bold"><?= format_pkr((float) $stats['revenue_month'], 0) ?></h3>
             </div>
             <div class="kpi-card__icon kpi-card__icon--primary"><i class="bi bi-cash-stack"></i></div>
           </div>
@@ -86,7 +86,7 @@ require __DIR__ . '/../components/page-hero.php';
           <img src="<?= media_url($c['thumb'], 'assets/images/avatars/placeholder.svg') ?>" width="120" height="68" class="rounded object-fit-cover" alt="" onerror="this.onerror=null;this.src='<?= media_url('assets/images/avatars/placeholder.svg') ?>'">
           <div class="flex-grow-1">
             <h3 class="h6 mb-1"><?= htmlspecialchars($c['title']) ?></h3>
-            <p class="small text-muted mb-1"><?= number_format($c['students']) ?> students · $<?= number_format($c['revenue'], 0) ?> revenue</p>
+            <p class="small text-muted mb-1"><?= number_format($c['students']) ?> students · <?= format_pkr((float) $c['revenue'], 0) ?> revenue</p>
             <span class="badge badge-approved">Published</span>
           </div>
           <a href="<?= url('pages/course-detail.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary" target="_blank">View</a>
@@ -97,9 +97,9 @@ require __DIR__ . '/../components/page-hero.php';
         <div class="table-card p-4 mb-4">
           <h2 class="h6 fw-bold mb-3">Earnings Snapshot</h2>
           <p class="text-muted small mb-1">Available balance</p>
-          <h3 class="text-primary fw-bold mb-3">$<?= number_format($earnings['balance'], 2) ?></h3>
+          <h3 class="text-primary fw-bold mb-3"><?= format_pkr((float) $earnings['balance']) ?></h3>
           <p class="small text-muted mb-1">Pending payout</p>
-          <p class="fw-medium mb-3">$<?= number_format($earnings['pending_payout'], 2) ?></p>
+          <p class="fw-medium mb-3"><?= format_pkr((float) $earnings['pending_payout']) ?></p>
           <div class="alert alert-info py-2 px-3 small mb-3">
             <i class="bi bi-wallet2 me-1"></i>
             The platform keeps 10%, and you receive 90% of the course fee.

@@ -17,6 +17,7 @@ if (studentIsEnrolled((int) $user['id'], $courseId)) {
 
 $pageTitle = 'Checkout | ' . SITE_NAME;
 $bodyClass = 'checkout-page';
+$coursePricePkr = course_price_pkr((float) $course['price']);
 require_once __DIR__ . '/../components/head.php';
 ?>
 <main class="min-vh-100 py-5">
@@ -34,9 +35,9 @@ require_once __DIR__ . '/../components/head.php';
               </div>
             </div>
             <hr>
-            <div class="d-flex justify-content-between mb-2"><span>Course Price</span><strong>$<?= number_format($course['price'], 2) ?></strong></div>
-            <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><strong class="fs-5 text-primary">$<?= number_format($course['price'], 2) ?></strong></div>
-            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Card payments are processed securely via Stripe. Bank transfer and wallet payments require admin approval before enrollment is activated.</div>
+            <div class="d-flex justify-content-between mb-2"><span>Course Price</span><strong>PKR <?= number_format($coursePricePkr, 2) ?></strong></div>
+            <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total</span><strong class="fs-5 text-primary">PKR <?= number_format($coursePricePkr, 2) ?></strong></div>
+            <div class="alert alert-info small mb-0"><i class="bi bi-shield-check me-1"></i>Bank transfer, JazzCash, and Easypaisa payments require admin approval before enrollment is activated.</div>
           </div>
         </div>
       </div>
@@ -44,27 +45,21 @@ require_once __DIR__ . '/../components/head.php';
       <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
           <div class="card-body p-4">
-            <h5 class="fw-bold mb-4">Choose Payment Method</h5>
+            <h5 class="fw-bold mb-2">Choose Payment Method</h5>
+            <p class="text-muted small mb-4">Note : Payments are manually verified by our team, so enrollment may take a little time to activate after submission.</p>
             <form id="payment-form" enctype="multipart/form-data">
               <input type="hidden" name="course_id" value="<?= $courseId ?>">
 
               <div class="row g-2 mb-4">
-                <?php foreach (PAYMENT_METHODS as $key => $label): ?>
-                <?php if ($key === 'stripe') continue; ?>
+                <?php foreach (['bank_transfer', 'jazzcash', 'easypaisa'] as $key): ?>
+                <?php $label = PAYMENT_METHODS[$key]; ?>
                 <div class="col-md-6">
                   <label class="payment-method-option d-block border rounded p-3 h-100">
-                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'card' ? 'checked' : '' ?>>
+                    <input type="radio" name="payment_method" value="<?= $key ?>" class="form-check-input me-2" <?= $key === 'bank_transfer' ? 'checked' : '' ?>>
                     <span class="fw-medium"><?= htmlspecialchars(str_replace(' (demo payment)', '', $label)) ?></span>
                   </label>
                 </div>
                 <?php endforeach; ?>
-              </div>
-
-              <div id="fields-stripe" class="payment-fields">
-                <div class="alert alert-info small mb-0">
-                  <i class="bi bi-credit-card me-2"></i>
-                  You will be redirected to Stripe to complete your secure payment for this course.
-                </div>
               </div>
 
               <div id="fields-bank" class="payment-fields d-none">
@@ -105,7 +100,7 @@ require_once __DIR__ . '/../components/head.php';
 
               <div id="payment-error" class="alert alert-danger d-none"></div>
               <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-btn">
-                <span id="btn-text">Pay $<?= number_format($course['price'], 2) ?></span>
+                <span id="btn-text">Submit Payment - PKR <?= number_format($coursePricePkr, 2) ?></span>
                 <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
               </button>
             </form>
@@ -131,15 +126,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnText = document.getElementById('btn-text');
   const btnSpinner = document.getElementById('btn-spinner');
 
-  const stripeFields = document.getElementById('fields-stripe');
-
   function showFields(method) {
-    if (stripeFields) stripeFields.classList.toggle('d-none', method !== 'stripe' && method !== 'card');
     if (bankFields) bankFields.classList.toggle('d-none', method !== 'bank_transfer');
     if (demoWalletFields) demoWalletFields.classList.toggle('d-none', !['jazzcash', 'easypaisa'].includes(method));
-    const isManual = method !== 'card' && method !== 'stripe';
-    if (manualReceiptFields) manualReceiptFields.classList.toggle('d-none', !isManual);
-    if (receiptInput) receiptInput.required = isManual;
+    if (manualReceiptFields) manualReceiptFields.classList.remove('d-none');
+    if (receiptInput) receiptInput.required = true;
     transactionInputs.forEach((input) => { input.required = input.closest('.payment-fields')?.classList.contains('d-none') === false; });
     if (walletDetails) {
       const details = <?= json_encode(['jazzcash' => manual_payment_details('jazzcash'), 'easypaisa' => manual_payment_details('easypaisa')]) ?>[method];
@@ -150,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
   methodInputs.forEach((input) => {
     input.addEventListener('change', () => showFields(input.value));
   });
-  showFields('card');
+  showFields('bank_transfer');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

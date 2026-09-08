@@ -53,7 +53,7 @@ require __DIR__ . '/../components/page-hero.php';
   </div>
   <div class="col-lg-4"><div class="card purchase-card border-0 shadow p-4">
     <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="rounded mb-3" alt="" style="width:100%;height:160px;object-fit:cover">
-    <h3 class="h3 text-primary mb-3">$<?= number_format($course['price'],2) ?></h3>
+    <h3 class="h3 text-primary mb-3"><?= format_pkr((float) $course['price']) ?></h3>
     <?php if ($enrolled): ?>
     <a href="<?= url('student/course-learn.php?id=' . $id) ?>" class="btn btn-success w-100 btn-lg mb-2">Go to Course</a>
     <?php elseif ($user && ($user['role'] ?? '') === 'student'): ?>

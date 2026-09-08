@@ -44,7 +44,7 @@ require __DIR__ . '/../components/page-hero.php';
                 <input type="number" class="form-control" id="coursePrice" name="price" min="1" step="0.01" placeholder="49.99" required>
                 <div class="form-text mt-2" id="courseFeeNotice" role="status">
                   <i class="bi bi-info-circle me-1"></i>
-                   The platform takes <strong data-platform-fee>$0.00</strong> (10%) and you receive <strong data-teacher-share>$0.00</strong>.
+                   The platform takes <strong data-platform-fee>PKR 0.00</strong> (10%) and you receive <strong data-teacher-share>PKR 0.00</strong>.
                 </div>
               </div>
             </div>
@@ -176,8 +176,8 @@ require __DIR__ . '/../components/page-hero.php';
       const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
       const platformFee = price * 0.10;
       const teacherShare = price - platformFee;
-      if (platformFeeEl) platformFeeEl.textContent = '$' + platformFee.toFixed(2);
-      if (teacherShareEl) teacherShareEl.textContent = '$' + teacherShare.toFixed(2);
+      if (platformFeeEl) platformFeeEl.textContent = 'PKR ' + (platformFee * 280).toFixed(2);
+      if (teacherShareEl) teacherShareEl.textContent = 'PKR ' + (teacherShare * 280).toFixed(2);
     };
     priceInput.addEventListener('input', syncFeeNotice);
     priceInput.addEventListener('change', syncFeeNotice);

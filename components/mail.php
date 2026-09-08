@@ -283,7 +283,7 @@ function build_course_submitted_admin_email(string $teacherName, string $courseT
         . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
         . '<h2 style="color:#0d6efd;margin-top:0;">Course awaiting approval</h2>'
         . '<p>Teacher <strong>' . $safeTeacher . '</strong> submitted a course for review.</p>'
-        . '<p><strong>Course:</strong> ' . $safeCourse . '<br><strong>Price:</strong> $' . number_format($price, 2) . '</p>'
+        . '<p><strong>Course:</strong> ' . $safeCourse . '<br><strong>Price:</strong> ' . format_pkr($price) . '</p>'
         . '</div></body></html>';
 }
 
@@ -314,7 +314,7 @@ function build_payment_submitted_email(string $studentName, string $courseTitle,
         . '<h2 style="color:#0d6efd;margin-top:0;">Payment submitted</h2>'
         . '<p>Hello ' . htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') . ',</p>'
         . '<p>Your payment submission for <strong>' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '</strong> is awaiting admin verification.</p>'
-        . '<p><strong>Amount:</strong> $' . number_format($amount, 2) . '<br><strong>Payment reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p><strong>Amount:</strong> ' . format_pkr($amount) . '<br><strong>Payment reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
         . '</div></body></html>';
 }
 
@@ -326,7 +326,7 @@ function build_payment_admin_email(string $studentName, string $courseTitle, flo
         . '<div style="max-width:600px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:8px;">'
         . '<h2 style="color:#0d6efd;margin-top:0;">' . $heading . '</h2>'
         . '<p>' . $message . '</p>'
-        . '<p><strong>Student:</strong> ' . htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') . '<br><strong>Course:</strong> ' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '<br><strong>Amount:</strong> $' . number_format($amount, 2) . '<br><strong>Reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p><strong>Student:</strong> ' . htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8') . '<br><strong>Course:</strong> ' . htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8') . '<br><strong>Amount:</strong> ' . format_pkr($amount) . '<br><strong>Reference:</strong> ' . htmlspecialchars($reference, ENT_QUOTES, 'UTF-8') . '</p>'
         . '</div></body></html>';
 }
 
@@ -337,7 +337,7 @@ function build_payment_approved_email(string $studentName, string $courseTitle, 
         $safeName = htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8');
         $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
         $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
-        $formattedAmount = number_format($amount, 2);
+        $formattedAmount = format_pkr($amount);
 
         return <<<HTML
 <html>
@@ -367,7 +367,7 @@ function build_payment_rejected_email(string $studentName, string $courseTitle, 
         $safeCourseTitle = htmlspecialchars($courseTitle, ENT_QUOTES, 'UTF-8');
         $safeReference = htmlspecialchars($reference, ENT_QUOTES, 'UTF-8');
         $safeReason = htmlspecialchars(trim($reason) !== '' ? $reason : 'No reason was provided.', ENT_QUOTES, 'UTF-8');
-        $formattedAmount = number_format($amount, 2);
+        $formattedAmount = format_pkr($amount);
 
         return <<<HTML
 <html>
