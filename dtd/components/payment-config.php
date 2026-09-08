@@ -32,6 +32,11 @@ function format_pkr(float $amount, int $decimals = 2): string
     return 'PKR ' . number_format($amount * PAYMENT_USD_TO_PKR_RATE, $decimals);
 }
 
+function format_course_price(float $amount, int $decimals = 2): string
+{
+    return 'PKR ' . number_format(round($amount, $decimals), $decimals);
+}
+
 function stripe_is_configured(): bool
 {
     return STRIPE_SECRET_KEY !== ''

@@ -51,9 +51,9 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
               </td>
               <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($c['category']) ?></span></td>
-              <td><?= format_pkr((float) $c['price']) ?></td>
+              <td><?= format_course_price((float) $c['price']) ?></td>
               <td><?= number_format($c['students']) ?></td>
-              <td class="fw-medium"><?= format_pkr((float) $c['revenue']) ?></td>
+              <td class="fw-medium"><?= format_course_price((float) $c['revenue']) ?></td>
               <td>
                 <span class="badge <?= $c['status'] === 'published' ? 'badge-approved' : 'badge-pending' ?>">
                   <?= ucfirst($c['status']) ?>

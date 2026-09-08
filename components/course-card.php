@@ -23,7 +23,7 @@
       <span class="text-muted ms-1">(<?= number_format($r, 1) ?>)</span>
     </div>
     <div class="mt-auto d-flex justify-content-between align-items-center">
-      <strong class="text-primary fs-5"><?= format_pkr((float) $course['price']) ?></strong>
+      <strong class="text-primary fs-5"><?= format_course_price((float) $course['price']) ?></strong>
       <a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>" class="btn btn-sm btn-outline-primary">Enroll</a>
     </div>
   </div>
