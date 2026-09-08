@@ -19,7 +19,7 @@ $price = normalize_money_input($_POST['price'] ?? '');
 $description = trim($_POST['description'] ?? '');
 $lessons = parse_course_lessons($_POST, $_FILES['lesson_files'] ?? []);
 
-if ($title === '' || $category === '' || $price === null || $price === '0.00' || $description === '') {
+if ($title === '' || $category === '' || $price === null || (float) $price <= 0 || $description === '') {
     redirect_with(url('teacher/add-course.php'), 'Please complete all required fields.', 'danger');
 }
 if (count($lessons) === 0) {
