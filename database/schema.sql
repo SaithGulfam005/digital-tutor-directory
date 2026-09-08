@@ -90,7 +90,7 @@ CREATE TABLE courses (
   title VARCHAR(200) NOT NULL,
   slug VARCHAR(220) NOT NULL,
   description TEXT NOT NULL,
-  price DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  price DECIMAL(12,6) NOT NULL DEFAULT 0.000000,
   thumb VARCHAR(255) DEFAULT 'assets/images/avatars/placeholder.svg',
   status ENUM('draft','pending','published','rejected') NOT NULL DEFAULT 'pending',
   rating DECIMAL(3,2) NOT NULL DEFAULT 0,

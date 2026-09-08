@@ -192,19 +192,11 @@ $lessons = getCourseLessons($courseId);
     const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');
     const teacherShareEl = feeNotice.querySelector('[data-teacher-share]');
     const syncFeeNotice = () => {
-<<<<<<< HEAD
-      const rawValue = parseFloat(priceInput.value);
-      const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
-      const platformFee = Math.round(price * 0.10 * 100) / 100;
-      const teacherShare = Math.round((price - platformFee) * 100) / 100;
-=======
       const rawPkr = parseFloat(priceInput.value);
       const pricePkr = Number.isFinite(rawPkr) && rawPkr > 0 ? rawPkr : 0;
-      const price = pricePkr / 280;
-      const platformFee = pricePkr * 0.10;
-      const teacherShare = pricePkr - platformFee;
-      if (storedPriceInput) storedPriceInput.value = price.toFixed(4);
->>>>>>> 3e95c657d5f4135585762f1e56df1026f9414ab5
+      const platformFee = Math.round(pricePkr * 0.10 * 100) / 100;
+      const teacherShare = Math.round((pricePkr - platformFee) * 100) / 100;
+      if (storedPriceInput) storedPriceInput.value = (pricePkr / 280).toFixed(6);
       if (platformFeeEl) platformFeeEl.textContent = 'PKR ' + platformFee.toFixed(2);
       if (teacherShareEl) teacherShareEl.textContent = 'PKR ' + teacherShare.toFixed(2);
     };

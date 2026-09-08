@@ -53,7 +53,7 @@ function ensure_course_price_precision(): void
     $checked = true;
 
     try {
-        db()->exec('ALTER TABLE courses MODIFY COLUMN price DECIMAL(12,4) NOT NULL DEFAULT 0.0000');
+        db()->exec('ALTER TABLE courses MODIFY COLUMN price DECIMAL(12,6) NOT NULL DEFAULT 0.000000');
     } catch (Throwable) {
         // Keep the current schema when the database user cannot alter tables.
     }
