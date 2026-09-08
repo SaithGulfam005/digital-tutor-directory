@@ -21,14 +21,7 @@ require __DIR__ . '/../components/page-hero.php';
   <main class="dashboard-main flex-grow-1 p-4">
     <div class="row g-4">
       <div class="col-lg-4">
-        <div class="table-card p-4 text-center position-relative">
-          <div class="dropdown position-absolute" style="right:16px;top:16px">
-            <button class="btn btn-sm btn-light" type="button" id="profileMenuStudent" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile options">⋯</button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenuStudent">
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editDetailsModal">Edit Details</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</a></li>
-            </ul>
-          </div>
+        <div class="table-card p-4 text-center">
           <img src="<?= media_url($student['avatar']) ?>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover" alt="<?= htmlspecialchars($student['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
           <h2 class="h5 mb-1"><?= htmlspecialchars($student['name']) ?></h2>
           <p class="text-muted small mb-2"><?= htmlspecialchars($student['email']) ?></p>
@@ -38,6 +31,15 @@ require __DIR__ . '/../components/page-hero.php';
             <input type="file" name="avatar" accept="image/*" class="form-control form-control-sm mb-2" required>
             <button type="submit" class="btn btn-outline-primary btn-sm w-100">Upload Photo</button>
           </form>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="table-card p-4">
+          <h3 class="h6 fw-bold mb-3">Profile Settings</h3>
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editDetailsModal">Edit Details</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+          </div>
         </div>
       </div>
         <!-- Edit Details Modal -->
