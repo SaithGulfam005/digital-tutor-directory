@@ -25,7 +25,7 @@ require __DIR__ . '/../components/page-hero.php';
             <?= renderStars((float)$teacher['rating']) ?>
             <span class="ms-2"><?= number_format($teacher['rating'], 1) ?> / 5</span>
           </div>
-          <p class="small mb-1"><strong><?= htmlspecialchars($teacher['experience']) ?></strong> experience</p>
+          <p class="small mb-1"><strong><?= htmlspecialchars(format_experience($teacher['experience'])) ?></strong> of experience</p>
           <p class="small mb-1"><strong><?= number_format($teacher['students']) ?></strong> students</p>
           <p class="text-muted small"><?= htmlspecialchars($teacher['qualification']) ?></p>
           <a href="<?= url('pages/teachers.php') ?>" class="btn btn-primary w-100 mb-2">Back to Teachers</a>

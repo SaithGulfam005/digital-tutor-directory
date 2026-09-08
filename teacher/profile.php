@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
 $teacher = mockCurrentTeacher();
+$categories = getCategories();
+$selectedSubjects = array_values(array_filter(array_map('trim', explode(',', (string) ($teacher['subject'] ?? '')))));
 $pageTitle = 'Edit Profile | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'profile';
@@ -62,13 +64,21 @@ require __DIR__ . '/../components/page-hero.php';
                     <textarea name="bio" class="form-control" rows="4" required><?= htmlspecialchars($teacher['bio']) ?></textarea>
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Subjects</label>
-                    <textarea name="subject" class="form-control" rows="2" placeholder="e.g. Trading, Finance, Technical Analysis"><?= htmlspecialchars($teacher['subject']) ?></textarea>
-                    <div class="form-text">Enter multiple subjects separated by commas.</div>
+                    <label class="form-label">Teaching Categories</label>
+                    <div class="d-flex flex-wrap gap-2">
+                      <?php foreach ($categories as $category): ?>
+                        <?php $categoryName = is_array($category) ? (string) ($category['name'] ?? '') : (string) $category; ?>
+                        <?php if ($categoryName === '') continue; ?>
+                        <?php $categoryId = 'teacherCategory' . substr(sha1($categoryName), 0, 8); ?>
+                        <input class="btn-check" type="checkbox" name="subject[]" value="<?= htmlspecialchars($categoryName) ?>" id="<?= $categoryId ?>" <?= in_array($categoryName, $selectedSubjects, true) ? 'checked' : '' ?>>
+                        <label class="btn btn-outline-primary btn-sm" for="<?= $categoryId ?>"><?= htmlspecialchars($categoryName) ?></label>
+                      <?php endforeach; ?>
+                    </div>
+                    <div class="form-text">Select all categories you teach.</div>
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Experience</label>
-                    <input type="text" name="experience" class="form-control" value="<?= htmlspecialchars($teacher['experience']) ?>">
+                    <label class="form-label" for="teacherExperience">Experience (years)</label>
+                    <input type="number" name="experience" id="teacherExperience" class="form-control" min="0" max="99" step="1" value="<?= experience_years($teacher['experience']) ?>" required>
                   </div>
                 </div>
                 <div class="modal-footer">

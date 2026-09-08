@@ -23,6 +23,17 @@ function detect_base_url(): string
 
 define('BASE_URL', detect_base_url());
 
+function experience_years(mixed $value): int
+{
+    return max(0, (int) filter_var((string) $value, FILTER_SANITIZE_NUMBER_INT));
+}
+
+function format_experience(mixed $value): string
+{
+    $years = experience_years($value);
+    return $years . ' ' . ($years === 1 ? 'year' : 'years');
+}
+
 function normalize_money_input(mixed $value): ?string
 {
     $value = trim((string) $value);

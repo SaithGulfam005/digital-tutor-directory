@@ -77,8 +77,11 @@ $data = [
 
 if ($user['role'] === 'teacher' && (array_key_exists('qualification', $_POST) || array_key_exists('subject', $_POST) || array_key_exists('experience', $_POST))) {
     $data['qualification'] = trim((string) ($_POST['qualification'] ?? ''));
-    $data['subject'] = trim((string) ($_POST['subject'] ?? ''));
-    $data['experience'] = trim((string) ($_POST['experience'] ?? ''));
+    $subjects = array_map('trim', (array) ($_POST['subject'] ?? []));
+    $subjects = array_values(array_unique(array_filter($subjects, static fn($subject) => $subject !== '')));
+    $data['subject'] = implode(', ', $subjects);
+    $experience = filter_var($_POST['experience'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 99]]);
+    $data['experience'] = $experience === false ? '0' : (string) $experience;
 }
 
 if ($password !== '') {
