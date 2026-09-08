@@ -85,8 +85,15 @@
       field.dataset.toggleReady = 'true';
 
       const floating = field.closest('.form-floating');
-      const host = floating || field.parentElement;
+      let host = floating || field.parentElement;
       if (!host) return;
+
+      if (!floating) {
+        host = document.createElement('div');
+        host.className = 'password-input-wrapper';
+        field.parentElement.insertBefore(host, field);
+        host.appendChild(field);
+      }
 
       host.classList.add('password-toggle-host');
       if (!host.style.position) {
