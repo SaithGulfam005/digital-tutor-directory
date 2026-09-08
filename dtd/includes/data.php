@@ -5,6 +5,7 @@ require_once __DIR__ . '/../components/database.php';
 
 function map_course_row(array $row): array
 {
+    $reviewCount = (int) ($row['course_review_count'] ?? 0);
     return [
         'id' => (int) $row['id'],
         'title' => $row['title'],
@@ -15,7 +16,8 @@ function map_course_row(array $row): array
         'teacher_subject' => $row['teacher_subject'] ?? '',
         'teacher_rating' => (float) ($row['teacher_rating'] ?? 0),
         'price' => (float) $row['price'],
-        'rating' => (float) $row['rating'],
+        'rating' => $reviewCount > 0 ? (float) ($row['course_review_rating'] ?? 0) : 0.0,
+        'review_count' => $reviewCount,
         'category' => $row['category_name'] ?? '',
         'category_id' => (int) ($row['category_id'] ?? 0),
         'thumb' => $row['thumb'] ?: 'assets/images/avatars/placeholder.svg',
@@ -32,6 +34,8 @@ function courses_base_sql(string $where = '1=1'): string
     return "SELECT c.*, u.name AS teacher_name, u.avatar AS teacher_photo,
             tp.qualification AS teacher_qualification, tp.subject AS teacher_subject,
             tp.rating AS teacher_rating, cat.name AS category_name,
+            (SELECT COUNT(*) FROM course_reviews cr WHERE cr.course_id = c.id) AS course_review_count,
+            (SELECT AVG(cr.course_rating) FROM course_reviews cr WHERE cr.course_id = c.id) AS course_review_rating,
             (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) AS student_count
             FROM courses c
             JOIN users u ON u.id = c.teacher_id
@@ -477,6 +481,31 @@ function get_student_course_review(int $studentId, int $courseId): ?array
         'teacher_rating' => (int) $row['teacher_rating'],
         'comment' => $row['comment'] ?? '',
     ] : null;
+}
+
+function get_course_reviews(int $courseId): array
+{
+    if (!db_available()) {
+        return [];
+    }
+
+    ensure_student_tracking_tables();
+    $stmt = db()->prepare('SELECT cr.course_rating, cr.teacher_rating, cr.comment, cr.created_at, u.name AS student_name
+        FROM course_reviews cr
+        JOIN users u ON u.id = cr.student_id
+        WHERE cr.course_id = ?
+        ORDER BY cr.created_at DESC');
+    $stmt->execute([$courseId]);
+
+    return array_map(static function (array $row): array {
+        return [
+            'student_name' => $row['student_name'] ?? 'Student',
+            'course_rating' => (int) ($row['course_rating'] ?? 0),
+            'teacher_rating' => (int) ($row['teacher_rating'] ?? 0),
+            'comment' => trim((string) ($row['comment'] ?? '')),
+            'created_at' => $row['created_at'] ?? '',
+        ];
+    }, $stmt->fetchAll());
 }
 
 function save_student_course_review(int $studentId, int $courseId, int $teacherId, int $courseRating, int $teacherRating, string $comment = ''): void

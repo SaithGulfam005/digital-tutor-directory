@@ -1,5 +1,6 @@
 <?php /** @var array $course */ ?>
-<?php $displayRating = (float) ($course['teacher_rating'] ?: $course['rating']); ?>
+<?php $reviewCount = (int) ($course['review_count'] ?? 0); ?>
+<?php $displayRating = $reviewCount > 0 ? (float) $course['rating'] : 0.0; ?>
 <article class="course-card card h-100 border-0 shadow-sm"
   data-category="<?= htmlspecialchars($course['category']) ?>"
   data-price="<?= (float)$course['price'] ?>"
@@ -15,16 +16,16 @@
     <?php endif; ?>
   </div>
   <div class="card-body d-flex flex-column">
-    <h3 class="h6 card-title mb-1"><?= htmlspecialchars($course['title']) ?></h3>
-    <div class="rating-stars small mb-2">
-      <?php $r = $displayRating; for ($i = 1; $i <= 5; $i++): ?>
-        <i class="bi bi-star<?= $i <= floor($r) ? '-fill' : ($i - $r < 1 ? '-half' : '') ?> text-warning"></i>
-      <?php endfor; ?>
-      <span class="text-muted ms-1">(<?= number_format($r, 1) ?>)</span>
+    <div class="course-card__meta mb-2">
+      <span class="course-card__badge">Bestseller</span>
+      <span class="course-card__rating"><i class="bi bi-star<?= $reviewCount > 0 ? '-fill' : '' ?>"></i> <?= number_format($displayRating, 1) ?></span>
     </div>
-    <div class="mt-auto d-flex justify-content-between align-items-center">
+    <h3 class="h5 card-title mb-2"><a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>"><?= htmlspecialchars($course['title']) ?></a></h3>
+    <p class="course-card__instructor mb-2"><?= htmlspecialchars($course['teacher']) ?><?php if ($course['category'] !== ''): ?> <span aria-hidden="true">|</span> <?= htmlspecialchars($course['category']) ?><?php endif; ?></p>
+    <p class="course-card__students mb-3"><?= number_format((int) $course['students']) ?> enrolled</p>
+    <div class="mt-auto course-card__footer">
       <strong class="text-primary fs-5"><?= format_pkr((float) $course['price']) ?></strong>
-      <a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>" class="btn btn-sm btn-outline-primary">Enroll</a>
+      <a href="<?= url('pages/course-detail.php?id=' . (int)$course['id']) ?>" class="btn btn-primary btn-sm px-3">Enroll Now</a>
     </div>
   </div>
 </article>

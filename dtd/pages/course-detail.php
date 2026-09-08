@@ -6,6 +6,7 @@ if (!$course) {
     redirect_with(url('pages/courses.php'), 'Course not found.', 'danger');
 }
 $user = auth_user();
+$courseReviews = get_course_reviews($id);
 $enrolled = false;
 $teacherProfile = null;
 if ($user && ($user['role'] ?? '') === 'student' && db_available()) {
@@ -50,6 +51,32 @@ require __DIR__ . '/../components/page-hero.php';
     </div>
     <h2 class="h5 fw-bold mt-4">Learning Outcomes</h2>
     <ul><li>Build real-world projects</li><li>Master core concepts</li></ul>
+    <section class="mt-5" aria-labelledby="studentReviewsHeading">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 fw-bold mb-0" id="studentReviewsHeading">Student Reviews</h2>
+        <?php if ($courseReviews): ?><span class="small text-muted"><?= count($courseReviews) ?> review<?= count($courseReviews) === 1 ? '' : 's' ?></span><?php endif; ?>
+      </div>
+      <?php if (!$courseReviews): ?>
+      <div class="border rounded p-4 text-muted small">No student reviews yet. Be the first to review this course after completing it.</div>
+      <?php else: ?>
+      <div class="course-reviews">
+        <?php foreach ($courseReviews as $review): ?>
+        <article class="course-review border rounded p-3 mb-3">
+          <div class="d-flex justify-content-between gap-3 flex-wrap mb-2">
+            <strong><?= htmlspecialchars($review['student_name']) ?></strong>
+            <?php $reviewDate = $review['created_at'] !== '' ? strtotime((string) $review['created_at']) : false; ?>
+            <?php if ($reviewDate): ?><time class="small text-muted" datetime="<?= date('Y-m-d', $reviewDate) ?>"><?= date('M j, Y', $reviewDate) ?></time><?php endif; ?>
+          </div>
+          <div class="small mb-2">
+            <span class="me-3"><strong>Course:</strong> <?= renderStars((float) $review['course_rating']) ?> <?= $review['course_rating'] ?>/5</span>
+            <span><strong>Teacher:</strong> <?= renderStars((float) $review['teacher_rating']) ?> <?= $review['teacher_rating'] ?>/5</span>
+          </div>
+          <?php if ($review['comment'] !== ''): ?><p class="text-muted small mb-0"><?= nl2br(htmlspecialchars($review['comment'])) ?></p><?php endif; ?>
+        </article>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
+    </section>
   </div>
   <div class="col-lg-4"><div class="card purchase-card border-0 shadow p-4">
     <img src="<?= media_url($course['thumb'], 'assets/images/avatars/placeholder.svg') ?>" class="rounded mb-3" alt="" style="width:100%;height:160px;object-fit:cover">
