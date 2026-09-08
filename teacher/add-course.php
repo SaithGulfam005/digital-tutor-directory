@@ -41,7 +41,7 @@ require __DIR__ . '/../components/page-hero.php';
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="coursePricePkr">Price (PKR)</label>
-                <input type="number" class="form-control" id="coursePricePkr" min="280" step="1" placeholder="14000" required>
+                <input type="number" class="form-control" id="coursePricePkr" name="price_pkr" min="280" step="1" placeholder="14000" required>
                 <input type="hidden" id="coursePrice" name="price">
                 <div class="form-text mt-2" id="courseFeeNotice" role="status">
                   <i class="bi bi-info-circle me-1"></i>

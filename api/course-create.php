@@ -16,6 +16,12 @@ if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) >
 $title = trim($_POST['title'] ?? '');
 $category = trim($_POST['category'] ?? '');
 $price = normalize_money_input($_POST['price'] ?? '');
+if ($price === null || (float) $price <= 0) {
+    $pricePkr = normalize_money_input($_POST['price_pkr'] ?? '');
+    if ($pricePkr !== null && (float) $pricePkr > 0) {
+        $price = number_format((float) $pricePkr / PAYMENT_USD_TO_PKR_RATE, 6, '.', '');
+    }
+}
 $description = trim($_POST['description'] ?? '');
 $lessons = parse_course_lessons($_POST, $_FILES['lesson_files'] ?? []);
 

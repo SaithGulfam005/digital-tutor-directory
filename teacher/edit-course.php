@@ -47,7 +47,7 @@ $lessons = getCourseLessons($courseId);
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="coursePricePkr">Price (PKR)</label>
-                <input type="number" class="form-control" id="coursePricePkr" min="280" step="1" value="<?= htmlspecialchars((string) course_price_pkr((float) $course['price'])) ?>" required>
+                <input type="number" class="form-control" id="coursePricePkr" name="price_pkr" min="280" step="1" value="<?= htmlspecialchars((string) course_price_pkr((float) $course['price'])) ?>" required>
                 <input type="hidden" id="coursePrice" name="price" value="<?= htmlspecialchars((string) $course['price']) ?>">
                 <div class="form-text mt-2" id="courseFeeNotice" role="status">
                   <i class="bi bi-info-circle me-1"></i>

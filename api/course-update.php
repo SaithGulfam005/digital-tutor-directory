@@ -35,8 +35,14 @@ if (isset($_POST['category'])) {
     $update['category'] = $category;
 }
 
-if (isset($_POST['price'])) {
+if (isset($_POST['price']) || isset($_POST['price_pkr'])) {
     $price = normalize_money_input($_POST['price']);
+    if ($price === null || (float) $price <= 0) {
+        $pricePkr = normalize_money_input($_POST['price_pkr'] ?? '');
+        if ($pricePkr !== null && (float) $pricePkr > 0) {
+            $price = number_format((float) $pricePkr / PAYMENT_USD_TO_PKR_RATE, 6, '.', '');
+        }
+    }
     if ($price === null || (float) $price <= 0) {
         redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Price must be greater than zero.', 'danger');
     }
