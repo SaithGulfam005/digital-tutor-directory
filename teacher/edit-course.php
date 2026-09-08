@@ -46,8 +46,9 @@ $lessons = getCourseLessons($courseId);
                 <input type="hidden" class="form-control mt-2 d-none" id="courseCategory" name="category" value="<?= htmlspecialchars((string) $course['category']) ?>" placeholder="Enter a custom category">
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="coursePrice">Price (USD)</label>
-                <input type="number" class="form-control" id="coursePrice" name="price" min="1" step="0.01" value="<?= htmlspecialchars((string) $course['price']) ?>" required>
+                <label class="form-label" for="coursePricePkr">Price (PKR)</label>
+                <input type="number" class="form-control" id="coursePricePkr" min="280" step="1" value="<?= htmlspecialchars((string) course_price_pkr((float) $course['price'])) ?>" required>
+                <input type="hidden" id="coursePrice" name="price" value="<?= htmlspecialchars((string) $course['price']) ?>">
                 <div class="form-text mt-2" id="courseFeeNotice" role="status">
                   <i class="bi bi-info-circle me-1"></i>
                   Students pay the full course fee. The platform takes <strong data-platform-fee>PKR 0.00</strong> (10%) and you receive <strong data-teacher-share>PKR 0.00</strong>.
@@ -162,7 +163,8 @@ $lessons = getCourseLessons($courseId);
   'use strict';
   const editCourseForm = document.getElementById('editCourseForm');
   const lessonFields = document.getElementById('lessonFields');
-  const priceInput = document.getElementById('coursePrice');
+  const priceInput = document.getElementById('coursePricePkr');
+  const storedPriceInput = document.getElementById('coursePrice');
   const feeNotice = document.getElementById('courseFeeNotice');
   const categorySelect = document.getElementById('courseCategorySelect');
   const categoryInput = document.getElementById('courseCategory');
@@ -190,10 +192,19 @@ $lessons = getCourseLessons($courseId);
     const platformFeeEl = feeNotice.querySelector('[data-platform-fee]');
     const teacherShareEl = feeNotice.querySelector('[data-teacher-share]');
     const syncFeeNotice = () => {
+<<<<<<< HEAD
       const rawValue = parseFloat(priceInput.value);
       const price = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0;
       const platformFee = Math.round(price * 0.10 * 100) / 100;
       const teacherShare = Math.round((price - platformFee) * 100) / 100;
+=======
+      const rawPkr = parseFloat(priceInput.value);
+      const pricePkr = Number.isFinite(rawPkr) && rawPkr > 0 ? rawPkr : 0;
+      const price = pricePkr / 280;
+      const platformFee = pricePkr * 0.10;
+      const teacherShare = pricePkr - platformFee;
+      if (storedPriceInput) storedPriceInput.value = price.toFixed(4);
+>>>>>>> 3e95c657d5f4135585762f1e56df1026f9414ab5
       if (platformFeeEl) platformFeeEl.textContent = 'PKR ' + platformFee.toFixed(2);
       if (teacherShareEl) teacherShareEl.textContent = 'PKR ' + teacherShare.toFixed(2);
     };

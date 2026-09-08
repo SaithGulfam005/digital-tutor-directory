@@ -44,11 +44,27 @@ function courses_base_sql(string $where = '1=1'): string
             WHERE $where";
 }
 
+function ensure_course_price_precision(): void
+{
+    static $checked = false;
+    if ($checked || !db_available()) {
+        return;
+    }
+    $checked = true;
+
+    try {
+        db()->exec('ALTER TABLE courses MODIFY COLUMN price DECIMAL(12,4) NOT NULL DEFAULT 0.0000');
+    } catch (Throwable) {
+        // Keep the current schema when the database user cannot alter tables.
+    }
+}
+
 function getCourses(bool $publishedOnly = true): array
 {
     if (!db_available()) {
         return fallbackCourses();
     }
+    ensure_course_price_precision();
     $where = $publishedOnly ? "c.status = 'published'" : '1=1';
     $stmt = db()->query(courses_base_sql($where) . ' ORDER BY c.created_at DESC');
     return array_map('map_course_row', $stmt->fetchAll());
@@ -64,6 +80,7 @@ function getCourseById(int $id): ?array
         }
         return null;
     }
+    ensure_course_price_precision();
     $stmt = db()->prepare(courses_base_sql('c.id = ?'));
     $stmt->execute([$id]);
     $row = $stmt->fetch();
@@ -903,6 +920,7 @@ function resolveCategoryId(string $category): int
 
 function createCourse(int $teacherId, array $data): int
 {
+    ensure_course_price_precision();
     $categoryId = resolveCategoryId((string) ($data['category'] ?? ''));
 
     $slug = slugify($data['title']);
@@ -940,6 +958,7 @@ function createCourse(int $teacherId, array $data): int
 
 function updateCourse(int $courseId, int $teacherId, array $data): void
 {
+    ensure_course_price_precision();
     $course = getCourseById($courseId);
     if (!$course) {
         throw new RuntimeException('Course not found.');
