@@ -24,7 +24,6 @@ require __DIR__ . '/../components/page-hero.php';
 
     <div class="table-card">
       <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <span class="text-muted small"><?= count($courses) ?> courses total</span>
         <input type="search" class="form-control form-control-sm" style="max-width:280px" placeholder="Search title, teacher, category..." data-table-search="coursesTable">
         <span class="small text-muted" data-table-count="coursesTable"></span>
       </div>
