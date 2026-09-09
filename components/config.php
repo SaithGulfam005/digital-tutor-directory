@@ -646,7 +646,7 @@ function getAdminChartData(): array
                 continue;
             }
             $date = date('Y-m-d', strtotime($payment['date'] ?? 'now'));
-            $paymentsByDate[$date] = ($paymentsByDate[$date] ?? 0) + (float) ($payment['amount'] ?? 0);
+            $paymentsByDate[$date] = ($paymentsByDate[$date] ?? 0) + chart_revenue_pkr((float) ($payment['amount'] ?? 0));
         }
         ksort($paymentsByDate);
 
@@ -665,7 +665,7 @@ function getAdminChartData(): array
         WHERE status = 'completed'
         GROUP BY DATE(created_at)
         ORDER BY payment_date") as $row) {
-        $revenueByDate[$row['payment_date']] = (float) $row['revenue'];
+        $revenueByDate[$row['payment_date']] = chart_revenue_pkr((float) $row['revenue']);
     }
     $userCounts = ['student' => 0, 'teacher' => 0, 'admin' => 0];
     foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher', 'admin') GROUP BY role") as $row) {
