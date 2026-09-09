@@ -8,7 +8,7 @@
   <nav class="nav flex-column p-2">
     <a class="nav-link <?= $dashSection === 'overview' ? 'active' : '' ?>" href="<?= url('teacher/dashboard.php') ?>"><i class="bi bi-grid me-2"></i>Dashboard</a>
     <a class="nav-link <?= $dashSection === 'courses' ? 'active' : '' ?>" href="<?= url('teacher/courses.php') ?>"><i class="bi bi-collection me-2"></i>My Courses</a>
-    <?php if ($teacherVerified): ?><a class="nav-link <?= $dashSection === 'add' ? 'active' : '' ?>" href="<?= url('teacher/add-course.php') ?>"><i class="bi bi-plus-circle me-2"></i>Add Course</a><?php endif; ?>
+    <a class="nav-link <?= $dashSection === 'add' ? 'active' : '' ?>" href="<?= url('teacher/add-course.php') ?>"><i class="bi bi-plus-circle me-2"></i>Add Course</a>
     <a class="nav-link <?= $dashSection === 'earnings' ? 'active' : '' ?>" href="<?= url('teacher/earnings.php') ?>"><i class="bi bi-cash-stack me-2"></i>Earnings</a>
     <a class="nav-link <?= $dashSection === 'verification' ? 'active' : '' ?>" href="<?= url('teacher/verification.php') ?>"><i class="bi bi-patch-check me-2"></i>Verification</a>
     <a class="nav-link <?= $dashSection === 'profile' ? 'active' : '' ?>" href="<?= url('teacher/profile.php') ?>"><i class="bi bi-person me-2"></i>Profile</a>
@@ -28,7 +28,7 @@
     <nav class="nav flex-column p-2">
       <a class="nav-link" href="<?= url('teacher/dashboard.php') ?>">Dashboard</a>
       <a class="nav-link" href="<?= url('teacher/courses.php') ?>">My Courses</a>
-      <?php if ($teacherVerified): ?><a class="nav-link" href="<?= url('teacher/add-course.php') ?>">Add Course</a><?php endif; ?>
+      <a class="nav-link" href="<?= url('teacher/add-course.php') ?>">Add Course</a>
       <a class="nav-link" href="<?= url('teacher/earnings.php') ?>">Earnings</a>
       <a class="nav-link" href="<?= url('teacher/verification.php') ?>">Verification</a>
       <a class="nav-link" href="<?= url('teacher/profile.php') ?>">Profile</a>

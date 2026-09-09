@@ -59,6 +59,11 @@ if (!in_array($defaultRole, ['student', 'teacher'], true)) {
           <label for="pass">Password</label>
           <div class="invalid-feedback">Password required (min 6 chars).</div>
         </div>
+        <div class="form-floating mb-3">
+          <input type="password" class="form-control" id="cpass" name="password_confirm" placeholder="Confirm password" minlength="6" required>
+          <label for="cpass">Confirm password</label>
+          <div class="invalid-feedback">Passwords must match.</div>
+        </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
       </form>
       <p class="text-center text-muted small mt-4 mb-0">

@@ -19,7 +19,7 @@ $dashSection = 'overview';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Welcome, ' . explode(' ', $teacher['name'])[0];
 $pageSubheading = htmlspecialchars($teacher['subject']) . ' instructor';
-$pageActions = $isVerified ? '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>New Course</a>' : '';
+$pageActions = '<a href="' . url('teacher/add-course.php') . '" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>' . ($isVerified ? 'New Course' : 'Verify Now to Upload Course') . '</a>';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
 require __DIR__ . '/../components/page-hero.php';
