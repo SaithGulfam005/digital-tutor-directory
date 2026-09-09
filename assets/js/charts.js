@@ -33,6 +33,8 @@
         },
         scales: {
           y: {
+            beginAtZero: true,
+            suggestedMin: 0,
             ticks: {
               callback: function (value) {
                 return 'PKR ' + Number(value).toLocaleString('en-PK');
