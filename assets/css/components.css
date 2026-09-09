@@ -37,6 +37,11 @@
   object-fit: cover;
   border: 3px solid var(--border);
 }
+.teacher-card__verified {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
 
 /* Testimonial */
 .testimonial-card {
