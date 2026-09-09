@@ -70,19 +70,14 @@ require __DIR__ . '/../components/page-hero.php';
           <p class="small text-muted mb-3">Upload your qualification and identity documents for admin review.</p>
           <form method="post" action="<?= url('api/teacher-verification.php') ?>" enctype="multipart/form-data">
             <div class="mb-3">
-              <label class="form-label" for="verificationQualification">Qualification</label>
-              <input type="text" class="form-control" id="verificationQualification" name="qualification" value="<?= htmlspecialchars($verification['qualification']) ?>" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="verificationCnic">CNIC</label>
-              <input type="text" class="form-control" id="verificationCnic" name="cnic" value="<?= htmlspecialchars($verification['cnic']) ?>" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="verificationDocuments">Documents</label>
               <label class="form-label" for="verificationCnicFront">CNIC front picture</label>
               <input type="file" class="form-control mb-3" id="verificationCnicFront" name="cnic_front" accept=".jpg,.jpeg,.png" required>
               <label class="form-label" for="verificationCnicBack">CNIC back picture</label>
               <input type="file" class="form-control mb-3" id="verificationCnicBack" name="cnic_back" accept=".jpg,.jpeg,.png" required>
+              <div class="mb-3">
+              <label class="form-label" for="verificationQualification">Qualification</label>
+              <input type="text" class="form-control" id="verificationQualification" name="qualification" value="<?= htmlspecialchars($verification['qualification']) ?>" required>
+            </div>
               <label class="form-label" for="verificationDocuments">Qualification documents</label>
               <input type="file" class="form-control" id="verificationDocuments" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" required>
               <div class="form-text">Upload your degree or other qualification proof.</div>
