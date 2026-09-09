@@ -1,6 +1,7 @@
 <?php /** @var array $teacher */ ?>
 <?php $teacherSubjects = $teacher['subjects'] ?? array_values(array_filter(array_map('trim', explode(',', (string) ($teacher['subject'] ?? ''))))); ?>
 <?php $teacherCategories = $teacher['categories'] ?? $teacherSubjects; ?>
+<?php $isVerifiedTeacher = ($teacher['verification_status'] ?? '') === 'verified'; ?>
 <article class="teacher-card card h-100 border-0 shadow-sm text-center p-4"
   data-category="<?= htmlspecialchars(implode('|', $teacherCategories)) ?>"
   data-subject="<?= htmlspecialchars(implode('|', $teacherSubjects)) ?>"
@@ -8,7 +9,10 @@
   data-experience="<?= experience_years($teacher['experience']) ?>"
   data-search="<?= htmlspecialchars(strtolower($teacher['name'] . ' ' . $teacher['qualification'] . ' ' . implode(' ', $teacherSubjects) . ' ' . implode(' ', $teacherCategories) . ' ' . $teacher['bio'])) ?>">
   <img src="<?= media_url($teacher['photo']) ?>" class="teacher-card__avatar rounded-circle mx-auto mb-3" alt="<?= htmlspecialchars($teacher['name']) ?>" onerror="this.onerror=null;this.src='<?= media_url('') ?>'">
-  <h3 class="h6 mb-1"><?= htmlspecialchars($teacher['name']) ?></h3>
+  <h3 class="h6 mb-1">
+    <?= htmlspecialchars($teacher['name']) ?>
+    <?php if ($isVerifiedTeacher): ?><span class="badge badge-approved ms-1 align-middle">Verified</span><?php endif; ?>
+  </h3>
   <p class="text-muted small mb-1"><?= htmlspecialchars($teacher['qualification']) ?></p>
   <p class="small mb-2"><i class="bi bi-briefcase me-1"></i><?= htmlspecialchars(format_experience($teacher['experience'])) ?></p>
   <div class="rating-stars small mb-3">

@@ -96,7 +96,7 @@ function getTeachers(bool $verifiedOnly = true): array
         ? "u.role = 'teacher' AND tp.verification_status = 'verified' AND u.status = 'active'"
         : "u.role = 'teacher'";
         $sql = "SELECT u.id, u.name, u.email, u.bio, u.avatar AS photo, tp.qualification, tp.experience,
-            tp.subject, tp.rating,
+            tp.subject, tp.rating, tp.verification_status,
             COALESCE((SELECT GROUP_CONCAT(DISTINCT cat2.name SEPARATOR ',')
              FROM courses c2 JOIN categories cat2 ON cat2.id = c2.category_id
              WHERE c2.teacher_id = u.id AND c2.status = 'published'), tp.subject) AS categories,
@@ -117,6 +117,7 @@ function getTeachers(bool $verifiedOnly = true): array
             'qualification' => $row['qualification'] ?? '',
             'experience' => $row['experience'] ?? '',
             'rating' => (float) ($row['rating'] ?? 0),
+            'verification_status' => $row['verification_status'] ?? '',
             'subject' => $row['subject'] ?? '',
             'subjects' => $subjects,
             'categories' => array_values(array_unique(array_merge($courseCategories, $subjects))),
@@ -1488,10 +1489,10 @@ function fallbackCourses(): array
 function fallbackTeachers(): array
 {
     return [
-        ['id' => 1, 'name' => 'Dr. Sarah Khan', 'email' => 'sarah.khan@digitaltutor.com', 'qualification' => 'PhD Computer Science', 'experience' => '12 years', 'rating' => 4.9, 'subject' => 'Development', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 3200, 'bio' => 'Senior developer and educator.'],
-        ['id' => 2, 'name' => 'Ahmed Hassan', 'email' => 'ahmed@email.com', 'qualification' => 'MSc Design', 'experience' => '8 years', 'rating' => 4.7, 'subject' => 'Design', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 1800, 'bio' => 'UI/UX designer.'],
-        ['id' => 3, 'name' => 'Maria Lopez', 'email' => 'maria@email.com', 'qualification' => 'PhD Statistics', 'experience' => '10 years', 'rating' => 4.9, 'subject' => 'Data Science', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 4100, 'bio' => 'Data scientist.'],
-        ['id' => 4, 'name' => 'James Wilson', 'email' => 'james@email.com', 'qualification' => 'MBA Marketing', 'experience' => '7 years', 'rating' => 4.6, 'subject' => 'Marketing', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 950, 'bio' => 'Marketing strategist.'],
+        ['id' => 1, 'name' => 'Dr. Sarah Khan', 'email' => 'sarah.khan@digitaltutor.com', 'qualification' => 'PhD Computer Science', 'experience' => '12 years', 'rating' => 4.9, 'subject' => 'Development', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 3200, 'bio' => 'Senior developer and educator.', 'verification_status' => 'verified'],
+        ['id' => 2, 'name' => 'Ahmed Hassan', 'email' => 'ahmed@email.com', 'qualification' => 'MSc Design', 'experience' => '8 years', 'rating' => 4.7, 'subject' => 'Design', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 1800, 'bio' => 'UI/UX designer.', 'verification_status' => 'verified'],
+        ['id' => 3, 'name' => 'Maria Lopez', 'email' => 'maria@email.com', 'qualification' => 'PhD Statistics', 'experience' => '10 years', 'rating' => 4.9, 'subject' => 'Data Science', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 4100, 'bio' => 'Data scientist.', 'verification_status' => 'verified'],
+        ['id' => 4, 'name' => 'James Wilson', 'email' => 'james@email.com', 'qualification' => 'MBA Marketing', 'experience' => '7 years', 'rating' => 4.6, 'subject' => 'Marketing', 'photo' => 'assets/images/avatars/placeholder.svg', 'students' => 950, 'bio' => 'Marketing strategist.', 'verification_status' => 'verified'],
     ];
 }
 
