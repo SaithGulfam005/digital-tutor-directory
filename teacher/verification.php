@@ -72,12 +72,15 @@ require __DIR__ . '/../components/page-hero.php';
             <div class="mb-3">
               <label class="form-label" for="verificationCnicFront">CNIC front picture</label>
               <input type="file" class="form-control mb-3" id="verificationCnicFront" name="cnic_front" accept=".jpg,.jpeg,.png" required>
+
               <label class="form-label" for="verificationCnicBack">CNIC back picture</label>
               <input type="file" class="form-control mb-3" id="verificationCnicBack" name="cnic_back" accept=".jpg,.jpeg,.png" required>
+
               <div class="mb-3">
-              <label class="form-label" for="verificationQualification">Qualification</label>
-              <input type="text" class="form-control" id="verificationQualification" name="qualification" value="<?= htmlspecialchars($verification['qualification']) ?>" required>
-            </div>
+                <label class="form-label" for="verificationQualification">Qualification</label>
+                <input type="text" class="form-control" id="verificationQualification" name="qualification" value="<?= htmlspecialchars($verification['qualification']) ?>" required>
+              </div>
+
               <label class="form-label" for="verificationDocuments">Qualification documents</label>
               <input type="file" class="form-control" id="verificationDocuments" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" required>
               <div class="form-text">Upload your degree or other qualification proof.</div>
