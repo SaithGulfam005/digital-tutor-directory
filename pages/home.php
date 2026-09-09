@@ -48,7 +48,7 @@ require_once __DIR__ . '/../components/navbar.php';
       </div>
       <div class="col-lg-6 fade-up">
         <div class="hero-img-wrap">
-          <img src="<?= asset('images/hero-student.jpg') ?>" class="img-fluid" alt="Students learning online" onerror="this.src='https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800'">
+          <img src="<?= asset('images/student-learning-online.jpg') ?>" class="img-fluid" alt="Students learning online" onerror="this.src='https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800'">
         </div>
       </div>
     </div>
