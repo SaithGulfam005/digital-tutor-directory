@@ -653,8 +653,8 @@ function getAdminChartData(): array
         return [
             'revenueLabels' => $paymentsByDate ? array_keys($paymentsByDate) : ['No completed payments'],
             'revenue' => $paymentsByDate ? array_values($paymentsByDate) : [0],
-            'userLabels' => ['Students', 'Teachers', 'Admins'],
-            'users' => [count(fallbackStudents()), count(fallbackTeachers()), 0],
+            'userLabels' => ['Students', 'Teachers'],
+            'users' => [count(fallbackStudents()), count(fallbackTeachers())],
         ];
     }
 
@@ -675,8 +675,8 @@ function getAdminChartData(): array
     return [
         'revenueLabels' => $revenueByDate ? array_keys($revenueByDate) : ['No completed payments'],
         'revenue' => $revenueByDate ? array_values($revenueByDate) : [0],
-        'userLabels' => ['Students', 'Teachers', 'Admins'],
-        'users' => [$userCounts['student'], $userCounts['teacher'], $userCounts['admin']],
+        'userLabels' => ['Students', 'Teachers'],
+        'users' => [$userCounts['student'], $userCounts['teacher']],
     ];
 }
 function mockCurrentStudent(): array { return getCurrentStudent(); }

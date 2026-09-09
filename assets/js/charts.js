@@ -49,11 +49,35 @@
       type: 'bar',
       data: {
         labels: chartData.userLabels || [],
-        datasets: [
-          { label: 'Users', data: chartData.users || [], backgroundColor: '#2563EB' }
-        ]
+        datasets: [{
+          label: 'Users',
+          data: chartData.users || [],
+          backgroundColor: '#2563EB'
+        }]
       },
-      options: { responsive: true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 18,
+              usePointStyle: true,
+              pointStyle: 'rect'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      }
     });
   }
 })();
