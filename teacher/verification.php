@@ -54,10 +54,6 @@ require __DIR__ . '/../components/page-hero.php';
               <p class="fw-medium mb-0"><?= htmlspecialchars($verification['qualification'] ?: 'Not submitted') ?></p>
             </div>
             <div class="col-md-6">
-              <label class="text-muted small">CNIC</label>
-              <p class="fw-medium mb-0 font-monospace"><?= htmlspecialchars($verification['cnic'] ?: 'Not submitted') ?></p>
-            </div>
-            <div class="col-md-6">
               <label class="text-muted small">Subject</label>
               <p class="fw-medium mb-0"><?= htmlspecialchars($teacher['subject']) ?></p>
             </div>
