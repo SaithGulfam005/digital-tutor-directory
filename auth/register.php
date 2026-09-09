@@ -59,28 +59,6 @@ if (!in_array($defaultRole, ['student', 'teacher'], true)) {
           <label for="pass">Password</label>
           <div class="invalid-feedback">Password required (min 6 chars).</div>
         </div>
-        <div class="form-floating mb-3">
-          <input type="password" class="form-control" id="cpass" name="password_confirm" placeholder="Confirm Password" minlength="6" required>
-          <label for="cpass">Confirm password</label>
-          <div class="invalid-feedback">Passwords must match.</div>
-        </div>
-        <div id="teacherFields" class="<?= $defaultRole === 'teacher' ? '' : 'd-none' ?>">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control teacher-field" id="qual" name="qualification" placeholder="Qualification" <?= $defaultRole === 'teacher' ? 'required' : '' ?>>
-            <label for="qual">Qualification</label>
-            <div class="invalid-feedback">Please enter your qualification.</div>
-          </div>
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control teacher-field" id="cnic" name="cnic" placeholder="CNIC" <?= $defaultRole === 'teacher' ? 'required' : '' ?>>
-            <label for="cnic">CNIC</label>
-            <div class="invalid-feedback">Please enter your CNIC.</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="documents">Upload documents (CNIC, Degree)</label>
-            <input type="file" class="form-control teacher-field" id="documents" name="documents[]" multiple accept=".pdf,.jpg,.png" <?= $defaultRole === 'teacher' ? '' : '' ?>>
-            <div class="invalid-feedback">Please upload verification documents.</div>
-          </div>
-        </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
       </form>
       <p class="text-center text-muted small mt-4 mb-0">

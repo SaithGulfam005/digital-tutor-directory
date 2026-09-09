@@ -4,6 +4,8 @@ $teacher = mockCurrentTeacher();
 $verification = mockTeacherVerification();
 $isVerified = ($verification['status'] ?? '') === 'verified';
 $isRejected = ($verification['status'] ?? '') === 'rejected';
+$hasSubmission = !$isVerified && trim((string) ($verification['qualification'] ?? '')) !== '' && trim((string) ($verification['cnic'] ?? '')) !== '' && !empty($verification['documents']);
+$isPending = !$isVerified && !$isRejected && $hasSubmission;
 $pageTitle = 'Verification | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'verification';
@@ -23,8 +25,8 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-lg-8">
         <div class="table-card p-4 mb-4">
           <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="kpi-card__icon kpi-card__icon--<?= $isVerified ? 'success' : 'warning' ?>" style="width:56px;height:56px;font-size:1.5rem">
-              <i class="bi bi-<?= $isVerified ? 'patch-check-fill' : 'hourglass-split' ?>"></i>
+              <div class="kpi-card__icon kpi-card__icon--<?= $isVerified ? 'success' : ($isPending ? 'warning' : 'danger') ?>" style="width:56px;height:56px;font-size:1.5rem">
+              <i class="bi bi-<?= $isVerified ? 'patch-check-fill' : ($isPending ? 'hourglass-split' : 'exclamation-circle') ?>"></i>
             </div>
             <div>
               <?php if ($isVerified): ?>
@@ -33,9 +35,12 @@ require __DIR__ . '/../components/page-hero.php';
               <?php elseif ($isRejected): ?>
               <h2 class="h5 fw-bold mb-1 text-danger">Verification Rejected</h2>
               <p class="text-muted small mb-0">Contact support to resubmit your documents.</p>
-              <?php else: ?>
+              <?php elseif ($isPending): ?>
               <h2 class="h5 fw-bold mb-1 text-warning">Pending Verification</h2>
               <p class="text-muted small mb-0">An administrator is reviewing your application.</p>
+              <?php else: ?>
+              <h2 class="h5 fw-bold mb-1 text-danger">Not Verified</h2>
+              <p class="text-muted small mb-0">Submit your information below to request verification.</p>
               <?php endif; ?>
             </div>
           </div>
@@ -74,8 +79,13 @@ require __DIR__ . '/../components/page-hero.php';
             </div>
             <div class="mb-3">
               <label class="form-label" for="verificationDocuments">Documents</label>
+              <label class="form-label" for="verificationCnicFront">CNIC front picture</label>
+              <input type="file" class="form-control mb-3" id="verificationCnicFront" name="cnic_front" accept=".jpg,.jpeg,.png" required>
+              <label class="form-label" for="verificationCnicBack">CNIC back picture</label>
+              <input type="file" class="form-control mb-3" id="verificationCnicBack" name="cnic_back" accept=".jpg,.jpeg,.png" required>
+              <label class="form-label" for="verificationDocuments">Qualification documents</label>
               <input type="file" class="form-control" id="verificationDocuments" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" required>
-              <div class="form-text">Upload your CNIC, degree, or other qualification proof.</div>
+              <div class="form-text">Upload your degree or other qualification proof.</div>
             </div>
             <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>Submit for Review</button>
           </form>

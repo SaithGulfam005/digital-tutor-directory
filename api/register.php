@@ -20,7 +20,7 @@ $name = trim($_POST['name'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $password = $_POST['password'] ?? '';
-$confirm = $_POST['password_confirm'] ?? '';
+$confirm = $_POST['password_confirm'] ?? $password;
 
 if ($name === '' || $email === '' || strlen($password) < 6) {
     redirect_with(url('auth/register.php?role=' . urlencode($role)), 'Please fill all required fields.', 'danger');
@@ -40,13 +40,8 @@ $data = [
 ];
 
 if ($role === 'teacher') {
-    $data['qualification'] = trim($_POST['qualification'] ?? '');
-    $data['cnic'] = trim($_POST['cnic'] ?? '');
     $data['subject'] = trim($_POST['subject'] ?? 'General');
     $data['experience'] = trim($_POST['experience'] ?? '0 years');
-    if (!empty($_FILES['documents']['name'][0])) {
-        $data['documents'] = save_uploaded_documents($_FILES['documents']);
-    }
 }
 
 $user = null;

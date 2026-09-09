@@ -76,6 +76,13 @@ require __DIR__ . '/../components/page-hero.php';
       </div>
     </div>
 
+    <?php if (!$isVerified): ?>
+    <div class="alert alert-danger d-flex align-items-center justify-content-between gap-3 mb-4" role="alert">
+      <span><i class="bi bi-exclamation-circle me-2"></i><strong>Not Verified</strong></span>
+      <a href="<?= url('teacher/verification.php') ?>" class="btn btn-sm btn-danger">Verify Now</a>
+    </div>
+    <?php endif; ?>
+
     <div class="row g-4">
       <div class="col-lg-8">
         <div class="d-flex justify-content-between align-items-center mb-3">

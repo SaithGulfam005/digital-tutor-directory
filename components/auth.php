@@ -262,20 +262,12 @@ function register_user(array $data, string $role): array
             $stmt = db()->prepare('INSERT INTO teacher_profiles (user_id, qualification, cnic, subject, experience, verification_status) VALUES (?,?,?,?,?,?)');
             $stmt->execute([
                 $userId,
-                $data['qualification'] ?? '',
-                $data['cnic'] ?? '',
+                null,
+                null,
                 $data['subject'] ?? 'General',
                 $data['experience'] ?? '0 years',
                 'pending',
             ]);
-            $profileId = (int) db()->lastInsertId();
-
-            if (!empty($data['documents'])) {
-                $docStmt = db()->prepare('INSERT INTO teacher_documents (teacher_profile_id, original_name, file_path) VALUES (?,?,?)');
-                foreach ($data['documents'] as $doc) {
-                    $docStmt->execute([$profileId, $doc['original_name'], $doc['file_path']]);
-                }
-            }
         }
 
         db()->commit();

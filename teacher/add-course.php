@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/../components/require-teacher.php';
-if (!teacher_is_verified(auth_id())) {
-  redirect_with(url('teacher/verification.php'), 'You must submit documents and receive admin verification before adding a course.', 'warning');
-}
+$isVerified = teacher_is_verified(auth_id());
 $pageTitle = 'Add Course | ' . SITE_NAME;
 $dashboardLayout = true;
 $dashSection = 'add';
@@ -19,6 +17,17 @@ require __DIR__ . '/../components/page-hero.php';
 <div class="dashboard-wrapper d-flex">
   <?php require __DIR__ . '/../components/sidebar-teacher.php'; ?>
   <main class="dashboard-main flex-grow-1 p-4">
+
+    <?php if (!$isVerified): ?>
+    <div class="table-card p-4">
+      <div class="text-center py-5">
+        <i class="bi bi-shield-exclamation text-danger fs-1"></i>
+        <h2 class="h5 fw-bold mt-3">Verify Now to Upload Course</h2>
+        <p class="text-muted mb-4">You must submit your CNIC, qualification, and supporting documents before uploading a course.</p>
+        <a href="<?= url('teacher/verification.php') ?>" class="btn btn-danger"><i class="bi bi-patch-check me-1"></i>Verify Now</a>
+      </div>
+    </div>
+    <?php else: ?>
 
     <div class="row">
       <div class="col-lg-8">
@@ -138,6 +147,7 @@ require __DIR__ . '/../components/page-hero.php';
         </div>
       </div>
     </div>
+    <?php endif; ?>
   </main>
 </div>
 </div>

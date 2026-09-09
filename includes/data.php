@@ -193,7 +193,10 @@ function getPendingVerifications(): array
     $sql = "SELECT u.id, u.name, u.email, tp.qualification, tp.cnic, tp.created_at AS submitted
             FROM teacher_profiles tp
             JOIN users u ON u.id = tp.user_id
-            WHERE tp.verification_status = 'pending'
+                        WHERE tp.verification_status = 'pending'
+                            AND NULLIF(TRIM(tp.qualification), '') IS NOT NULL
+                            AND NULLIF(TRIM(tp.cnic), '') IS NOT NULL
+                            AND EXISTS (SELECT 1 FROM teacher_documents td WHERE td.teacher_profile_id = tp.id)
             ORDER BY tp.created_at DESC";
     $stmt = db()->query($sql);
     return array_map(static function ($row) {
@@ -268,7 +271,7 @@ function getAdminStats(): array
     $students = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
     $teachers = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='teacher' AND status='active'")->fetchColumn();
     $admins = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn();
-    $pendingVerifications = (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles WHERE verification_status='pending'")->fetchColumn();
+    $pendingVerifications = (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles tp WHERE tp.verification_status='pending' AND NULLIF(TRIM(tp.qualification), '') IS NOT NULL AND NULLIF(TRIM(tp.cnic), '') IS NOT NULL AND EXISTS (SELECT 1 FROM teacher_documents td WHERE td.teacher_profile_id = tp.id)")->fetchColumn();
     $totalCourses = (int) $pdo->query("SELECT COUNT(*) FROM courses")->fetchColumn();
     $pendingCourses = (int) $pdo->query("SELECT COUNT(*) FROM courses WHERE status='pending'")->fetchColumn();
     $revenueMonth = (float) $pdo->query("SELECT COALESCE(SUM(amount),0) FROM payments WHERE status='completed' AND MONTH(created_at)=MONTH(CURRENT_DATE()) AND YEAR(created_at)=YEAR(CURRENT_DATE())")->fetchColumn();
@@ -303,7 +306,7 @@ function getAdminNotificationCounts(): array
 
     $pdo = db();
     return [
-        'verifications' => (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles WHERE verification_status = 'pending'")->fetchColumn(),
+        'verifications' => (int) $pdo->query("SELECT COUNT(*) FROM teacher_profiles tp WHERE tp.verification_status = 'pending' AND NULLIF(TRIM(tp.qualification), '') IS NOT NULL AND NULLIF(TRIM(tp.cnic), '') IS NOT NULL AND EXISTS (SELECT 1 FROM teacher_documents td WHERE td.teacher_profile_id = tp.id)")->fetchColumn(),
         'courses' => (int) $pdo->query("SELECT COUNT(*) FROM courses WHERE status = 'pending'")->fetchColumn(),
         'payments' => (int) $pdo->query("SELECT COUNT(*) FROM payments WHERE status = 'pending'")->fetchColumn(),
     ];
