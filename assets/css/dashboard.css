@@ -114,6 +114,12 @@
   padding: 1.25rem;
   height: 100%;
 }
+.admin-chart-card canvas {
+  display: block;
+  width: 100% !important;
+  height: 220px !important;
+  max-height: 220px;
+}
 .admin-activity-item {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--border);
