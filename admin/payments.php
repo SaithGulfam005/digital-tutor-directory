@@ -7,7 +7,7 @@ $dashboardLayout = true;
 $dashSection = 'payments';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Payments';
-$pageSubheading = 'Track transactions, refunds, and payment status';
+$pageSubheading = 'Track transactions and payment status';
 $pageActions = '';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact';
@@ -33,8 +33,8 @@ require __DIR__ . '/../components/page-hero.php';
       </div>
       <div class="col-md-4">
         <div class="kpi-card">
-          <p class="text-muted small mb-1">Failed / Refunded</p>
-          <h3 class="mb-0 fw-bold"><?= count(array_filter($payments, fn($p) => in_array($p['status'], ['failed', 'refunded'], true))) ?></h3>
+          <p class="text-muted small mb-1">Failed</p>
+          <h3 class="mb-0 fw-bold"><?= count(array_filter($payments, fn($p) => $p['status'] === 'failed')) ?></h3>
         </div>
       </div>
     </div>
@@ -44,7 +44,6 @@ require __DIR__ . '/../components/page-hero.php';
       <li class="nav-item"><a class="nav-link" href="#" data-filter-status="completed" data-filter-table="paymentsTable">Completed</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-filter-status="pending" data-filter-table="paymentsTable">Pending</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-filter-status="failed" data-filter-table="paymentsTable">Failed</a></li>
-      <li class="nav-item"><a class="nav-link" href="#" data-filter-status="refunded" data-filter-table="paymentsTable">Refunded</a></li>
     </ul>
 
     <div class="table-card">
@@ -88,9 +87,7 @@ require __DIR__ . '/../components/page-hero.php';
               <td class="small text-muted"><?= htmlspecialchars($p['date']) ?></td>
               <td><span class="badge status-badge badge-<?= htmlspecialchars($p['status']) ?>"><?= ucfirst($p['status']) ?></span></td>
               <td class="text-end text-nowrap">
-                <?php if ($p['status'] === 'completed'): ?>
-                <button type="button" class="btn btn-sm btn-outline-warning" data-admin-action="refund" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Refund</button>
-                <?php elseif ($p['status'] === 'pending'): ?>
+                <?php if ($p['status'] === 'pending'): ?>
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Confirm</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) ($p['payment_id'] ?? 0) ?>" data-admin-label="<?= htmlspecialchars($p['id']) ?>">Reject</button>
                 <?php endif; ?>

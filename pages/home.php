@@ -104,12 +104,29 @@ require_once __DIR__ . '/../components/navbar.php';
   <div class="container">
     <h2 class="section-title">Popular Teachers</h2>
     <p class="section-subtitle">Learn from experienced, verified professionals.</p>
-    <div class="row g-4">
-      <?php foreach ($teachers as $teacher): ?>
-      <div class="col-sm-6 col-lg-3 fade-up">
-        <?php require __DIR__ . '/../components/teacher-card.php'; ?>
+    <div class="tc-carousel" data-tc-carousel>
+      <div class="tc-carousel__viewport">
+        <div class="tc-carousel__track">
+          <?php foreach ($teachers as $teacher): ?>
+          <div class="tc-carousel__slide col-sm-6 col-lg-3 fade-up" data-tc-slide>
+            <?php require __DIR__ . '/../components/teacher-card.php'; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
       </div>
-      <?php endforeach; ?>
+      <div class="tc-carousel__controls" aria-label="Popular teachers carousel controls">
+        <button type="button" class="tc-carousel__button tc-carousel__button--prev" aria-label="Previous teacher">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="tc-carousel__dots" aria-label="Teacher navigation">
+          <?php foreach ($teachers as $index => $teacher): ?>
+          <button type="button" class="tc-carousel__dot <?= $index === 0 ? 'is-active' : '' ?>" data-tc-dot="<?= $index ?>" aria-label="Go to teacher <?= $index + 1 ?>"></button>
+          <?php endforeach; ?>
+        </div>
+        <button type="button" class="tc-carousel__button tc-carousel__button--next" aria-label="Next teacher">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </div>
 </section>
@@ -229,6 +246,243 @@ require_once __DIR__ . '/../components/navbar.php';
     </div>
   </div>
 </section>
+
+<style>
+  .tc-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .tc-carousel__viewport {
+    position: relative;
+    overflow: hidden;
+    height: 420px;
+    padding: 12px 0 20px;
+  }
+
+  .tc-carousel__track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tc-carousel__slide {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(290px, 70vw);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) scale(0.72) translateX(0px);
+    transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease, z-index 0.45s ease;
+    z-index: 0;
+    filter: blur(0.5px);
+    cursor: pointer;
+  }
+
+  .tc-carousel__slide .teacher-card {
+    height: 100%;
+    transform-origin: center center;
+  }
+
+  .tc-carousel__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 6px;
+  }
+
+  .tc-carousel__button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(37, 99, 235, 0.24);
+    background: #fff;
+    color: #2563eb;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .tc-carousel__button:hover,
+  .tc-carousel__button:focus-visible {
+    transform: translateY(-1px);
+    background: #eff6ff;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.16);
+    outline: none;
+  }
+
+  .tc-carousel__dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tc-carousel__dot {
+    width: 10px;
+    height: 10px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.28);
+    padding: 0;
+    transition: transform 0.2s ease, background 0.2s ease, width 0.2s ease;
+  }
+
+  .tc-carousel__dot.is-active {
+    width: 26px;
+    background: #2563eb;
+  }
+
+  @media (max-width: 767px) {
+    .tc-carousel__viewport {
+      height: 400px;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const carousels = document.querySelectorAll('[data-tc-carousel]');
+
+    if (!carousels.length) {
+      return;
+    }
+
+    carousels.forEach(function (carousel) {
+      const slides = Array.from(carousel.querySelectorAll('[data-tc-slide]'));
+      const prevButton = carousel.querySelector('.tc-carousel__button--prev');
+      const nextButton = carousel.querySelector('.tc-carousel__button--next');
+      const dots = Array.from(carousel.querySelectorAll('[data-tc-dot]'));
+      let activeIndex = 0;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      if (!slides.length) {
+        return;
+      }
+
+      function updateCarousel() {
+        const viewportWidth = carousel.querySelector('.tc-carousel__viewport')?.clientWidth || 900;
+        const totalSlides = slides.length;
+
+        slides.forEach(function (slide, index) {
+          let offset = index - activeIndex;
+
+          if (offset > totalSlides / 2) {
+            offset -= totalSlides;
+          }
+
+          if (offset < -(totalSlides / 2)) {
+            offset += totalSlides;
+          }
+
+          let translateX = offset * (viewportWidth * 0.28);
+          let scale = 0.72;
+          let opacity = 0;
+          let zIndex = 0;
+          let filter = 'blur(0.5px)';
+
+          if (offset === 0) {
+            translateX = 0;
+            scale = 1;
+            opacity = 1;
+            zIndex = 3;
+            filter = 'blur(0)';
+          } else if (Math.abs(offset) === 1) {
+            scale = 0.84;
+            opacity = 0.8;
+            zIndex = 2;
+          } else if (Math.abs(offset) === 2) {
+            scale = 0.72;
+            opacity = 0.5;
+            zIndex = 1;
+          }
+
+          slide.style.transform = 'translateX(-50%) translateX(' + translateX + 'px) scale(' + scale + ')';
+          slide.style.opacity = opacity;
+          slide.style.zIndex = String(zIndex);
+          slide.style.filter = filter;
+          slide.style.pointerEvents = offset === 0 || Math.abs(offset) === 1 ? 'auto' : 'none';
+        });
+
+        dots.forEach(function (dot, index) {
+          const isActive = index === activeIndex;
+          dot.classList.toggle('is-active', isActive);
+          dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+        });
+      }
+
+      function goTo(index) {
+        activeIndex = (index + slides.length) % slides.length;
+        updateCarousel();
+      }
+
+      prevButton?.addEventListener('click', function () {
+        goTo(activeIndex - 1);
+      });
+
+      nextButton?.addEventListener('click', function () {
+        goTo(activeIndex + 1);
+      });
+
+      dots.forEach(function (dot) {
+        dot.addEventListener('click', function () {
+          goTo(Number(dot.dataset.tcDot || 0));
+        });
+      });
+
+      slides.forEach(function (slide, index) {
+        slide.addEventListener('click', function () {
+          if (index !== activeIndex) {
+            goTo(index);
+          }
+        });
+      });
+
+      carousel.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          goTo(activeIndex + 1);
+        }
+
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          goTo(activeIndex - 1);
+        }
+      });
+
+      carousel.addEventListener('touchstart', function (event) {
+        const touch = event.changedTouches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }, { passive: true });
+
+      carousel.addEventListener('touchend', function (event) {
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+
+        if (Math.abs(deltaX) > 40 && Math.abs(deltaY) < 60) {
+          if (deltaX < 0) {
+            goTo(activeIndex + 1);
+          } else {
+            goTo(activeIndex - 1);
+          }
+        }
+      }, { passive: true });
+
+      updateCarousel();
+      window.addEventListener('resize', updateCarousel);
+    });
+  })();
+</script>
 
 <?php
 require_once __DIR__ . '/../components/footer.php';

@@ -9,7 +9,6 @@
     activate: 'activate_user',
     deactivate: 'deactivate_user',
     delete: null,
-    refund: 'refund_payment',
     feature: null,
   };
 
@@ -26,7 +25,7 @@
       } else if (table?.id === 'coursesTable') {
         apiAction = uiAction === 'approve' ? 'approve_course' : uiAction === 'reject' ? 'reject_course' : uiAction === 'delete' ? 'delete_course' : apiAction;
       } else if (table?.id === 'paymentsTable') {
-        apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'reject' ? 'reject_payment' : uiAction === 'refund' ? 'refund_payment' : apiAction;
+        apiAction = uiAction === 'approve' ? 'confirm_payment' : uiAction === 'reject' ? 'reject_payment' : apiAction;
       } else if (table?.id === 'payoutRequestsTable') {
         apiAction = uiAction === 'approve' ? 'approve_payout_request' : uiAction === 'reject' ? 'reject_payout_request' : apiAction;
       }
@@ -77,7 +76,7 @@
           .catch((err) => window.showToast?.(err.message, 'danger'));
       };
 
-      const needsConfirm = ['reject', 'delete', 'deactivate', 'refund'].includes(uiAction);
+      const needsConfirm = ['reject', 'delete', 'deactivate'].includes(uiAction);
       if (window.showConfirm && needsConfirm) {
         window.showConfirm('Confirm', `Proceed with ${uiAction} for ${label}?`, run);
       } else {
