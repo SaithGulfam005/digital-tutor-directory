@@ -2,7 +2,7 @@
 body {
   font-family: var(--font);
   color: var(--text);
-  background: #fff;
+  background: #e40e0e;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
