@@ -2,7 +2,11 @@
 body {
   font-family: var(--font);
   color: var(--text);
+<<<<<<< HEAD
   background: #fcfbfb;
+=======
+  background: #054fe4;
+>>>>>>> refs/remotes/origin/main
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -38,8 +42,13 @@ main { flex: 1; }
 
 /* Hero */
 .hero {
+<<<<<<< HEAD
   background: linear-gradient(135deg, hsl(234, 84%, 50%) 0%, #2e2eec 50%, #4122f0 100%);
   color: hwb(0 100% 0%);
+=======
+  background: linear-gradient(135deg, hsl(234, 70%, 54%) 0%, #2e2eec 50%, #4122f0 100%);
+  color: hwb(0 96% 3%);
+>>>>>>> refs/remotes/origin/main
   padding: 5rem 0;
   position: relative;
   overflow: hidden;
