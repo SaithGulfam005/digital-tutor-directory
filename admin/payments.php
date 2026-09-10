@@ -79,7 +79,7 @@ require __DIR__ . '/../components/page-hero.php';
               </td>
               <td>
                 <?php if (!empty($p['receipt_path'])): ?>
-                <a class="btn btn-sm btn-outline-primary" href="<?= url('api/payment-receipt.php?id=' . (int) ($p['payment_id'] ?? 0)) ?>" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>View</a>
+                <a class="btn btn-sm btn-outline-primary" href="<?= url('api/payment-receipt.php?ref=' . urlencode((string) ($p['id'] ?? ''))) ?>" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>View</a>
                 <?php else: ?>
                 <span class="small text-muted">None</span>
                 <?php endif; ?>

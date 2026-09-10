@@ -1123,6 +1123,7 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
         throw new RuntimeException('Invalid payment method.');
     }
 
+    ensure_enrollment_schema();
     $payment = create_pending_payment($studentId, $courseId, $methodKey, $billing['transaction_ref'] ?? null, $billing['receipt_path'] ?? null);
 
     return [
@@ -1134,6 +1135,20 @@ function processCoursePayment(int $studentId, int $courseId, string $method, arr
     ];
 }
 
+function ensure_enrollment_schema(): void
+{
+    static $checked = false;
+    if ($checked || !db_available()) {
+        return;
+    }
+    $checked = true;
+    $stmt = db()->prepare("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'enrollments' AND column_name = 'id'");
+    $stmt->execute();
+    if (strtolower((string) $stmt->fetchColumn()) !== 'auto_increment') {
+        db()->exec('ALTER TABLE enrollments MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT');
+    }
+}
+
 function ensure_manual_payment_schema(): void
 {
     static $checked = false;
@@ -1141,6 +1156,11 @@ function ensure_manual_payment_schema(): void
         return;
     }
     $checked = true;
+    $idStmt = db()->prepare("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'payments' AND column_name = 'id'");
+    $idStmt->execute();
+    if (strtolower((string) $idStmt->fetchColumn()) !== 'auto_increment') {
+        db()->exec('ALTER TABLE payments MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT');
+    }
     foreach (['transaction_ref' => 'VARCHAR(120) DEFAULT NULL', 'receipt_path' => 'VARCHAR(255) DEFAULT NULL', 'rejection_reason' => 'TEXT DEFAULT NULL'] as $column => $definition) {
         $stmt = db()->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
         $stmt->execute(['payments', $column]);
@@ -1211,6 +1231,7 @@ function create_pending_payment(int $studentId, int $courseId, string $method, ?
 function admin_confirm_payment(int $paymentId): void
 {
     ensure_manual_payment_schema();
+    ensure_enrollment_schema();
     $pdo = db();
     $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
     $stmt->execute([$paymentId]);
@@ -1439,6 +1460,7 @@ function admin_delete_course(int $courseId): void
 
 function admin_update_payment_status(int $paymentId, string $status): void
 {
+    ensure_enrollment_schema();
     $pdo = db();
     $paymentStmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? LIMIT 1');
     $paymentStmt->execute([$paymentId]);

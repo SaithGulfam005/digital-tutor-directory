@@ -107,7 +107,7 @@ $lessons = getCourseLessons($courseId);
                 <div class="row g-3 mt-3">
                   <div class="col-12">
                     <label class="form-label">Upload new lesson file (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" accept="*/*">
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="*/*">
                   </div>
                 </div>
               </div>
@@ -132,7 +132,7 @@ $lessons = getCourseLessons($courseId);
                 <div class="row g-3 mt-3">
                   <div class="col-12">
                     <label class="form-label">Upload lesson file (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" accept="*/*">
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="*/*">
                   </div>
                 </div>
               </div>
@@ -218,9 +218,11 @@ $lessons = getCourseLessons($courseId);
     let valid = true;
     lessonFields.querySelectorAll('.lesson-row').forEach((row) => {
       const urlInput = row.querySelector('.lesson-video-url');
+      const fileInput = row.querySelector('.lesson-video-file');
       const hasUrl = Boolean(urlInput?.value?.trim());
-      urlInput?.classList.toggle('is-invalid', !hasUrl);
-      if (!hasUrl) valid = false;
+      const hasFile = Boolean(fileInput?.files?.length);
+      urlInput?.classList.toggle('is-invalid', !hasUrl && !hasFile);
+      if (!hasUrl && !hasFile) valid = false;
     });
 
     if (!valid || !editCourseForm.checkValidity()) {
