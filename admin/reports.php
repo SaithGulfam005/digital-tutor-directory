@@ -8,8 +8,6 @@ $dashSection = 'reports';
 $bodyClass = 'dashboard-body';
 $pageHeading = 'Reports & Analytics';
 $pageSubheading = 'Platform performance, enrollments, and revenue insights';
-$pageActions = '<button type="button" class="btn btn-outline-primary btn-sm" data-demo><i class="bi bi-file-earmark-pdf me-1"></i>Download PDF</button>
-<button type="button" class="btn btn-primary btn-sm" data-demo><i class="bi bi-download me-1"></i>Export Data</button>';
 require_once __DIR__ . '/../components/head.php';
 $heroClass = 'page-hero--compact page-hero--admin';
 require __DIR__ . '/../components/page-hero.php';
