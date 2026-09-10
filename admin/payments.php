@@ -48,7 +48,7 @@ require __DIR__ . '/../components/page-hero.php';
     </ul>
 
     <div class="table-card">
-      <div class="p-3 border-bottom">
+      <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
         <input type="search" class="form-control form-control-sm" style="max-width:320px" placeholder="Search ID, student, course..." data-table-search="paymentsTable">
         <span class="small text-muted" data-table-count="paymentsTable"></span>
       </div>

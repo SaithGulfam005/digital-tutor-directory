@@ -10,7 +10,7 @@
       data: {
         labels: chartData.revenueLabels || [],
         datasets: [{
-          label: 'Revenue ($)',
+          label: 'Revenue (PKR)',
           data: chartData.revenue || [],
           borderColor: '#2563EB',
           backgroundColor: 'rgba(37,99,235,0.1)',
@@ -18,7 +18,31 @@
           tension: 0.4
         }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } } }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const value = Number(context.parsed.y || 0);
+                return 'Revenue: PKR ' + value.toLocaleString('en-PK');
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMin: 0,
+            ticks: {
+              callback: function (value) {
+                return 'PKR ' + Number(value).toLocaleString('en-PK');
+              }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -27,11 +51,35 @@
       type: 'bar',
       data: {
         labels: chartData.userLabels || [],
-        datasets: [
-          { label: 'Users', data: chartData.users || [], backgroundColor: '#2563EB' }
-        ]
+        datasets: [{
+          label: 'Users',
+          data: chartData.users || [],
+          backgroundColor: '#2563EB'
+        }]
       },
-      options: { responsive: true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 18,
+              usePointStyle: true,
+              pointStyle: 'rect'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      }
     });
   }
 })();

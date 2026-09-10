@@ -646,15 +646,15 @@ function getAdminChartData(): array
                 continue;
             }
             $date = date('Y-m-d', strtotime($payment['date'] ?? 'now'));
-            $paymentsByDate[$date] = ($paymentsByDate[$date] ?? 0) + (float) ($payment['amount'] ?? 0);
+            $paymentsByDate[$date] = ($paymentsByDate[$date] ?? 0) + chart_revenue_pkr((float) ($payment['amount'] ?? 0));
         }
         ksort($paymentsByDate);
 
         return [
             'revenueLabels' => $paymentsByDate ? array_keys($paymentsByDate) : ['No completed payments'],
             'revenue' => $paymentsByDate ? array_values($paymentsByDate) : [0],
-            'userLabels' => ['Students', 'Teachers', 'Admins'],
-            'users' => [count(fallbackStudents()), count(fallbackTeachers()), 0],
+            'userLabels' => ['Students', 'Teachers'],
+            'users' => [count(fallbackStudents()), count(fallbackTeachers())],
         ];
     }
 
@@ -665,7 +665,7 @@ function getAdminChartData(): array
         WHERE status = 'completed'
         GROUP BY DATE(created_at)
         ORDER BY payment_date") as $row) {
-        $revenueByDate[$row['payment_date']] = (float) $row['revenue'];
+        $revenueByDate[$row['payment_date']] = chart_revenue_pkr((float) $row['revenue']);
     }
     $userCounts = ['student' => 0, 'teacher' => 0, 'admin' => 0];
     foreach ($pdo->query("SELECT role, COUNT(*) AS total FROM users WHERE role IN ('student', 'teacher', 'admin') GROUP BY role") as $row) {
@@ -675,8 +675,8 @@ function getAdminChartData(): array
     return [
         'revenueLabels' => $revenueByDate ? array_keys($revenueByDate) : ['No completed payments'],
         'revenue' => $revenueByDate ? array_values($revenueByDate) : [0],
-        'userLabels' => ['Students', 'Teachers', 'Admins'],
-        'users' => [$userCounts['student'], $userCounts['teacher'], $userCounts['admin']],
+        'userLabels' => ['Students', 'Teachers'],
+        'users' => [$userCounts['student'], $userCounts['teacher']],
     ];
 }
 function mockCurrentStudent(): array { return getCurrentStudent(); }

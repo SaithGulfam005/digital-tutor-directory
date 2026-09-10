@@ -19,7 +19,7 @@ require __DIR__ . '/../components/page-hero.php';
     <?php require __DIR__ . '/../components/flash.php'; ?>
 
     <div class="table-card">
-      <div class="p-3 border-bottom">
+      <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
         <input type="search" class="form-control form-control-sm" style="max-width:320px" placeholder="Search teacher, bank, status..." data-table-search="payoutRequestsTable">
         <span class="small text-muted" data-table-count="payoutRequestsTable"></span>
       </div>

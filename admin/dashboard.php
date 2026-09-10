@@ -114,7 +114,7 @@ require __DIR__ . '/../components/page-hero.php';
       <div class="col-lg-4">
         <div class="admin-chart-card">
           <h2 class="h6 fw-bold mb-3">Users by Role</h2>
-          <canvas id="growthChart" height="200"></canvas>
+          <canvas id="growthChart" height="180"></canvas>
         </div>
       </div>
     </div>

@@ -86,6 +86,11 @@ function course_price_pkr(float $price): float
     return round($price * PAYMENT_USD_TO_PKR_RATE);
 }
 
+function chart_revenue_pkr(float $amount): float
+{
+    return round($amount * PAYMENT_USD_TO_PKR_RATE, 2);
+}
+
 function format_pkr(float $amount, int $decimals = 2): string
 {
     return 'PKR ' . number_format(course_price_pkr($amount), $decimals);
