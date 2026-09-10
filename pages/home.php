@@ -39,7 +39,7 @@ require_once __DIR__ . '/../components/navbar.php';
     <div class="row align-items-center g-5">
       <div class="col-lg-6 fade-up">
         <span class="hero-badge d-inline-block mb-3"><i class="bi bi-patch-check me-1"></i> Verified Teachers Only</span>
-        <h1 class="display-4 fw-bold mb-3 text-danger">Learn From the Best.<br>Teach What You Love.</h1>
+        <h1 class="display-4 fw-bold mb-3">Learn From the Best.<br>Teach What You Love.</h1>
         <p class="lead opacity-90 mb-4">Digital Tutor Directory connects students with verified educators. Browse courses, enroll instantly, and grow your skills.</p>
         <div class="d-flex flex-wrap gap-2">
           <a href="<?= url('pages/courses.php') ?>" class="btn btn-light btn-lg">Browse Courses</a>
