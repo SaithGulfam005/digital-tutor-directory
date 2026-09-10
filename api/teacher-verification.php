@@ -39,6 +39,9 @@ if (!empty($_FILES['documents']['name'][0])) {
         ];
     }
 }
+if (!$cnicFrontValid || !$cnicBackValid || count(array_filter($_FILES['documents']['error'] ?? [], static fn (int $error): bool => $error === UPLOAD_ERR_OK)) < 1) {
+    redirect_with(url('teacher/verification.php'), 'Please upload the CNIC front, CNIC back, and at least one supporting document.', 'danger');
+}
 $uploadedDocuments = save_uploaded_documents([
     'name' => array_column($documents, 'name'),
     'type' => array_column($documents, 'type'),
@@ -46,9 +49,6 @@ $uploadedDocuments = save_uploaded_documents([
     'error' => array_column($documents, 'error'),
     'size' => array_column($documents, 'size'),
 ]);
-if (!$cnicFrontValid || !$cnicBackValid || count(array_filter($_FILES['documents']['error'] ?? [], static fn (int $error): bool => $error === UPLOAD_ERR_OK)) < 1) {
-    redirect_with(url('teacher/verification.php'), 'Please upload the CNIC front, CNIC back, and at least one supporting document.', 'danger');
-}
 
 try {
     submit_teacher_verification((int) $user['id'], $qualification, $cnic, $uploadedDocuments);

@@ -70,6 +70,8 @@ require __DIR__ . '/../components/page-hero.php';
           <p class="small text-muted mb-3">Upload your qualification and identity documents for admin review.</p>
           <form method="post" action="<?= url('api/teacher-verification.php') ?>" enctype="multipart/form-data">
             <div class="mb-3">
+              <label class="form-label" for="verificationCnic">CNIC number</label>
+              <input type="text" class="form-control mb-3" id="verificationCnic" name="cnic" value="<?= htmlspecialchars($verification['cnic']) ?>" placeholder="e.g. 35202-1234567-1" maxlength="20" required>
               <label class="form-label" for="verificationCnicFront">CNIC front picture</label>
               <input type="file" class="form-control mb-3" id="verificationCnicFront" name="cnic_front" accept=".jpg,.jpeg,.png" required>
               <label class="form-label" for="verificationCnicBack">CNIC back picture</label>
