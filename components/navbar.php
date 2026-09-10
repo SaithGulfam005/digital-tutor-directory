@@ -23,6 +23,7 @@
           </li>
           <li class="nav-item"><a class="nav-link <?= isActive('about.php') ?>" href="<?= url('pages/about.php') ?>">About</a></li>
           <li class="nav-item"><a class="nav-link <?= isActive('contact.php') ?>" href="<?= url('pages/contact.php') ?>">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Test</a></li>
         </ul>
         <div class="d-flex gap-2">
           <div class="dropdown">
