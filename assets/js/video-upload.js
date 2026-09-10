@@ -67,12 +67,6 @@
     const urlInput = row.querySelector('.lesson-video-url');
     if (!file) return;
 
-    if (urlInput?.value?.trim() && /^https?:\/\//i.test(urlInput.value.trim())) {
-      window.showToast?.('Clear the external URL first to upload a file.', 'warning');
-      fileInput.value = '';
-      return;
-    }
-
     const statusEl = getStatusEl(row);
     row.dataset.uploading = '1';
     statusEl.className = 'lesson-upload-status d-block mt-2 text-muted';
@@ -101,6 +95,7 @@
         urlInput.value = data.path;
         urlInput.readOnly = true;
       }
+      row.dataset.uploadedPath = data.path;
       const durationInput = row.querySelector('input[name="lesson_durations[]"]');
       if (durationInput && data.duration) {
         durationInput.value = data.duration;
@@ -111,6 +106,7 @@
       statusEl.innerHTML = '<i class="bi bi-check-circle me-1"></i>Video uploaded successfully';
       window.showToast?.('Lesson file uploaded successfully.', 'success');
     } catch (error) {
+      delete row.dataset.uploadedPath;
       fileInput.value = '';
       statusEl.className = 'lesson-upload-status d-block mt-2 text-danger';
       statusEl.textContent = error.message || 'Lesson upload failed.';
@@ -129,13 +125,6 @@
   }
 
   function initLessonVideoUploads(root) {
-    (root || document).addEventListener('input', (event) => {
-      if (!event.target.matches('.lesson-video-url')) return;
-      if (/^https?:\/\//i.test(event.target.value.trim())) {
-        event.target.readOnly = false;
-      }
-    });
-
     (root || document).addEventListener('change', (event) => {
       if (!event.target.matches('.lesson-video-file')) return;
       uploadLessonVideo(event.target);

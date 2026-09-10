@@ -88,17 +88,13 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <input type="file" class="form-control lesson-video-file" accept="*/*">
-                  </div>
-                  <div class="col-md-6">
-                    <div class="input-group">
-                      <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                      <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://youtube.com/...">
-                    </div>
+                    <label class="form-label">Upload lesson video</label>
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*">
+                    <input type="hidden" class="lesson-video-url" name="lesson_urls[]">
                   </div>
                 </div>
-                <small class="text-muted d-block mt-2">Upload a file or paste a URL — not both</small>
-                <div class="invalid-feedback lesson-video-feedback">Please upload a lesson file or provide an external URL.</div>
+                <small class="text-muted d-block mt-2">Upload a video lecture for this lesson.</small>
+                <div class="invalid-feedback lesson-video-feedback">Please upload a lesson video.</div>
               </div>
               <div class="lesson-row card p-3 mb-3">
                 <div class="row g-2 align-items-center mb-2">
@@ -115,17 +111,13 @@ require __DIR__ . '/../components/page-hero.php';
                 </div>
                 <div class="row g-2">
                   <div class="col-md-6">
-                    <input type="file" class="form-control lesson-video-file" accept="*/*">
-                  </div>
-                  <div class="col-md-6">
-                    <div class="input-group">
-                      <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                      <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://youtube.com/...">
-                    </div>
+                    <label class="form-label">Upload lesson video</label>
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*">
+                    <input type="hidden" class="lesson-video-url" name="lesson_urls[]">
                   </div>
                 </div>
-                <small class="text-muted d-block mt-2">Upload a file or paste a URL — not both</small>
-                <div class="invalid-feedback lesson-video-feedback">Please upload a lesson file or provide an external URL.</div>
+                <small class="text-muted d-block mt-2">Upload a video lecture for this lesson.</small>
+                <div class="invalid-feedback lesson-video-feedback">Please upload a lesson video.</div>
               </div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="addLessonBtn"><i class="bi bi-plus me-1"></i>Add Lesson</button>
@@ -213,16 +205,10 @@ require __DIR__ . '/../components/page-hero.php';
         '<div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn" title="Remove lesson"><i class="bi bi-trash"></i></button></div>' +
       '</div>' +
       '<div class="row g-2">' +
-        '<div class="col-md-6"><input type="file" class="form-control lesson-video-file" accept="*/*"></div>' +
-        '<div class="col-md-6">' +
-          '<div class="input-group">' +
-            '<span class="input-group-text"><i class="bi bi-link-45deg"></i></span>' +
-            '<input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://youtube.com/...">' +
-          '</div>' +
-        '</div>' +
+        '<div class="col-md-6"><label class="form-label">Upload lesson video</label><input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*"><input type="hidden" class="lesson-video-url" name="lesson_urls[]"></div>' +
       '</div>' +
-      '<small class="text-muted d-block mt-2">Upload a file or paste a URL — not both</small>' +
-      '<div class="invalid-feedback lesson-video-feedback">Please upload a lesson file or provide an external URL.</div>';
+      '<small class="text-muted d-block mt-2">Upload a video lecture for this lesson.</small>' +
+      '<div class="invalid-feedback lesson-video-feedback">Please upload a lesson video.</div>';
     return row;
   }
 
@@ -257,13 +243,12 @@ require __DIR__ . '/../components/page-hero.php';
       const feedback = row.querySelector('.lesson-video-feedback');
       const uploading = row.dataset.uploading === '1';
       const hasUrl = Boolean(urlInput?.value?.trim());
-      const rowValid = hasUrl && !uploading;
+      const hasUploadedVideo = Boolean(row.dataset.uploadedPath || hasUrl);
+      const rowValid = hasUploadedVideo && !uploading;
 
       urlInput?.classList.toggle('is-invalid', !rowValid);
       if (feedback) {
-        feedback.textContent = uploading
-          ? 'Please wait for the lesson upload to finish.'
-          : 'Please upload a lesson file or provide an external URL.';
+        feedback.textContent = uploading ? 'Please wait for the lesson upload to finish.' : 'Please upload a lesson video.';
         feedback.classList.toggle('d-block', !rowValid);
       }
       if (!rowValid) valid = false;

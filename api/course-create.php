@@ -29,8 +29,8 @@ if (count($lessons) === 0) {
     redirect_with(url('teacher/add-course.php'), 'Please add at least one lesson with a title.', 'danger');
 }
 foreach ($lessons as $lesson) {
-    if (empty($lesson['content_url'])) {
-        redirect_with(url('teacher/add-course.php'), 'Each lesson must have an uploaded lesson file or a URL.', 'danger');
+    if (empty($lesson['content_url']) || !str_starts_with((string) $lesson['content_url'], 'uploads/')) {
+        redirect_with(url('teacher/add-course.php'), 'Each lesson must have an uploaded video file.', 'danger');
     }
 }
 

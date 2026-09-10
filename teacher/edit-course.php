@@ -85,6 +85,7 @@ $lessons = getCourseLessons($courseId);
             <h3 class="h6 fw-bold mt-4 mb-3">Curriculum Outline</h3>
             <div id="lessonFields">
               <?php foreach ($lessons as $index => $lesson): ?>
+              <?php $lessonFileExists = !empty($lesson['content_url']) && resolve_local_media_path((string) $lesson['content_url']) !== null; ?>
               <div class="lesson-row mb-4 p-3 rounded border position-relative">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-lesson-btn position-absolute top-0 end-0 m-3" title="Remove lesson"><i class="bi bi-trash"></i></button>
                 <div class="row g-3">
@@ -97,17 +98,19 @@ $lessons = getCourseLessons($courseId);
                     <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM" value="<?= htmlspecialchars($lesson['duration']) ?>">
                   </div>
                   <div class="col-md-5">
-                    <label class="form-label">Lesson URL or file path</label>
-                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf or uploads/lessons/..." value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
-                    <?php if (!empty($lesson['content_url']) && !preg_match('#^https?://#i', $lesson['content_url'])): ?>
-                    <small class="text-success d-block mt-1"><i class="bi bi-check-circle me-1"></i>Uploaded lesson file on server</small>
+                    <label class="form-label">Uploaded lesson video</label>
+                    <input type="hidden" class="lesson-video-url" name="lesson_urls[]" value="<?= htmlspecialchars($lesson['content_url'] ?? '') ?>">
+                    <?php if ($lessonFileExists && str_starts_with($lesson['content_url'], 'uploads/')): ?>
+                    <small class="text-success d-block"><i class="bi bi-check-circle me-1"></i>Uploaded lesson video on server</small>
+                    <?php else: ?>
+                    <small class="text-danger d-block"><i class="bi bi-exclamation-circle me-1"></i>Replace this lesson with an uploaded video</small>
                     <?php endif; ?>
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
                   <div class="col-12">
-                    <label class="form-label">Upload new lesson file (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="*/*">
+                    <label class="form-label">Replace lesson video (optional)</label>
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*">
                   </div>
                 </div>
               </div>
@@ -125,14 +128,14 @@ $lessons = getCourseLessons($courseId);
                     <input type="text" class="form-control" name="lesson_durations[]" placeholder="HH:MM">
                   </div>
                   <div class="col-md-5">
-                    <label class="form-label">Lesson URL or file path</label>
-                    <input type="text" class="form-control lesson-video-url" name="lesson_urls[]" placeholder="https://example.com/lesson.pdf">
+                    <label class="form-label">Uploaded lesson video</label>
+                    <input type="hidden" class="lesson-video-url" name="lesson_urls[]">
                   </div>
                 </div>
                 <div class="row g-3 mt-3">
                   <div class="col-12">
-                    <label class="form-label">Upload lesson file (optional)</label>
-                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="*/*">
+                    <label class="form-label">Upload lesson video</label>
+                    <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*" required>
                   </div>
                 </div>
               </div>
@@ -221,15 +224,16 @@ $lessons = getCourseLessons($courseId);
       const fileInput = row.querySelector('.lesson-video-file');
       const hasUrl = Boolean(urlInput?.value?.trim());
       const hasFile = Boolean(fileInput?.files?.length);
-      urlInput?.classList.toggle('is-invalid', !hasUrl && !hasFile);
-      if (!hasUrl && !hasFile) valid = false;
+      const hasUploadedVideo = Boolean(row.dataset.uploadedPath || hasUrl || hasFile);
+      urlInput?.classList.toggle('is-invalid', !hasUploadedVideo);
+      if (!hasUploadedVideo) valid = false;
     });
 
     if (!valid || !editCourseForm.checkValidity()) {
       e.preventDefault();
       editCourseForm.classList.add('was-validated');
       if (!valid) {
-        window.showToast?.('Each lesson needs an uploaded lesson file or external URL.', 'danger');
+        window.showToast?.('Each lesson needs an uploaded video file.', 'danger');
       }
     }
   });

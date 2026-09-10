@@ -49,7 +49,7 @@
     }
 
     const mime = videoMimeType(src);
-    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" onerror="this.insertAdjacentHTML('afterend', '<div class="alert alert-warning">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>')"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
   }
 
   document.querySelectorAll('.lesson-list .list-group-item[data-lesson]').forEach((item) => {
@@ -138,14 +138,14 @@
           <input type="text" class="form-control" name="lesson_durations[]" placeholder="10:00">
         </div>
         <div class="col-md-5">
-          <label class="form-label">Video URL</label>
-          <input type="url" class="form-control" name="lesson_urls[]" placeholder="https://example.com/lesson.mp4">
+          <label class="form-label">Upload lesson video</label>
+          <input type="hidden" class="lesson-video-url" name="lesson_urls[]">
         </div>
       </div>
       <div class="row g-3 mt-3">
         <div class="col-12">
-          <label class="form-label">Upload video (optional)</label>
-          <input type="file" class="form-control" name="lesson_files[]" accept="video/*">
+          <label class="form-label">Upload video</label>
+          <input type="file" class="form-control lesson-video-file" name="lesson_files[]" accept="video/*">
         </div>
       </div>
     `;

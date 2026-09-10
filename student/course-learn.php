@@ -62,6 +62,10 @@ function lesson_video_embed(array $lesson, int $courseId): string
         return '<div class="ratio ratio-16x9 mb-3"><iframe src="' . htmlspecialchars($embed) . '" title="' . htmlspecialchars($lesson['title']) . '" allowfullscreen></iframe></div>';
     }
 
+    if (resolve_local_media_path($url) === null) {
+      return '<div class="alert alert-warning mb-3">This lesson video is missing. Please ask the teacher to replace it in Edit Course.</div>';
+    }
+
     $src = lesson_playback_url($courseId, $lesson);
     $extension = strtolower(pathinfo(parse_url($src, PHP_URL_PATH) ?: $src, PATHINFO_EXTENSION));
     $downloadableExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'zip', 'rar', 'csv', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
@@ -74,7 +78,7 @@ function lesson_video_embed(array $lesson, int $courseId): string
     }
 
     $mime = video_mime_type($url);
-    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata">'
+    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" onerror="this.insertAdjacentHTML(\'afterend\', \'<div class=\"alert alert-warning\">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>\')">'
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
         . 'Your browser does not support the video tag.</video>';
 }

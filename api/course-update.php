@@ -75,8 +75,8 @@ if (array_key_exists('lessons', $_POST)) {
         redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Please add at least one lesson with a title.', 'danger');
     }
     foreach ($lessons as $lesson) {
-        if (empty($lesson['content_url'])) {
-            redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Each lesson must have an uploaded lesson file or a URL.', 'danger');
+        if (empty($lesson['content_url']) || !str_starts_with((string) $lesson['content_url'], 'uploads/')) {
+            redirect_with(url('teacher/edit-course.php?id=' . $courseId), 'Each lesson must have an uploaded video file.', 'danger');
         }
     }
     $update['lessons'] = $lessons;
