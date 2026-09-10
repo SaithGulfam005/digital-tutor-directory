@@ -263,13 +263,12 @@
       apply();
     });
 
-    apply();
-
     if (config.initialFilters) {
       config.initialFilters();
-      currentPage = 1;
-      apply();
     }
+
+    currentPage = 1;
+    apply();
   }
 
   function initCourseGrid() {
@@ -307,7 +306,7 @@
           searchText.includes(query) ||
           title.includes(query) ||
           teacher.includes(query) ||
-          normalize(category).includes(query);
+          teacherCategories.some((category) => category.includes(query));
 
         const matchCategory = categories.length === 0 || categories.some((category) => teacherCategories.includes(normalize(category)));
         const matchPrice = price <= maxPrice;
