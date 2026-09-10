@@ -10,14 +10,6 @@
     bootstrap.Toast.getOrCreateInstance(toastEl).show();
   };
 
-  // Navbar shrink on scroll
-  const header = document.querySelector('.site-header .navbar');
-  if (header) {
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('navbar-scrolled', window.scrollY > 40);
-    });
-  }
-
   // Fade-up on scroll
   const fadeEls = document.querySelectorAll('.fade-up');
   if (fadeEls.length && 'IntersectionObserver' in window) {

@@ -1,5 +1,5 @@
 <header class="site-header">
-  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="<?= url('pages/home.php') ?>">
         <span class="brand-icon"><i class="bi bi-mortarboard-fill"></i></span>

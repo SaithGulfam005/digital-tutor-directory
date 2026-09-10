@@ -294,7 +294,6 @@ body {
 .cta-band:hover {
   transform: translateY(-2px);
 }
-.hero .hero-img-wrap,
 .course-card:hover,
 .teacher-card:hover,
 .kpi-card:hover,
@@ -308,13 +307,6 @@ body {
 .page-hero:hover {
   transform: translateY(-8px) translateZ(12px);
   box-shadow: 0 44px 108px rgba(15,23,42,.16), 0 22px 48px rgba(15,23,42,.12);
-}
-.hero .hero-img-wrap {
-  transform: rotateY(-14deg) translateZ(18px);
-  transition: transform 0.8s ease, box-shadow 0.8s ease;
-}
-.hero .hero-img-wrap:hover {
-  transform: rotateY(-12deg) translateZ(24px);
 }
 .step-card,
 .category-pill,
