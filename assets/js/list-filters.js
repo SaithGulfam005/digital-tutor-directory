@@ -230,20 +230,16 @@
       }
 
       matched.forEach((col, idx) => {
-        if (!shouldPaginate) {
-          col.classList.remove('d-none');
-          return;
-        }
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        col.classList.toggle('d-none', idx < start || idx >= end);
+        const visible = !shouldPaginate || (idx >= (currentPage - 1) * itemsPerPage && idx < currentPage * itemsPerPage);
+        col.classList.toggle('d-none', !visible);
       });
 
+      const visibleCount = matched.filter((col) => !col.classList.contains('d-none')).length;
       if (countEl) {
-        countEl.textContent = `${matched.length} of ${items.length} shown`;
+        countEl.textContent = `${visibleCount} of ${items.length} shown`;
       }
       if (emptyEl) {
-        emptyEl.classList.toggle('d-none', matched.length > 0);
+        emptyEl.classList.toggle('d-none', visibleCount > 0);
       }
 
       updatePagination(shouldPaginate ? totalPages : 1);
@@ -272,106 +268,103 @@
   }
 
   function initCourseGrid() {
-    initCardGrid({
-      gridId: 'courseGrid',
-      searchId: 'courseSearch',
-      countId: 'courseFilterCount',
-      emptyId: 'courseGridEmpty',
-      paginationId: 'coursePagination',
-      itemSelector: '.course-card',
-      itemsPerPage: 6,
-      getFilters() {
-        const categories = [...document.querySelectorAll('.filter-category:checked')].map((c) => c.value);
-        const minRating = parseFloat(document.querySelector('.filter-rating:checked')?.value || '0');
-        const maxPrice = parseFloat(document.getElementById('priceMax')?.value || 'Infinity');
-        return { categories, minRating, maxPrice };
-      },
-      hasActiveFilters(filters) {
-        return (
-          filters.categories.length > 0 ||
-          filters.minRating > 0 ||
-          filters.maxPrice < 100
-        );
-      },
-      matchItem(card, query, { categories, minRating, maxPrice }) {
-        const searchText = normalize(card.dataset.search || card.textContent);
-        const title = normalize(card.querySelector('.card-title')?.textContent);
-        const teacher = normalize(card.dataset.teacher);
-        const teacherCategories = (card.dataset.category || '').split('|').map(normalize).filter(Boolean);
+    const searchInput = document.getElementById('courseSearch');
+    const countEl = document.getElementById('courseFilterCount');
+    const emptyEl = document.getElementById('courseGridEmpty');
+    const wrappers = [...document.querySelectorAll('#courseGrid [data-filter-col]')];
+
+    function getSelectedCategories() {
+      return [...document.querySelectorAll('.filter-category:checked')].map((cb) => normalize(cb.value));
+    }
+
+    function applyCourseFilters() {
+      const query = normalize(searchInput ? searchInput.value : '');
+      const selectedCategories = getSelectedCategories();
+      const minRating = parseFloat(document.querySelector('.filter-rating:checked')?.value || '0');
+      const maxPrice = parseFloat(document.getElementById('priceMax')?.value || '100');
+      let visibleCount = 0;
+
+      wrappers.forEach((wrapper) => {
+        const card = wrapper.querySelector('.course-card');
+        if (!card) {
+          wrapper.classList.add('d-none');
+          return;
+        }
+
+        const title = normalize(card.querySelector('.card-title')?.textContent || '');
+        const teacher = normalize(card.dataset.teacher || '');
+        const category = normalize(card.dataset.category || '');
+        const searchText = normalize(card.dataset.search || `${title} ${teacher} ${category}`);
         const price = parseFloat(card.dataset.price || '0');
         const rating = parseFloat(card.dataset.rating || '0');
 
-        const matchQuery =
-          !query ||
-          searchText.includes(query) ||
-          title.includes(query) ||
-          teacher.includes(query) ||
-          teacherCategories.some((category) => category.includes(query));
-
-        const matchCategory = categories.length === 0 || categories.some((category) => teacherCategories.includes(normalize(category)));
-        const matchPrice = price <= maxPrice;
-        const matchRating = rating >= minRating;
-
-        return matchQuery && matchCategory && matchPrice && matchRating;
-      },
-      bindFilterEvents(apply) {
-        document.getElementById('priceMax')?.addEventListener('input', () => {
-          const label = document.getElementById('priceLabel');
-          const slider = document.getElementById('priceMax');
-          if (label && slider) label.textContent = 'PKR ' + slider.value;
-          apply();
+        const matchesQuery = !query || searchText.includes(query) || title.includes(query) || teacher.includes(query) || category.includes(query);
+        const matchesCategory = selectedCategories.length === 0 || selectedCategories.some((selected) => {
+          return category === selected || category.includes(selected) || selected.includes(category);
         });
-        document.querySelectorAll('.filter-category, .filter-rating').forEach((el) => {
-          el.addEventListener('change', apply);
-        });
-        document.getElementById('clearCourseFilters')?.addEventListener('click', (e) => {
-          e.preventDefault();
-          const search = document.getElementById('courseSearch');
-          if (search) search.value = '';
-          document.querySelectorAll('.filter-category').forEach((c) => {
-            c.checked = false;
-          });
-          document.querySelectorAll('.filter-rating').forEach((r) => {
-            r.checked = r.value === '0';
-          });
-          const priceMax = document.getElementById('priceMax');
-          if (priceMax) {
-            priceMax.value = priceMax.max || '100';
-            const label = document.getElementById('priceLabel');
-            if (label) label.textContent = 'PKR ' + priceMax.value;
-          }
-          apply();
-        });
-      },
-      initialFilters() {
-        const params = new URLSearchParams(location.search);
-        const q = params.get('q');
-        const category = params.get('category');
-        const search = document.getElementById('courseSearch');
+        const matchesPrice = price <= maxPrice;
+        const matchesRating = rating >= minRating;
+        const show = matchesQuery && matchesCategory && matchesPrice && matchesRating;
 
-        if (q && search) {
-          search.value = q;
-        }
-        if (category) {
-          let categoryFound = false;
-          document.querySelectorAll('.filter-category').forEach((cb) => {
-            if (cb.value === category) {
-              cb.checked = true;
-              categoryFound = true;
-            }
-          });
-          if (categoryFound) {
-            // Trigger change event to ensure filter is applied
-            const event = new Event('change', { bubbles: true });
-            document.querySelectorAll('.filter-category').forEach(cb => {
-              if (cb.value === category) {
-                cb.dispatchEvent(event);
-              }
-            });
-          }
-        }
-      },
+        wrapper.classList.toggle('d-none', !show);
+        if (show) visibleCount += 1;
+      });
+
+      if (countEl) {
+        countEl.textContent = `${visibleCount} of ${wrappers.length} shown`;
+      }
+      if (emptyEl) {
+        emptyEl.classList.toggle('d-none', visibleCount > 0);
+      }
+    }
+
+    const params = new URLSearchParams(location.search);
+    const initialQuery = params.get('q');
+    const initialCategory = params.get('category');
+
+    if (initialQuery && searchInput) {
+      searchInput.value = initialQuery;
+    }
+
+    if (initialCategory) {
+      document.querySelectorAll('.filter-category').forEach((cb) => {
+        cb.checked = normalize(cb.value) === normalize(initialCategory);
+      });
+    }
+
+    searchInput?.addEventListener('input', applyCourseFilters);
+    document.querySelectorAll('.filter-category, .filter-rating').forEach((el) => {
+      el.addEventListener('change', applyCourseFilters);
     });
+
+    document.getElementById('priceMax')?.addEventListener('input', () => {
+      const slider = document.getElementById('priceMax');
+      const label = document.getElementById('priceLabel');
+      if (slider && label) {
+        label.textContent = 'PKR ' + slider.value;
+      }
+      applyCourseFilters();
+    });
+
+    document.getElementById('clearCourseFilters')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (searchInput) searchInput.value = '';
+      document.querySelectorAll('.filter-category').forEach((cb) => {
+        cb.checked = false;
+      });
+      document.querySelectorAll('.filter-rating').forEach((r) => {
+        r.checked = r.value === '0';
+      });
+      const priceMax = document.getElementById('priceMax');
+      if (priceMax) {
+        priceMax.value = priceMax.max || '100';
+        const label = document.getElementById('priceLabel');
+        if (label) label.textContent = 'PKR ' + priceMax.value;
+      }
+      applyCourseFilters();
+    });
+
+    applyCourseFilters();
   }
 
   function initTeacherGrid() {

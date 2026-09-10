@@ -3,8 +3,31 @@ require_once __DIR__ . '/../components/config.php';
 $pageTitle = 'Courses | ' . SITE_NAME;
 $loadFilters = true;
 $courses = getCourses(true);
-$initialSearch = trim($_GET['q'] ?? '');
-$initialCategory = trim($_GET['category'] ?? '');
+$initialSearch = trim((string) ($_GET['q'] ?? ''));
+$initialCategory = trim((string) ($_GET['category'] ?? ''));
+
+if ($initialSearch !== '' || $initialCategory !== '') {
+  $normalizedSearch = strtolower($initialSearch);
+  $normalizedCategory = strtolower($initialCategory);
+
+  $courses = array_values(array_filter($courses, function (array $course) use ($normalizedSearch, $normalizedCategory): bool {
+    $title = strtolower((string) ($course['title'] ?? ''));
+    $teacher = strtolower((string) ($course['teacher'] ?? ''));
+    $category = strtolower((string) ($course['category'] ?? ''));
+    $description = strtolower((string) ($course['desc'] ?? ''));
+
+    $matchesQuery = $normalizedSearch === ''
+      || str_contains($title, $normalizedSearch)
+      || str_contains($teacher, $normalizedSearch)
+      || str_contains($category, $normalizedSearch)
+      || str_contains($description, $normalizedSearch);
+
+    $matchesCategory = $normalizedCategory === ''
+      || $category === $normalizedCategory;
+
+    return $matchesQuery && $matchesCategory;
+  }));
+}
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/navbar.php';
 ?>
@@ -17,9 +40,6 @@ require __DIR__ . '/../components/page-hero.php';
   <div class="row g-4">
     <aside class="col-lg-3">
       <div class="filter-panel">
-        <h6 class="fw-bold mb-3">Search</h6>
-        <input type="search" id="courseSearch" class="form-control mb-2" placeholder="Title, teacher, category..." value="<?= htmlspecialchars($initialSearch) ?>">
-        <p class="small text-muted mb-3" id="courseFilterCount"></p>
         <h6 class="fw-bold mb-2">Category</h6>
         <?php foreach (getCategoriesWithCourses() as $cat): 
           $catName = is_array($cat) ? $cat['name'] : $cat;
@@ -30,8 +50,6 @@ require __DIR__ . '/../components/page-hero.php';
           <label class="form-check-label" for="c<?= htmlspecialchars($catId) ?>"><?= htmlspecialchars($catName) ?></label>
         </div>
         <?php endforeach; ?>
-        <h6 class="fw-bold mt-3 mb-2">Max Price: <span id="priceLabel">PKR 100</span></h6>
-        <input type="range" class="form-range" id="priceMax" min="10" max="100" value="100" step="1">
         <h6 class="fw-bold mt-3 mb-2">Minimum Rating</h6>
         <div class="form-check">
           <input class="form-check-input filter-rating" type="radio" name="rating" value="0" id="r0" checked>

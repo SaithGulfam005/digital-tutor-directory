@@ -58,9 +58,14 @@ require_once __DIR__ . '/../components/navbar.php';
 <section class="section section--alt py-4">
   <div class="container">
     <form class="row g-2 align-items-end bg-white p-4 rounded-4 shadow-sm" action="<?= url('pages/courses.php') ?>" method="get">
+      <datalist id="homepageCourseSuggestions">
+        <?php foreach ($courses as $course): ?>
+        <option value="<?= htmlspecialchars((string) ($course['title'] ?? '')) ?>"></option>
+        <?php endforeach; ?>
+      </datalist>
       <div class="col-md-5">
         <label class="form-label small fw-semibold">What do you want to learn?</label>
-        <input type="search" name="q" class="form-control form-control-lg" placeholder="e.g. Web Development">
+        <input type="search" name="q" class="form-control form-control-lg" list="homepageCourseSuggestions" placeholder="e.g. Web Development" autocomplete="off">
       </div>
       <div class="col-md-4">
         <label class="form-label small fw-semibold">Category</label>
