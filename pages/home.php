@@ -83,7 +83,7 @@ require_once __DIR__ . '/../components/navbar.php';
   </div>
 </section>
 
-<section class="section">
+<section id="featured-courses" class="section">
   <div class="container">
     <h2 class="section-title">Featured Courses</h2>
     <p class="section-subtitle">Hand-picked courses from top-rated instructors.</p>
