@@ -186,6 +186,22 @@ main { flex: 1; }
 .page-hero--compact {
   padding: 2.25rem 0;
 }
+.page-hero--admin {
+  background: linear-gradient(135deg, #1746b8 0%, #2563eb 52%, #3b82f6 100%);
+}
+.page-hero--admin .page-hero__actions .btn-primary,
+.page-hero--admin .page-hero__actions .btn-outline-primary {
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.9);
+  color: #2563eb;
+  font-weight: 600;
+}
+.page-hero--admin .page-hero__actions .btn-primary:hover,
+.page-hero--admin .page-hero__actions .btn-outline-primary:hover {
+  background: #eff6ff;
+  border-color: #fff;
+  color: #1746b8;
+}
 .page-hero__row--with-actions {
   display: flex;
   flex-wrap: wrap;
