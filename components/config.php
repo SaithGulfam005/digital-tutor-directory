@@ -374,7 +374,16 @@ function resolve_local_media_path(string $path): ?string
         return null;
     }
 
+    $path = str_replace('\\', '/', $path);
+    $basePath = trim(str_replace('\\', '/', BASE_URL), '/');
     $candidate = ltrim($path, '/');
+    if ($basePath !== '' && str_starts_with($candidate, $basePath . '/')) {
+        $candidate = substr($candidate, strlen($basePath) + 1);
+    }
+    if (in_array('..', explode('/', $candidate), true)) {
+        return null;
+    }
+
     $absolute = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $candidate);
     if (is_file($absolute)) {
         return $absolute;

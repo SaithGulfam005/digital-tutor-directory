@@ -8,6 +8,7 @@ if (!$course) {
 $user = auth_user();
 $courseReviews = get_course_reviews($id);
 $enrolled = false;
+$isAdmin = $user && ($user['role'] ?? '') === 'admin';
 $teacherProfile = null;
 if ($user && ($user['role'] ?? '') === 'student' && db_available()) {
     $stmt = db()->prepare('SELECT id FROM enrollments WHERE student_id=? AND course_id=?');
@@ -24,6 +25,30 @@ $pageHeading = $course['title'];
 $pageSubheading = htmlspecialchars($course['teacher']) . ' · ' . number_format($course['rating'], 1) . ' ★ · ' . number_format($course['students']) . ' students';
 $pageBadge = '<span class="badge bg-warning text-dark">' . htmlspecialchars($course['category']) . '</span>';
 require __DIR__ . '/../components/page-hero.php';
+
+function render_admin_lesson_video(array $lesson, int $courseId): string
+{
+  $url = trim((string) ($lesson['content_url'] ?? ''));
+  if ($url === '') {
+    return '<div class="alert alert-warning mb-0">This lesson has no video uploaded.</div>';
+  }
+
+  $title = htmlspecialchars((string) $lesson['title']);
+  if (preg_match('#(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([\w-]+)#i', $url, $match)) {
+    return '<div class="ratio ratio-16x9"><iframe src="https://www.youtube.com/embed/' . htmlspecialchars($match[1]) . '" title="' . $title . '" allowfullscreen></iframe></div>';
+  }
+  if (preg_match('#vimeo\.com/(\d+)#i', $url, $match)) {
+    return '<div class="ratio ratio-16x9"><iframe src="https://player.vimeo.com/video/' . htmlspecialchars($match[1]) . '" title="' . $title . '" allowfullscreen></iframe></div>';
+  }
+  if (resolve_local_media_path($url) === null) {
+    return '<div class="alert alert-warning mb-0">This lesson video is missing or unavailable.</div>';
+  }
+
+  $src = lesson_playback_url($courseId, $lesson);
+  return '<video class="w-100 rounded" controls controlsList="nodownload" playsinline preload="metadata">'
+    . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars(video_mime_type($url)) . '">'
+    . 'Your browser does not support the video tag.</video>';
+}
 ?>
 <main class="section"><div class="container"><div class="row g-4">
   <div class="col-lg-8">
@@ -37,7 +62,18 @@ require __DIR__ . '/../components/page-hero.php';
         <div id="m0" class="accordion-collapse collapse show"><div class="accordion-body">
           <ul class="list-unstyled mb-0">
             <?php foreach ($lessons as $lesson): ?>
-            <li><i class="bi bi-play-circle me-2"></i><?= htmlspecialchars($lesson['title']) ?> <span class="text-muted small">(<?= htmlspecialchars($lesson['duration']) ?>)</span></li>
+            <li class="mb-2 <?= $isAdmin ? 'admin-curriculum-lesson' : '' ?>">
+              <?php if ($isAdmin): ?>
+              <button type="button" class="btn btn-link text-decoration-none p-0 text-start admin-lesson-toggle" data-lesson-target="adminLessonVideo<?= (int) $lesson['id'] ?>">
+                <i class="bi bi-play-circle me-2"></i><?= htmlspecialchars($lesson['title']) ?> <span class="text-muted small">(<?= htmlspecialchars($lesson['duration']) ?>)</span>
+              </button>
+              <div id="adminLessonVideo<?= (int) $lesson['id'] ?>" class="admin-lesson-video d-none mt-3">
+                <?= render_admin_lesson_video($lesson, $id) ?>
+              </div>
+              <?php else: ?>
+              <i class="bi bi-play-circle me-2"></i><?= htmlspecialchars($lesson['title']) ?> <span class="text-muted small">(<?= htmlspecialchars($lesson['duration']) ?>)</span>
+              <?php endif; ?>
+            </li>
             <?php endforeach; ?>
           </ul>
         </div></div>
@@ -88,7 +124,10 @@ require __DIR__ . '/../components/page-hero.php';
     <?php else: ?>
     <a href="<?= url('auth/login.php?role=student&redirect=' . urlencode('student/checkout.php?course_id=' . $id)) ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
     <?php endif; ?>
-    <ul class="list-unstyled small text-muted"><li><i class="bi bi-infinity me-2"></i>Lifetime access</li></ul>
+    <ul class="list-unstyled course-benefits text-muted mb-0">
+      <li class="course-benefit"><i class="bi bi-infinity" aria-hidden="true"></i><span>Lifetime access</span></li>
+      <li class="course-benefit"><i class="bi bi-phone" aria-hidden="true"></i><span>Mobile Friendly</span></li>
+    </ul>
   
     <?php if ($teacherProfile): ?>
       <hr>
@@ -113,3 +152,27 @@ require __DIR__ . '/../components/page-hero.php';
   </div></div>
 </div></div></main>
 <?php require_once __DIR__.'/../components/footer.php'; require_once __DIR__.'/../components/modals.php'; require_once __DIR__.'/../components/public-footer-scripts.php'; ?>
+<?php if ($isAdmin): ?>
+<script>
+document.querySelectorAll('.admin-lesson-toggle').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var target = document.getElementById(button.dataset.lessonTarget);
+    if (!target) return;
+
+    document.querySelectorAll('.admin-lesson-video').forEach(function (videoWrap) {
+      if (videoWrap !== target) {
+        videoWrap.classList.add('d-none');
+        var video = videoWrap.querySelector('video');
+        if (video) video.pause();
+      }
+    });
+
+    target.classList.toggle('d-none');
+    if (!target.classList.contains('d-none')) {
+      var video = target.querySelector('video');
+      if (video) video.play().catch(function () {});
+    }
+  });
+});
+</script>
+<?php endif; ?>

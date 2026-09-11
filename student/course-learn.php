@@ -78,7 +78,7 @@ function lesson_video_embed(array $lesson, int $courseId): string
     }
 
     $mime = video_mime_type($url);
-    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" onerror="this.insertAdjacentHTML(\'afterend\', \'<div class=\"alert alert-warning\">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>\')">'
+    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata">'
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
         . 'Your browser does not support the video tag.</video>';
 }
