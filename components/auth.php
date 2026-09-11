@@ -259,6 +259,7 @@ function register_user(array $data, string $role): array
         $userId = (int) db()->lastInsertId();
 
         if ($role === 'teacher') {
+            ensure_auto_increment_primary_key('teacher_profiles');
             $stmt = db()->prepare('INSERT INTO teacher_profiles (user_id, qualification, cnic, subject, experience, verification_status) VALUES (?,?,?,?,?,?)');
             $stmt->execute([
                 $userId,

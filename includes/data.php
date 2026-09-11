@@ -804,6 +804,9 @@ function teacher_is_verified(?int $teacherId = null): bool
 
 function submit_teacher_verification(int $teacherId, string $qualification, string $cnic, array $documents): void
 {
+    ensure_auto_increment_primary_key('teacher_profiles');
+    ensure_auto_increment_primary_key('teacher_documents');
+
     $pdo = db();
     $profileStmt = $pdo->prepare('SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1');
     $profileStmt->execute([$teacherId]);
@@ -968,12 +971,12 @@ function resolveCategoryId(string $category): int
 
 function ensure_auto_increment_primary_key(string $table): void
 {
-    $allowedTables = ['categories', 'courses', 'lessons'];
+    $allowedTables = ['categories', 'courses', 'lessons', 'teacher_profiles', 'teacher_documents'];
     if (!in_array($table, $allowedTables, true)) {
         return;
     }
 
-    static $checked = false;
+    static $checked = [];
     if (!db_available()) {
         return;
     }
