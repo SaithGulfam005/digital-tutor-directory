@@ -144,7 +144,7 @@ require_once __DIR__ . '/../components/navbar.php';
       $steps = [
         ['icon'=>'bi-search','title'=>'Browse & Search','text'=>'Find courses and teachers by category, rating, or keyword.'],
         ['icon'=>'bi-cart-check','title'=>'Enroll & Learn','text'=>'Purchase courses and access video lessons from your dashboard.'],
-        ['icon'=>'bi-award','title'=>'Grow & Certify','text'=>'Complete courses, track progress, and build your portfolio.'],
+        ['icon'=>'bi-award','title'=>'Learn & Grow','text'=>'Complete courses, track progress, and build your portfolio.'],
       ];
       foreach ($steps as $i => $step): ?>
       <div class="col-md-4 fade-up">
