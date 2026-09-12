@@ -78,7 +78,7 @@ function lesson_video_embed(array $lesson, int $courseId): string
     }
 
     $mime = video_mime_type($url);
-    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" onerror="this.insertAdjacentHTML(\'afterend\', \'<div class=\"alert alert-warning\">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>\')">'
+    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" data-video-error="1">'
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
         . 'Your browser does not support the video tag.</video>';
 }
@@ -110,9 +110,9 @@ function lesson_video_url(array $lesson, int $courseId): string
           </div>
           <small class="text-muted" id="courseProgressText"><?= (int) $progress ?>% complete · <?= count(array_filter($lessons, fn($l) => $l['completed'])) ?> of <?= count($lessons) ?> lessons done</small>
         </div>
-        <?php if ($enrollmentStatus === 'completed' || $existingReview): ?>
+        <?php if ($enrollmentStatus === 'completed' || $existingReview || studentIsEnrolled((int) $user['id'], $courseId)): ?>
         <div class="table-card p-3 mt-4">
-          <h3 class="h6 fw-bold mb-3">Rate this course</h3>
+          <h3 class="h6 fw-bold mb-3">Course feedback and rating</h3>
           <form method="post" action="<?= url('api/student-review.php') ?>">
             <input type="hidden" name="course_id" value="<?= (int) $courseId ?>">
             <input type="hidden" name="teacher_id" value="<?= (int) $course['teacher_id'] ?>">
@@ -144,7 +144,7 @@ function lesson_video_url(array $lesson, int $courseId): string
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Save review</button>
+            <button type="submit" class="btn btn-primary mt-3">Save feedback</button>
           </form>
         </div>
         <?php endif; ?>

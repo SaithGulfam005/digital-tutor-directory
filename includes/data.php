@@ -418,7 +418,7 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
             JOIN enrollments e ON e.id = lp.enrollment_id
             WHERE e.student_id = ? AND e.course_id = ?');
         $stmt->execute([$studentId, $courseId]);
-        $completedIds = array_column($stmt->fetchAll(), 'lesson_id');
+        $completedIds = array_map('intval', array_column($stmt->fetchAll(), 'lesson_id'));
     }
 
     return array_map(static function ($row) use ($completedIds) {
@@ -427,7 +427,7 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
             'title' => $row['title'],
             'duration' => $row['duration'],
             'content_url' => $row['content_url'] ?? '',
-            'completed' => in_array($row['id'], $completedIds, true),
+            'completed' => in_array((int) $row['id'], $completedIds, true),
         ];
     }, $lessons);
 }
@@ -481,12 +481,19 @@ function mark_lesson_complete(int $studentId, int $courseId, int $lessonId): arr
     }
 
     ensure_student_tracking_tables();
+    ensure_lesson_progress_schema();
     $pdo = db();
     $enrollmentStmt = $pdo->prepare('SELECT id FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');
     $enrollmentStmt->execute([$studentId, $courseId]);
     $enrollmentId = (int) $enrollmentStmt->fetchColumn();
     if ($enrollmentId <= 0) {
         return ['ok' => false, 'error' => 'Enrollment not found.'];
+    }
+
+    $lessonStmt = $pdo->prepare('SELECT id FROM lessons WHERE id = ? AND course_id = ? LIMIT 1');
+    $lessonStmt->execute([$lessonId, $courseId]);
+    if (!$lessonStmt->fetchColumn()) {
+        return ['ok' => false, 'error' => 'Lesson does not belong to this course.'];
     }
 
     $pdo->prepare('INSERT INTO lesson_progress (enrollment_id, lesson_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE lesson_id = lesson_id')
@@ -508,6 +515,28 @@ function mark_lesson_complete(int $studentId, int $courseId, int $lessonId): arr
         'completed_count' => $completedCount,
         'total_lessons' => $totalLessons,
     ];
+}
+
+function ensure_lesson_progress_schema(): void
+{
+    static $checked = false;
+    if ($checked || !db_available()) {
+        return;
+    }
+    $checked = true;
+
+    $pdo = db();
+    $extraStmt = $pdo->query("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'lesson_progress' AND column_name = 'id'");
+    if (strtolower((string) $extraStmt->fetchColumn()) === 'auto_increment') {
+        return;
+    }
+
+    if ((int) $pdo->query('SELECT COUNT(*) FROM lesson_progress WHERE id = 0')->fetchColumn() > 0) {
+        $nextId = (int) $pdo->query('SELECT COALESCE(MAX(id), 0) + 1 FROM lesson_progress')->fetchColumn();
+        $pdo->prepare('UPDATE lesson_progress SET id = ? WHERE id = 0')->execute([$nextId]);
+    }
+
+    $pdo->exec('ALTER TABLE lesson_progress MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT');
 }
 
 function get_student_course_review(int $studentId, int $courseId): ?array
@@ -803,6 +832,7 @@ function teacher_is_verified(?int $teacherId = null): bool
 
 function submit_teacher_verification(int $teacherId, string $qualification, string $cnic, array $documents): void
 {
+    ensure_teacher_verification_schema();
     $pdo = db();
     $profileStmt = $pdo->prepare('SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1');
     $profileStmt->execute([$teacherId]);
@@ -830,6 +860,27 @@ function submit_teacher_verification(int $teacherId, string $qualification, stri
         $pdo->rollBack();
         throw $e;
     }
+}
+
+function ensure_teacher_verification_schema(): void
+{
+    if (!db_available()) {
+        return;
+    }
+
+    $pdo = db();
+    $extraStmt = $pdo->query("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'teacher_documents' AND column_name = 'id'");
+    if (strtolower((string) $extraStmt->fetchColumn()) === 'auto_increment') {
+        return;
+    }
+
+    $hasZero = (int) $pdo->query('SELECT COUNT(*) FROM teacher_documents WHERE id = 0')->fetchColumn() > 0;
+    if ($hasZero) {
+        $nextId = (int) $pdo->query('SELECT COALESCE(MAX(id), 0) + 1 FROM teacher_documents')->fetchColumn();
+        $pdo->prepare('UPDATE teacher_documents SET id = ? WHERE id = 0')->execute([$nextId]);
+    }
+
+    $pdo->exec('ALTER TABLE teacher_documents MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT');
 }
 
 function getStudentStats(?int $studentId = null): array
@@ -947,6 +998,7 @@ function enrollStudent(int $studentId, int $courseId, string $method = 'Card'): 
 
 function resolveCategoryId(string $category): int
 {
+    ensure_course_schema();
     $name = trim($category);
     if ($name === '') {
         return 1;
@@ -967,6 +1019,7 @@ function resolveCategoryId(string $category): int
 
 function createCourse(int $teacherId, array $data): int
 {
+    ensure_course_schema();
     ensure_course_price_precision();
     $categoryId = resolveCategoryId((string) ($data['category'] ?? ''));
 
@@ -1001,6 +1054,37 @@ function createCourse(int $teacherId, array $data): int
         }
     }
     return $courseId;
+}
+
+function ensure_course_schema(): void
+{
+    static $checked = false;
+    if ($checked || !db_available()) {
+        return;
+    }
+    $checked = true;
+
+    $pdo = db();
+    foreach (['courses', 'categories'] as $table) {
+        $stmt = $pdo->prepare("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = 'id'");
+        $stmt->execute([$table]);
+        if (strtolower((string) $stmt->fetchColumn()) === 'auto_increment') {
+            continue;
+        }
+
+        if ($table === 'courses' && (int) $pdo->query('SELECT COUNT(*) FROM courses WHERE id = 0')->fetchColumn() > 0) {
+            $nextId = (int) $pdo->query('SELECT COALESCE(MAX(id), 0) + 1 FROM courses')->fetchColumn();
+            $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+            try {
+                $pdo->prepare('UPDATE lessons SET course_id = ? WHERE course_id = 0')->execute([$nextId]);
+                $pdo->prepare('UPDATE courses SET id = ? WHERE id = 0')->execute([$nextId]);
+            } finally {
+                $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+            }
+        }
+
+        $pdo->exec("ALTER TABLE {$table} MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT");
+    }
 }
 
 function updateCourse(int $courseId, int $teacherId, array $data): void

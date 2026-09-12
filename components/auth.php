@@ -233,6 +233,7 @@ function attempt_login(string $email, string $password, string $expectedRole): a
 function register_user(array $data, string $role): array
 {
     ensure_email_verification_schema();
+    ensure_registration_schema();
 
     $stmt = db()->prepare('SELECT id FROM users WHERE email = ?');
     $stmt->execute([$data['email']]);
@@ -277,6 +278,44 @@ function register_user(array $data, string $role): array
     } catch (Throwable $e) {
         db()->rollBack();
         throw $e;
+    }
+}
+
+function ensure_registration_schema(): void
+{
+    if (!db_available()) {
+        return;
+    }
+
+    $pdo = db();
+    $zeroKeyReferences = [
+        'users' => [
+            ['teacher_profiles', 'user_id'],
+            ['email_verifications', 'user_id'],
+            ['enrollments', 'student_id'],
+            ['payments', 'student_id'],
+            ['course_reviews', 'student_id'],
+            ['teacher_favorites', 'student_id'],
+        ],
+        'teacher_profiles' => [
+            ['teacher_documents', 'teacher_profile_id'],
+        ],
+    ];
+
+    foreach (['users', 'teacher_profiles'] as $table) {
+        $stmt = db()->prepare("SELECT EXTRA FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = 'id'");
+        $stmt->execute([$table]);
+        if (strtolower((string) $stmt->fetchColumn()) !== 'auto_increment') {
+            $zeroStmt = $pdo->query("SELECT COUNT(*) FROM {$table} WHERE id = 0");
+            if ((int) $zeroStmt->fetchColumn() > 0) {
+                $nextId = (int) $pdo->query("SELECT COALESCE(MAX(id), 0) + 1 FROM {$table}")->fetchColumn();
+                foreach ($zeroKeyReferences[$table] as [$referenceTable, $referenceColumn]) {
+                    $pdo->prepare("UPDATE {$referenceTable} SET {$referenceColumn} = ? WHERE {$referenceColumn} = 0")->execute([$nextId]);
+                }
+                $pdo->prepare("UPDATE {$table} SET id = ? WHERE id = 0")->execute([$nextId]);
+            }
+            $pdo->exec("ALTER TABLE {$table} MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT");
+        }
     }
 }
 

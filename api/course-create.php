@@ -52,7 +52,7 @@ try {
     try {
         send_admin_notification(
             'Course awaiting approval - ' . SITE_NAME,
-            build_course_submitted_admin_email((string) $user['name'], $title, $price)
+            build_course_submitted_admin_email((string) $user['name'], $title, (float) $price)
         );
     } catch (Throwable $mailError) {
         error_log('Course submission admin notification failed: ' . $mailError->getMessage());

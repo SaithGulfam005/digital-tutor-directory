@@ -49,8 +49,20 @@
     }
 
     const mime = videoMimeType(src);
-    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" onerror="this.insertAdjacentHTML('afterend', '<div class="alert alert-warning">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>')"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" data-video-error="1"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
   }
+
+  function bindVideoErrors(container) {
+    container?.querySelectorAll('video[data-video-error]').forEach((video) => {
+      video.addEventListener('error', () => {
+        if (!video.nextElementSibling?.classList.contains('video-error-message')) {
+          video.insertAdjacentHTML('afterend', '<div class="alert alert-warning video-error-message">This lesson video is unavailable. Please ask the teacher to re-upload it.</div>');
+        }
+      }, { once: true });
+    });
+  }
+
+  bindVideoErrors(document.getElementById('lessonVideoWrap'));
 
   document.querySelectorAll('.lesson-list .list-group-item[data-lesson]').forEach((item) => {
     item.addEventListener('click', (e) => {
@@ -70,7 +82,10 @@
 
       if (titleEl && title) titleEl.textContent = title;
       if (durationEl && duration) durationEl.textContent = duration;
-      if (videoWrap) videoWrap.innerHTML = buildVideoHtml(title, url);
+      if (videoWrap) {
+        videoWrap.innerHTML = buildVideoHtml(title, url);
+        bindVideoErrors(videoWrap);
+      }
       if (completeBtn && lessonId) completeBtn.dataset.lessonId = lessonId;
     });
   });
@@ -107,12 +122,11 @@
       if (progressBar) progressBar.style.width = data.progress + '%';
       if (progressText) progressText.textContent = data.progress + '% complete · ' + data.completed_count + ' of ' + data.total_lessons + ' lessons done';
 
-      if (data.status === 'completed') {
-        window.showToast?.('Course completed! You can now rate this course and teacher.', 'success');
-        setTimeout(() => window.location.reload(), 800);
-      } else {
-        window.showToast?.('Lesson marked complete!', 'success');
-      }
+      const message = data.status === 'completed'
+        ? 'Course completed! You can now rate this course and teacher.'
+        : 'Lesson marked complete!';
+      window.showToast?.(message, 'success');
+      setTimeout(() => window.location.reload(), 700);
     } catch (error) {
       window.showToast?.(error.message || 'Unable to mark lesson complete.', 'danger');
     } finally {

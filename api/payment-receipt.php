@@ -12,9 +12,11 @@ if (($paymentId <= 0 && $paymentReference === '') || !db_available()) {
 
 ensure_manual_payment_schema();
 $stmt = $paymentReference !== ''
-    ? db()->prepare('SELECT receipt_path, reference FROM payments WHERE reference = ? LIMIT 1')
+    ? db()->prepare('SELECT receipt_path, reference FROM payments WHERE reference = ? OR id = ? LIMIT 1')
     : db()->prepare('SELECT receipt_path, reference FROM payments WHERE id = ? LIMIT 1');
-$stmt->execute([$paymentReference !== '' ? $paymentReference : $paymentId]);
+$stmt->execute($paymentReference !== ''
+    ? [$paymentReference, ctype_digit($paymentReference) ? (int) $paymentReference : 0]
+    : [$paymentId]);
 $payment = $stmt->fetch();
 $relativePath = trim((string) ($payment['receipt_path'] ?? ''));
 $projectRoot = realpath(dirname(__DIR__));
