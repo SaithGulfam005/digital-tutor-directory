@@ -971,7 +971,7 @@ function resolveCategoryId(string $category): int
 
 function ensure_auto_increment_primary_key(string $table): void
 {
-    $allowedTables = ['categories', 'courses', 'lessons', 'teacher_profiles', 'teacher_documents'];
+    $allowedTables = ['users', 'email_verifications', 'categories', 'courses', 'lessons', 'teacher_profiles', 'teacher_documents'];
     if (!in_array($table, $allowedTables, true)) {
         return;
     }
