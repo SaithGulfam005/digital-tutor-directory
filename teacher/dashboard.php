@@ -97,7 +97,7 @@ require __DIR__ . '/../components/page-hero.php';
             <p class="small text-muted mb-1"><?= number_format($c['students']) ?> students · <?= format_pkr((float) $c['revenue'], 0) ?> revenue</p>
             <span class="badge badge-approved">Published</span>
           </div>
-          <a href="<?= url('pages/course-detail.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+          <a href="<?= url('pages/course-detail-review.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary" target="_blank">View</a>
         </div>
         <?php endforeach; ?>
       </div>

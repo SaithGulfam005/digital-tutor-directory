@@ -61,7 +61,7 @@ require __DIR__ . '/../components/page-hero.php';
                 </span>
               </td>
               <td class="text-end text-nowrap">
-                <a href="<?= url('pages/course-detail.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i></a>
+                <a href="<?= url('pages/course-detail-review.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i></a>
                 <a href="<?= url('teacher/edit-course.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                 <?php if ($c['status'] === 'draft'): ?>
                 <form method="post" action="<?= url('api/course-update.php') ?>" class="d-inline">
