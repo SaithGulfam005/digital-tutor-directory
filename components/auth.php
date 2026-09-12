@@ -234,11 +234,8 @@ function attempt_login(string $email, string $password, string $expectedRole): a
 function register_user(array $data, string $role): array
 {
     ensure_email_verification_schema();
-<<<<<<< HEAD
     ensure_registration_schema();
-=======
     ensure_auto_increment_primary_key('users');
->>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
 
     $stmt = db()->prepare('SELECT id FROM users WHERE email = ?');
     $stmt->execute([$data['email']]);

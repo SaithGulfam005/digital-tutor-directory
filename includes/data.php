@@ -833,13 +833,10 @@ function teacher_is_verified(?int $teacherId = null): bool
 
 function submit_teacher_verification(int $teacherId, string $qualification, string $cnic, array $documents): void
 {
-<<<<<<< HEAD
     ensure_teacher_verification_schema();
-=======
     ensure_auto_increment_primary_key('teacher_profiles');
     ensure_auto_increment_primary_key('teacher_documents');
 
->>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
     $pdo = db();
     $profileStmt = $pdo->prepare('SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1');
     $profileStmt->execute([$teacherId]);

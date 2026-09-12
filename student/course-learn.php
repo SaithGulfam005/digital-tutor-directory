@@ -78,11 +78,7 @@ function lesson_video_embed(array $lesson, int $courseId): string
     }
 
     $mime = video_mime_type($url);
-<<<<<<< HEAD
     return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" data-video-error="1">'
-=======
-    return '<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata">'
->>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
         . '<source src="' . htmlspecialchars($src) . '" type="' . htmlspecialchars($mime) . '">'
         . 'Your browser does not support the video tag.</video>';
 }
