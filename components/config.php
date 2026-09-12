@@ -374,7 +374,16 @@ function resolve_local_media_path(string $path): ?string
         return null;
     }
 
+    $path = str_replace('\\', '/', $path);
+    $basePath = trim(str_replace('\\', '/', BASE_URL), '/');
     $candidate = ltrim($path, '/');
+    if ($basePath !== '' && str_starts_with($candidate, $basePath . '/')) {
+        $candidate = substr($candidate, strlen($basePath) + 1);
+    }
+    if (in_array('..', explode('/', $candidate), true)) {
+        return null;
+    }
+
     $absolute = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $candidate);
     if (is_file($absolute)) {
         return $absolute;
@@ -682,7 +691,6 @@ function getAdminChartData(): array
 function mockCurrentStudent(): array { return getCurrentStudent(); }
 function mockStudentEnrollments(): array { return getStudentEnrollments(); }
 function mockStudentPurchases(): array { return getStudentPurchases(); }
-function mockStudentBookings(): array { return getStudentBookings(); }
 function mockCourseLessons(int $courseId): array { return getCourseLessons($courseId, auth_id()); }
 function mockCurrentTeacher(): array { return getCurrentTeacher(); }
 function mockTeacherCourses(): array { return getTeacherCourses(); }

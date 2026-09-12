@@ -46,7 +46,7 @@ function courses_base_sql(string $where = '1=1'): string
 
 function ensure_course_price_precision(): void
 {
-    static $checked = false;
+    static $checked = [];
     if ($checked || !db_available()) {
         return;
     }
@@ -408,6 +408,7 @@ function getCourseLessons(int $courseId, ?int $studentId = null): array
     if (!db_available()) {
         return fallbackCourseLessons($courseId);
     }
+    ensure_lessons_primary_key();
     $stmt = db()->prepare('SELECT * FROM lessons WHERE course_id = ? ORDER BY sort_order, id');
     $stmt->execute([$courseId]);
     $lessons = $stmt->fetchAll();
@@ -832,7 +833,13 @@ function teacher_is_verified(?int $teacherId = null): bool
 
 function submit_teacher_verification(int $teacherId, string $qualification, string $cnic, array $documents): void
 {
+<<<<<<< HEAD
     ensure_teacher_verification_schema();
+=======
+    ensure_auto_increment_primary_key('teacher_profiles');
+    ensure_auto_increment_primary_key('teacher_documents');
+
+>>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
     $pdo = db();
     $profileStmt = $pdo->prepare('SELECT id FROM teacher_profiles WHERE user_id = ? LIMIT 1');
     $profileStmt->execute([$teacherId]);
@@ -1017,10 +1024,43 @@ function resolveCategoryId(string $category): int
     return (int) db()->lastInsertId();
 }
 
+function ensure_auto_increment_primary_key(string $table): void
+{
+    $allowedTables = ['users', 'email_verifications', 'categories', 'courses', 'lessons', 'teacher_profiles', 'teacher_documents'];
+    if (!in_array($table, $allowedTables, true)) {
+        return;
+    }
+
+    static $checked = [];
+    if (!db_available()) {
+        return;
+    }
+    if (($checked[$table] ?? false) === true) {
+        return;
+    }
+    $checked[$table] = true;
+
+    $column = db()->query("SHOW COLUMNS FROM `$table` LIKE 'id'")->fetch();
+    if (!$column || str_contains((string) ($column['Extra'] ?? ''), 'auto_increment')) {
+        return;
+    }
+
+    db()->exec("UPDATE `$table` SET id = (SELECT next_id FROM (SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `$table`) AS table_ids) WHERE id = 0");
+    db()->exec("ALTER TABLE `$table` MODIFY COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT");
+}
+
+function ensure_lessons_primary_key(): void
+{
+    ensure_auto_increment_primary_key('lessons');
+}
+
 function createCourse(int $teacherId, array $data): int
 {
     ensure_course_schema();
     ensure_course_price_precision();
+    ensure_auto_increment_primary_key('categories');
+    ensure_auto_increment_primary_key('courses');
+    ensure_lessons_primary_key();
     $categoryId = resolveCategoryId((string) ($data['category'] ?? ''));
 
     $slug = slugify($data['title']);
@@ -1090,6 +1130,9 @@ function ensure_course_schema(): void
 function updateCourse(int $courseId, int $teacherId, array $data): void
 {
     ensure_course_price_precision();
+    ensure_auto_increment_primary_key('categories');
+    ensure_auto_increment_primary_key('courses');
+    ensure_lessons_primary_key();
     $course = getCourseById($courseId);
     if (!$course) {
         throw new RuntimeException('Course not found.');

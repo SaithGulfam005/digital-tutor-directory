@@ -62,7 +62,7 @@ require __DIR__ . '/../components/page-hero.php';
                 </span>
               </td>
               <td class="text-end text-nowrap">
-                <a href="<?= url('pages/course-detail.php?id=' . $c['id']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i></a>
+                <a href="<?= url('pages/course-detail-review.php?id=' . $c['id']) ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i></a>
                 <?php if ($c['status'] === 'pending'): ?>
                 <button type="button" class="btn btn-sm btn-success" data-admin-action="approve" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Approve</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-admin-action="reject" data-api-id="<?= (int) $c['id'] ?>" data-admin-label="<?= htmlspecialchars($c['title']) ?>">Reject</button>

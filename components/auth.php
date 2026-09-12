@@ -42,6 +42,7 @@ function create_or_resend_email_verification(int $userId, string $email): array
     }
 
     ensure_email_verification_schema();
+    ensure_auto_increment_primary_key('email_verifications');
     db()->prepare('DELETE FROM email_verifications WHERE user_id = ?')->execute([$userId]);
 
     $otp = generate_email_verification_otp();
@@ -233,7 +234,11 @@ function attempt_login(string $email, string $password, string $expectedRole): a
 function register_user(array $data, string $role): array
 {
     ensure_email_verification_schema();
+<<<<<<< HEAD
     ensure_registration_schema();
+=======
+    ensure_auto_increment_primary_key('users');
+>>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
 
     $stmt = db()->prepare('SELECT id FROM users WHERE email = ?');
     $stmt->execute([$data['email']]);
@@ -260,6 +265,7 @@ function register_user(array $data, string $role): array
         $userId = (int) db()->lastInsertId();
 
         if ($role === 'teacher') {
+            ensure_auto_increment_primary_key('teacher_profiles');
             $stmt = db()->prepare('INSERT INTO teacher_profiles (user_id, qualification, cnic, subject, experience, verification_status) VALUES (?,?,?,?,?,?)');
             $stmt->execute([
                 $userId,

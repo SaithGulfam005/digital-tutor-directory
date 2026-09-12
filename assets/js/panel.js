@@ -49,7 +49,11 @@
     }
 
     const mime = videoMimeType(src);
+<<<<<<< HEAD
     return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata" data-video-error="1"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+=======
+    return `<video id="courseVideoPlayer" class="w-100 rounded mb-3" controls controlsList="nodownload" playsinline preload="metadata"><source src="${escapeHtml(src)}" type="${mime}">Your browser does not support the video tag.</video>`;
+>>>>>>> 7443e1914f1629f6212799d42db3d4e6aa149ad0
   }
 
   function bindVideoErrors(container) {

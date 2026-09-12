@@ -144,7 +144,7 @@ require_once __DIR__ . '/../components/navbar.php';
       $steps = [
         ['icon'=>'bi-search','title'=>'Browse & Search','text'=>'Find courses and teachers by category, rating, or keyword.'],
         ['icon'=>'bi-cart-check','title'=>'Enroll & Learn','text'=>'Purchase courses and access video lessons from your dashboard.'],
-        ['icon'=>'bi-award','title'=>'Grow & Certify','text'=>'Complete courses, track progress, and build your portfolio.'],
+        ['icon'=>'bi-award','title'=>'Learn & Grow','text'=>'Complete courses, track progress, and build your portfolio.'],
       ];
       foreach ($steps as $i => $step): ?>
       <div class="col-md-4 fade-up">
@@ -185,11 +185,12 @@ require_once __DIR__ . '/../components/navbar.php';
     <h2 class="section-title text-center mb-4">Student Testimonials</h2>
     <?php $testimonials = get_homepage_testimonials(); ?>
     <?php if (!empty($testimonials)): ?>
-    <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
-      <div class="carousel-inner">
+    <div class="tc-carousel testimonial-carousel" data-tc-carousel>
+      <div class="tc-carousel__viewport">
+        <div class="tc-carousel__track">
         <?php foreach ($testimonials as $i => $t): ?>
-        <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
-          <div class="testimonial-card text-center mx-auto" style="max-width:640px">
+        <div class="tc-carousel__slide testimonial-carousel__slide" data-tc-slide>
+          <div class="testimonial-card text-center">
             <p class="fs-5 mb-4">"<?= htmlspecialchars($t['text']) ?>"</p>
             <div class="d-flex justify-content-center gap-1 mb-3">
               <?= renderStars((float) ($t['rating'] ?? 0)) ?>
@@ -200,9 +201,21 @@ require_once __DIR__ . '/../components/navbar.php';
           </div>
         </div>
         <?php endforeach; ?>
+        </div>
       </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev"></button>
-      <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next"></button>
+      <div class="tc-carousel__controls" aria-label="Student testimonials carousel controls">
+        <button type="button" class="tc-carousel__button tc-carousel__button--prev" aria-label="Previous testimonial">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="tc-carousel__dots" aria-label="Testimonial navigation">
+          <?php foreach ($testimonials as $index => $testimonial): ?>
+          <button type="button" class="tc-carousel__dot <?= $index === 0 ? 'is-active' : '' ?>" data-tc-dot="<?= $index ?>" aria-label="Go to testimonial <?= $index + 1 ?>"></button>
+          <?php endforeach; ?>
+        </div>
+        <button type="button" class="tc-carousel__button tc-carousel__button--next" aria-label="Next testimonial">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
     </div>
     <?php else: ?>
     <div class="text-center text-muted py-3">Student testimonials will appear here once learners leave course reviews.</div>
@@ -292,6 +305,22 @@ require_once __DIR__ . '/../components/navbar.php';
     transform-origin: center center;
   }
 
+  .testimonial-carousel {
+    max-width: 1200px;
+  }
+
+  .testimonial-carousel .tc-carousel__viewport {
+    height: 300px;
+  }
+
+  .testimonial-carousel__slide {
+    width: min(640px, 78vw);
+  }
+
+  .testimonial-carousel__slide .testimonial-card {
+    height: 100%;
+  }
+
   .tc-carousel__controls {
     display: flex;
     align-items: center;
@@ -348,6 +377,10 @@ require_once __DIR__ . '/../components/navbar.php';
   @media (max-width: 767px) {
     .tc-carousel__viewport {
       height: 400px;
+    }
+
+    .testimonial-carousel .tc-carousel__viewport {
+      height: 350px;
     }
   }
 </style>

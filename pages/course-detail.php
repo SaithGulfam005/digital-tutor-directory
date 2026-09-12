@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__.'/../components/config.php';
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 $id = (int) ($_GET['id'] ?? 0);
 $course = getCourseById($id);
 if (!$course) {
@@ -24,6 +26,7 @@ $pageHeading = $course['title'];
 $pageSubheading = htmlspecialchars($course['teacher']) . ' · ' . number_format($course['rating'], 1) . ' ★ · ' . number_format($course['students']) . ' students';
 $pageBadge = '<span class="badge bg-warning text-dark">' . htmlspecialchars($course['category']) . '</span>';
 require __DIR__ . '/../components/page-hero.php';
+
 ?>
 <main class="section"><div class="container"><div class="row g-4">
   <div class="col-lg-8">
@@ -37,7 +40,7 @@ require __DIR__ . '/../components/page-hero.php';
         <div id="m0" class="accordion-collapse collapse show"><div class="accordion-body">
           <ul class="list-unstyled mb-0">
             <?php foreach ($lessons as $lesson): ?>
-            <li><i class="bi bi-play-circle me-2"></i><?= htmlspecialchars($lesson['title']) ?> <span class="text-muted small">(<?= htmlspecialchars($lesson['duration']) ?>)</span></li>
+            <li class="mb-2"><i class="bi bi-play-circle me-2"></i><?= htmlspecialchars($lesson['title']) ?> <span class="text-muted small">(<?= htmlspecialchars($lesson['duration']) ?>)</span></li>
             <?php endforeach; ?>
           </ul>
         </div></div>
@@ -88,7 +91,10 @@ require __DIR__ . '/../components/page-hero.php';
     <?php else: ?>
     <a href="<?= url('auth/login.php?role=student&redirect=' . urlencode('student/checkout.php?course_id=' . $id)) ?>" class="btn btn-primary w-100 btn-lg mb-2">Login to Enroll</a>
     <?php endif; ?>
-    <ul class="list-unstyled small text-muted"><li><i class="bi bi-infinity me-2"></i>Lifetime access</li></ul>
+    <ul class="list-unstyled course-benefits text-muted mb-0">
+      <li class="course-benefit"><i class="bi bi-infinity" aria-hidden="true"></i><span>Lifetime access</span></li>
+      <li class="course-benefit"><i class="bi bi-phone" aria-hidden="true"></i><span>Mobile Friendly</span></li>
+    </ul>
   
     <?php if ($teacherProfile): ?>
       <hr>

@@ -93,6 +93,23 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-hover);
 }
+.course-benefits { font-size: .875rem; }
+.course-benefit {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+  line-height: 1.4;
+}
+.course-benefit i { flex: 0 0 auto; font-size: 1rem; }
+.course-benefit span { overflow-wrap: anywhere; }
+
+@media (max-width: 575.98px) {
+  .purchase-card { top: 1rem; }
+  .course-benefits { font-size: .8125rem; }
+  .course-benefit { gap: .4rem; }
+  .course-benefit i { font-size: .95rem; }
+}
 
 /* Filters sidebar */
 .filter-panel {

@@ -378,39 +378,28 @@
         const categories = [...document.querySelectorAll('.filter-teacher-category:checked')].map((c) => c.value);
         const subjects = [...document.querySelectorAll('.filter-teacher-subject:checked')].map((c) => c.value);
         const minRating = parseFloat(document.querySelector('.filter-teacher-rating:checked')?.value || '0');
-        const minExperience = parseInt(document.getElementById('experienceMin')?.value || '0', 10);
-        return { categories, subjects, minRating, minExperience };
+        return { categories, subjects, minRating };
       },
       hasActiveFilters(filters) {
-        return filters.categories.length > 0 || filters.subjects.length > 0 || filters.minRating > 0 || filters.minExperience > 0;
+        return filters.categories.length > 0 || filters.subjects.length > 0 || filters.minRating > 0;
       },
-      matchItem(card, query, { categories, subjects, minRating, minExperience }) {
-        const searchText = normalize(card.dataset.search || card.textContent);
+      matchItem(card, query, { categories, subjects, minRating }) {
         const name = normalize(card.querySelector('h3')?.textContent);
         const categoriesForTeacher = (card.dataset.category || '').split('|').filter(Boolean);
         const teacherSubjects = (card.dataset.subject || '').split('|').filter(Boolean);
         const rating = parseFloat(card.dataset.rating || '0');
-        const experience = parseInt(card.dataset.experience || '0', 10);
+        const searchText = normalize([name, ...categoriesForTeacher, ...teacherSubjects].join(' '));
 
         const matchQuery = !query || searchText.includes(query) || name.includes(query);
         const matchCategory = categories.length === 0 || categories.some((category) => categoriesForTeacher.includes(category));
         const matchSubject = subjects.length === 0 || subjects.some((subject) => teacherSubjects.includes(subject));
         const matchRating = rating >= minRating;
-        const matchExperience = experience >= minExperience;
 
-        return matchQuery && matchCategory && matchSubject && matchRating && matchExperience;
+        return matchQuery && matchCategory && matchSubject && matchRating;
       },
       bindFilterEvents(apply) {
         document.querySelectorAll('.filter-teacher-category, .filter-teacher-subject, .filter-teacher-rating').forEach((el) => {
           el.addEventListener('change', apply);
-        });
-        document.getElementById('experienceMin')?.addEventListener('input', () => {
-          const label = document.getElementById('experienceLabel');
-          const slider = document.getElementById('experienceMin');
-          if (label && slider) {
-            label.textContent = slider.value === '0' ? 'Any' : slider.value + '+ years';
-          }
-          apply();
         });
         document.getElementById('clearTeacherFilters')?.addEventListener('click', (e) => {
           e.preventDefault();
@@ -425,12 +414,6 @@
           document.querySelectorAll('.filter-teacher-rating').forEach((r) => {
             r.checked = r.value === '0';
           });
-          const exp = document.getElementById('experienceMin');
-          if (exp) {
-            exp.value = '0';
-            const label = document.getElementById('experienceLabel');
-            if (label) label.textContent = 'Any';
-          }
           apply();
         });
       },

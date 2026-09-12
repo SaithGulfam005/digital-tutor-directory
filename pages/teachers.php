@@ -27,7 +27,7 @@ require __DIR__ . '/../components/page-hero.php';
 <aside class="col-lg-3">
   <div class="filter-panel">
     <h6 class="fw-bold mb-3">Search</h6>
-    <input type="search" id="teacherSearch" class="form-control mb-2" placeholder="Name, category, qualification...">
+    <input type="search" id="teacherSearch" class="form-control mb-2" placeholder="Name, category, subject...">
     <p class="small text-muted mb-3" id="teacherFilterCount"></p>
     <?php foreach (getCategories() as $cat):
       $catName = is_array($cat) ? ($cat['name'] ?? '') : $cat;
@@ -61,8 +61,6 @@ require __DIR__ . '/../components/page-hero.php';
       <label class="form-check-label" for="tr<?= str_replace('.', '', (string) $r) ?>"><?= $r ?>+ stars</label>
     </div>
     <?php endforeach; ?>
-    <h6 class="fw-bold mt-3 mb-2">Experience: <span id="experienceLabel">Any</span></h6>
-    <input type="range" class="form-range" id="experienceMin" min="0" max="15" value="0" step="1">
     <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-3" id="clearTeacherFilters">Clear filters</button>
   </div>
 </aside>
