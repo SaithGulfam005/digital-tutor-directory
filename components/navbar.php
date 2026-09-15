@@ -24,7 +24,7 @@
           <li class="nav-item"><a class="nav-link <?= isActive('about.php') ?>" href="<?= url('pages/about.php') ?>">About</a></li>
           <li class="nav-item"><a class="nav-link <?= isActive('contact.php') ?>" href="<?= url('pages/contact.php') ?>">Contact</a></li>
         </ul>
-        <div class="d-flex gap-2">
+        <div class="navbar-auth-actions d-flex gap-2">
           <div class="dropdown">
             <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Login</button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0">

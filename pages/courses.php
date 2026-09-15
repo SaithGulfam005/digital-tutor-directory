@@ -6,11 +6,10 @@ $courses = getCourses(true);
 $initialSearch = trim((string) ($_GET['q'] ?? ''));
 $initialCategory = trim((string) ($_GET['category'] ?? ''));
 
-if ($initialSearch !== '' || $initialCategory !== '') {
+if ($initialSearch !== '') {
   $normalizedSearch = strtolower($initialSearch);
-  $normalizedCategory = strtolower($initialCategory);
 
-  $courses = array_values(array_filter($courses, function (array $course) use ($normalizedSearch, $normalizedCategory): bool {
+  $courses = array_values(array_filter($courses, function (array $course) use ($normalizedSearch): bool {
     $title = strtolower((string) ($course['title'] ?? ''));
     $teacher = strtolower((string) ($course['teacher'] ?? ''));
     $category = strtolower((string) ($course['category'] ?? ''));
@@ -22,10 +21,7 @@ if ($initialSearch !== '' || $initialCategory !== '') {
       || str_contains($category, $normalizedSearch)
       || str_contains($description, $normalizedSearch);
 
-    $matchesCategory = $normalizedCategory === ''
-      || $category === $normalizedCategory;
-
-    return $matchesQuery && $matchesCategory;
+    return $matchesQuery;
   }));
 }
 require_once __DIR__ . '/../components/head.php';
@@ -41,12 +37,12 @@ require __DIR__ . '/../components/page-hero.php';
     <aside class="col-lg-3">
       <div class="filter-panel">
         <h6 class="fw-bold mb-2">Category</h6>
-        <?php foreach (getCategoriesWithCourses() as $cat): 
+        <?php foreach (getCategoriesWithCourses() as $cat):
           $catName = is_array($cat) ? $cat['name'] : $cat;
           $catId = str_replace(' ', '', $catName);
         ?>
         <div class="form-check">
-          <input class="form-check-input filter-category" type="checkbox" value="<?= htmlspecialchars($catName) ?>" id="c<?= htmlspecialchars($catId) ?>" <?= $initialCategory === $catName ? 'checked' : '' ?>>
+          <input class="form-check-input filter-category" type="checkbox" value="<?= htmlspecialchars($catName) ?>" id="c<?= htmlspecialchars($catId) ?>" <?= strcasecmp($initialCategory, $catName) === 0 ? 'checked' : '' ?>>
           <label class="form-check-label" for="c<?= htmlspecialchars($catId) ?>"><?= htmlspecialchars($catName) ?></label>
         </div>
         <?php endforeach; ?>

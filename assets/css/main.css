@@ -35,6 +35,19 @@ main { flex: 1; }
 .site-header .nav-link:hover,
 .site-header .nav-link.active { color: var(--primary); }
 .search-form { min-width: 220px; }
+.navbar-auth-actions .dropdown-menu { z-index: 1030; }
+
+@media (max-width: 991.98px) {
+  .navbar-auth-actions > .dropdown { position: relative; }
+  .navbar-auth-actions .dropdown-menu {
+    position: absolute !important;
+    top: 100%;
+    left: 0;
+    transform: none !important;
+    width: max-content;
+    margin-top: 0.25rem;
+  }
+}
 
 /* Hero */
 .hero {
