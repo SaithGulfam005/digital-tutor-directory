@@ -24,7 +24,7 @@ require __DIR__ . '/../components/page-hero.php';
     </div>
     <h2 class="h4 fw-bold mb-4">Our Team</h2>
     <div class="row g-4">
-      <?php foreach (['CEO — Gulfam','CTO — Haseeb Rana ','Head of Education — Zeesham aslam ','Support Lead — Amina Khan'] as $member): ?>
+      <?php foreach (['CEO — Gulfam','CTO — Haseeb Rana ','Head of Education — Zeesham aslam ',] as $member): ?>
       <div class="col-sm-6 col-lg-3"><div class="teacher-card card border-0 shadow-sm p-4 text-center">
         <img src="https://ui-avatars.com/api/?name=<?= urlencode($member) ?>&background=2563EB&color=fff" class="rounded-circle mb-3" width="80" height="80" alt="">
         <h3 class="h6 mb-0"><?= $member ?></h3>

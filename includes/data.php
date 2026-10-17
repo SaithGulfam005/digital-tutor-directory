@@ -889,14 +889,37 @@ function ensure_teacher_verification_schema(): void
 
 function getStudentStats(?int $studentId = null): array
 {
+    $studentId = $studentId ?? auth_id();
     $enrollments = getStudentEnrollments($studentId);
     $active = count(array_filter($enrollments, fn($e) => $e['status'] === 'active'));
     $completed = count(array_filter($enrollments, fn($e) => $e['status'] === 'completed'));
+    $hoursLearned = 0.0;
+
+    if ($studentId && db_available()) {
+        $stmt = db()->prepare('SELECT l.duration
+            FROM lesson_progress lp
+            JOIN enrollments e ON e.id = lp.enrollment_id
+            JOIN lessons l ON l.id = lp.lesson_id
+            WHERE e.student_id = ?');
+        $stmt->execute([$studentId]);
+
+        $secondsLearned = 0;
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $duration) {
+            if (preg_match('/^(\d+):([0-5]\d)$/', (string) $duration, $matches)) {
+                $secondsLearned += (int) $matches[1] * 60 + (int) $matches[2];
+            } elseif (preg_match('/^(\d+):([0-5]\d):([0-5]\d)$/', (string) $duration, $matches)) {
+                $secondsLearned += (int) $matches[1] * 3600 + (int) $matches[2] * 60 + (int) $matches[3];
+            }
+        }
+
+        $hoursLearned = round($secondsLearned / 3600, 1);
+    }
+
     return [
         'total' => count($enrollments),
         'active' => $active,
         'completed' => $completed,
-        'hours' => min(99, count($enrollments) * 12),
+        'hours' => $hoursLearned,
     ];
 }
 

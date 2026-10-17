@@ -57,7 +57,7 @@ require __DIR__ . '/../components/page-hero.php';
           <div class="d-flex justify-content-between">
             <div>
               <p class="text-muted small mb-1">Hours Learned</p>
-              <h3 class="mb-0 fw-bold"><?= $stats['hours'] ?></h3>
+              <h3 class="mb-0 fw-bold"><?= rtrim(rtrim(number_format((float) $stats['hours'], 1, '.', ''), '0'), '.') ?></h3>
             </div>
             <div class="kpi-card__icon kpi-card__icon--primary"><i class="bi bi-clock"></i></div>
           </div>
